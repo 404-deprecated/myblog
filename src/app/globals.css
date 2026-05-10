@@ -1,0 +1,359 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "Fira Code", monospace;
+}
+
+/* Light mode tokens */
+:root {
+  --bg: oklch(97.5% 0.003 90);
+  --bg-secondary: oklch(94% 0.005 90);
+  --surface: oklch(100% 0 0);
+  --border: oklch(88% 0.005 90);
+  --text: oklch(15% 0.01 240);
+  --text-muted: oklch(50% 0.01 240);
+  --accent: oklch(52% 0.22 264);
+  --accent-hover: oklch(45% 0.22 264);
+
+  --cat-tech: oklch(55% 0.2 240);
+  --cat-tech-bg: oklch(95% 0.04 240);
+  --cat-life: oklch(48% 0.17 160);
+  --cat-life-bg: oklch(95% 0.05 160);
+  --cat-finance: oklch(58% 0.18 60);
+  --cat-finance-bg: oklch(96% 0.05 70);
+  --cat-resources: oklch(52% 0.2 295);
+  --cat-resources-bg: oklch(95% 0.04 295);
+}
+
+/* Dark mode tokens */
+.dark {
+  --bg: oklch(11% 0.005 240);
+  --bg-secondary: oklch(15% 0.008 240);
+  --surface: oklch(17% 0.008 240);
+  --border: oklch(26% 0.01 240);
+  --text: oklch(92% 0.005 90);
+  --text-muted: oklch(58% 0.01 240);
+  --accent: oklch(72% 0.18 264);
+  --accent-hover: oklch(80% 0.18 264);
+
+  --cat-tech: oklch(72% 0.15 240);
+  --cat-tech-bg: oklch(20% 0.06 240);
+  --cat-life: oklch(70% 0.14 160);
+  --cat-life-bg: oklch(18% 0.06 160);
+  --cat-finance: oklch(78% 0.14 60);
+  --cat-finance-bg: oklch(20% 0.06 70);
+  --cat-resources: oklch(72% 0.15 295);
+  --cat-resources-bg: oklch(20% 0.05 295);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  color-scheme: light;
+  scroll-behavior: smooth;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Prose for MDX ─────────────────────────────────── */
+.prose {
+  max-width: 68ch;
+  color: var(--text);
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.prose h1 { font-size: clamp(1.75rem, 1.4rem + 1.7vw, 2.5rem); }
+.prose h2 {
+  font-size: clamp(1.35rem, 1.15rem + 1vw, 1.75rem);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+.prose h3 { font-size: 1.2rem; }
+
+.prose p { margin-bottom: 1.5rem; }
+
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.prose a:hover { color: var(--accent-hover); }
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+.prose pre {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.prose pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+.prose blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1.25rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 1.5rem 0;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.prose li { margin-bottom: 0.5rem; }
+
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem 0;
+}
+
+.prose img {
+  border-radius: 8px;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem auto;
+  display: block;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+}
+
+.prose th,
+.prose td {
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.prose th {
+  background-color: var(--bg-secondary);
+  font-weight: 600;
+}
+
+/* ── Utility hover classes (Server Component safe) ─────── */
+.link-muted {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.link-muted:hover { color: var(--accent); }
+
+.link-heading {
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.link-heading:hover { color: var(--accent); }
+
+.tag-pill {
+  color: var(--text-muted);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tag-pill:hover { color: var(--accent); border-color: var(--accent); }
+
+.filter-btn {
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background-color: transparent;
+  transition: all 0.15s;
+}
+.filter-btn:hover { border-color: var(--accent); color: var(--text); }
+.filter-btn.active {
+  font-weight: 600;
+  color: var(--accent);
+  background-color: var(--bg-secondary);
+  border-color: var(--accent);
+}
+
+.surface-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  background-color: var(--surface);
+  transition: border-color 0.2s, color 0.2s;
+}
+.surface-link:hover { border-color: var(--accent); color: var(--text); }
+
+.btn-primary {
+  display: inline-block;
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  background-color: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: opacity 0.15s;
+}
+.btn-primary:hover { opacity: 0.85; }
+
+.nav-icon-btn:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+
+/* ── Post nav ───────────────────────────────────────── */
+.post-nav-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.post-nav-link:hover {
+  border-color: var(--accent);
+  background-color: var(--bg-secondary);
+}
+
+/* ── TOC sidebar ────────────────────────────────────── */
+.toc-link:hover { color: var(--accent) !important; }
+
+@media (min-width: 1100px) {
+  .toc-sidebar { display: block !important; }
+}
+
+/* ── rehype-pretty-code (shiki) ─────────────────────── */
+/* Override prose pre styles for highlighted blocks */
+.prose [data-rehype-pretty-code-figure] pre {
+  padding: 1.25rem 0;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background-color: var(--surface) !important;
+}
+
+.prose [data-rehype-pretty-code-figure] code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  display: grid;
+}
+
+.prose [data-rehype-pretty-code-figure] [data-line] {
+  padding: 0 1.5rem;
+  border-left: 2px solid transparent;
+}
+
+.prose [data-rehype-pretty-code-figure] [data-highlighted-line] {
+  background-color: var(--bg-secondary);
+  border-left-color: var(--accent);
+}
+
+/* Code title bar */
+.prose [data-rehype-pretty-code-title] {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding: 0.4rem 1rem;
+  margin-bottom: 0;
+}
+
+.prose [data-rehype-pretty-code-title] + pre {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  margin-top: 0;
+}
+
+/* Line numbers */
+.prose code[data-line-numbers] {
+  counter-reset: line;
+}
+.prose code[data-line-numbers] > [data-line]::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 1.5rem;
+  margin-right: 1.5rem;
+  text-align: right;
+  color: var(--text-muted);
+  font-size: 0.8em;
+  user-select: none;
+}
+
+/* Inline code — keep existing style, don't conflict with shiki */
+.prose :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+/* ── Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }

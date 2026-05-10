@@ -1,0 +1,131 @@
+---
+title: "翻出了我的 Chrome 书签——一份 Android 开发资源时间胶囊"
+date: "2025-05-03"
+excerpt: "整理了一下几年来积累的 Chrome 书签，7000 多条里筛出真正有价值的 Android 技术资源，附上当年收藏的理由。"
+category: resources
+tags: [Android, 学习资源, GitHub, 性能优化, 技术博客]
+---
+
+最近整理 Chrome 书签，发现里面躺着 7000 多条记录。时间跨度从 2014 年一直到现在，简直是一部个人技术成长史。
+
+去掉公司内网、购物车、旅游订单，剩下的技术资源我重新过了一遍——很多链接已经 404，但还活着的那些，大多仍然值得一读。
+
+这篇文章是我从书签堆里挖出来的「精华」，按分类整理，附上我当年收藏的理由。
+
+---
+
+## GitHub 开源库
+
+这批仓库是我 2014-2016 年密集收藏的，那是 Android 开源生态爆发的年代。很多库现在已经有更好的替代品，但作为学习源码的材料依然有价值。
+
+### UI 组件
+
+| 仓库 | 用途 |
+|------|------|
+| [wasabeef/awesome-android-ui](https://github.com/wasabeef/awesome-android-ui) | Android UI 库汇总，入门找灵感必看 |
+| [daimajia/AnimationEasingFunctions](https://github.com/daimajia/AnimationEasingFunctions) | 动画缓动函数，代码家出品 |
+| [dmytrodanylyk/circular-progress-button](https://github.com/dmytrodanylyk/circular-progress-button) | 经典圆形进度按钮，交互细节做得很好 |
+| [diogobernardino/WilliamChart](https://github.com/diogobernardino/WilliamChart) | 图表库，设计感强 |
+| [lecho/hellocharts-android](https://github.com/lecho/hellocharts-android) | 功能全面的图表库 |
+| [ongakuer/CircleIndicator](https://github.com/ongakuer/CircleIndicator) | ViewPager 圆点指示器，至今还在用 |
+| [traex/RippleEffect](https://github.com/traex/RippleEffect) | Material Design 水波纹效果的早期实现 |
+| [qiujuer/Genius-Android](https://github.com/qiujuer/Genius-Android) | qiujuer 的 Material 组件库 |
+| [jpardogo/GoogleProgressBar](https://github.com/jpardogo/GoogleProgressBar) | 仿 Chrome 加载动画 |
+| [jfeinstein10/JazzyViewPager](https://github.com/jfeinstein10/JazzyViewPager) | ViewPager 翻页动画，曾经很流行 |
+
+### 架构 & 工具
+
+| 仓库 | 用途 |
+|------|------|
+| [JakeWharton/DiskLruCache](https://github.com/JakeWharton/DiskLruCache) | 磁盘 LRU 缓存，Jake Wharton 早期经典 |
+| [JakeWharton/kotterknife](https://github.com/JakeWharton/kotterknife) | Kotlin 版 ButterKnife，已被 ViewBinding 取代，但 delegate 思路值得学 |
+| [yangfuhai/ASimpleCache](https://github.com/yangfuhai/ASimpleCache) | 轻量缓存库，源码只有一个文件，适合学习 |
+| [konmik/nucleus](https://github.com/konmik/nucleus) | 早期 MVP 框架，帮我理解了 Presenter 生命周期 |
+| [mikepenz/AboutLibraries](https://github.com/mikepenz/AboutLibraries) | 自动生成开源库致谢页面，现在仍在维护 |
+| [amulyakhare/TextDrawable](https://github.com/amulyakhare/TextDrawable) | 用文字生成头像占位图 |
+
+### 值得 Star 的合集
+
+- [wasabeef/awesome-android-ui](https://github.com/wasabeef/awesome-android-ui) — UI 资源最全的汇总
+- [Trinea/android-open-project](https://github.com/trinea/android-open-project) — 国人整理的开源库合集，时代记忆
+- [android-cn/android-discuss](https://github.com/android-cn/android-discuss/issues) — 用 Issue 讨论 Android 技术问题的社区，早期很活跃
+
+---
+
+## 性能优化
+
+性能是 Android 开发绕不过的话题，这几个资源帮我建立了系统性的认知。
+
+### 必读文章
+
+- **[Android性能优化典范](http://hukai.me/android-performance-patterns/)** — 胡凯整理的 Google Android Performance Patterns 系列，是入门性能调优的最佳中文资料，建议从头读完
+- **[Android Performance Patterns: Understanding VSYNC](https://www.youtube.com/watch?v=1iaHxmfZGGc)** — YouTube 视频，搞清楚帧率、VSYNC、Choreographer 的关系之前，很多性能问题都是盲人摸象
+- **[正确使用 Android 性能分析工具——TraceView](http://blog.jobbole.com/78995/)** — 工具用对了，问题就定位了一半
+- **[Instagram 工程师教你如何改善 App 的性能](http://www.csdn.net/article/2014-10-05/2821953-instagram-improved-their-apps-performance)** — 大厂实践，含金量高
+
+### 工具
+
+- **[AndroidPerformance.com](http://www.androidperformance.com/)** — 专注 Android 性能的博客，内容很垂直
+- **[Trinea - TraceView 使用](http://www.trinea.cn/android/android-traceview/)** — TraceView 实操教程
+
+> 2024 年更新：现在推荐用 **Android Profiler**（集成在 Android Studio）替代 TraceView，但理解原理的文章还是上面这些最清楚。
+
+---
+
+## 技术博客
+
+### 中文博客（按质量排序）
+
+这些博主在 2014-2018 年产出了大量高质量文章，是我学 Android 时的主要学习来源。
+
+| 博主 | 博客 | 特点 |
+|------|------|------|
+| 胡凯 | [hukai.me](http://hukai.me) | Google Training 翻译 + 性能系列，质量极高 |
+| 郭霖 | [CSDN 郭霖](http://blog.csdn.net/guolin_blog) | 系列文章完整，从 Activity 到 Glide 源码都有 |
+| 鸿洋 | [CSDN 鸿洋](http://blog.csdn.net/lmj623565791) | 自定义 View 系列最出名，入门必看 |
+| 任玉刚 | [CSDN 任玉刚](http://blog.csdn.net/singwhatiwanna) | 插件化、热修复方向深入 |
+| stormzhang | [stormzhang.com](http://stormzhang.com) | 偏工程实践，Git 使用讲得好 |
+| 代码家 daimajia | [blog.daimajia.com](http://blog.daimajia.com) | 动画和 UI 方向 |
+| qiujuer | [CSDN qiujuer](http://blog.csdn.net/qiujuer) | Material Design 早期实践 |
+
+### 英文博客
+
+| 博主 | 博客 | 特点 |
+|------|------|------|
+| Chris Banes | [chris.banes.me](https://chris.banes.me) | AppCompat 作者，权威 |
+| Dan Lew | [blog.danlew.net](http://blog.danlew.net) | Style、RxJava 方向 |
+| Mirosław Stanek | [frogermcs.github.io](https://frogermcs.github.io) | InstaMaterial 系列，动画和 Material Design |
+| Instagram Engineering | [Instagram Engineering](http://instagram-engineering.tumblr.com) | 大厂技术实践 |
+| Square Engineering | [corner.squareup.com](https://corner.squareup.com) | OkHttp、Retrofit 背后的团队 |
+
+---
+
+## 面试准备
+
+这些是我当年跳槽时收藏的资料，现在看仍然有参考价值——基础知识不会过时。
+
+- **[史上最全 Android 面试资料集合](https://www.jianshu.com/p/d1efe2f31b6d)** — 汇总型资料，快速查漏补缺
+- **[一张图看清 Android 事件传递机制](http://www.jianshu.com/p/cf22ea3b09a5)** — 事件分发是高频考点，这张图帮我理清了思路
+- **[Java 线程面试题 Top 50](http://www.cnblogs.com/dolphin0520/p/3958019.html)** — Java 并发基础，Android 开发也绕不开
+- **[Android 性能优化之 22 点](http://www.itbbu.com/1290.html)** — 条目清晰，适合面前快速复习
+
+---
+
+## 算法可视化
+
+- **[VisuAlgo](http://zh.visualgo.net/)** — 算法可视化工具，支持中文，看动画理解排序/树/图比干看代码强 10 倍。备战算法题时每次必打开。
+
+---
+
+## 关于这批书签
+
+这些链接最集中收藏于 2014-2016 年，正好是 Android 开源社区最活跃的时期——Material Design 刚发布，Rx 热度正高，MVP/MVVM 之争激烈。
+
+很多链接现在已经 404，博主也不再更新了。但翻看这些书签就像翻老照片——每一个都能想起当时为什么收藏，卡在哪个问题上，最后怎么解决的。
+
+如果你也是 Android 开发，这里大概有几个值得重新读一读的：
+1. 胡凯的**性能优化典范**系列，基础问题讲得很透彻
+2. **VisuAlgo** 算法可视化，比任何教材都直观
+3. **Chris Banes 的博客**，很多 AndroidX 的设计思路都能从这里找到来源
+
+后续有时间会继续整理 AI 工具和跨平台方向的书签，那批是最近两年收藏的，内容更新。
