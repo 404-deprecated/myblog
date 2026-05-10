@@ -5,7 +5,7 @@
 // 3. 把 TODO 替换成真实值后重启开发服务器
 
 export const GISCUS_CONFIG = {
-  repo: 'EvilsoulMMM/myblog' as `${string}/${string}`,
+  repo: '404-deprecated/myblog' as `${string}/${string}`,
   repoId: 'TODO_REPO_ID',         // giscus.app 生成的 repoId
   category: 'Announcements',
   categoryId: 'TODO_CATEGORY_ID', // giscus.app 生成的 categoryId

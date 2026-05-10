@@ -1,7 +1,7 @@
 import { getAllPosts } from '@/lib/posts'
 import { NextResponse } from 'next/server'
 
-const SITE_URL = 'https://404notfound.blog'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'
 const SITE_TITLE = '404_Not_Found'
 const SITE_DESC = '记录技术、生活、理财与学习资源的个人博客'
 
