@@ -6,9 +6,9 @@
 
 export const GISCUS_CONFIG = {
   repo: '404-deprecated/myblog' as `${string}/${string}`,
-  repoId: 'TODO_REPO_ID',         // giscus.app 生成的 repoId
-  category: 'Announcements',
-  categoryId: 'TODO_CATEGORY_ID', // giscus.app 生成的 categoryId
+  repoId: 'R_kgDOSZNXBA',
+  category: 'General',
+  categoryId: 'DIC_kwDOSZNXBM4C8smi',
   mapping: 'pathname' as const,
   reactionsEnabled: '1' as const,
   emitMetadata: '0' as const,
