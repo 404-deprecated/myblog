@@ -56,8 +56,8 @@ export default function AboutPage() {
             GitHub Issues 联系我。
           </p>
           <p>
-            <a href="https://github.com/EvilsoulMMM" target="_blank" rel="noopener noreferrer">
-              github.com/EvilsoulMMM
+            <a href="https://github.com/404-deprecated" target="_blank" rel="noopener noreferrer">
+              github.com/404-deprecated
             </a>
           </p>
 

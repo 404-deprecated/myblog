@@ -255,6 +255,7 @@ body {
 .btn-primary:hover { opacity: 0.85; }
 
 .nav-icon-btn:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+.market-entry-link:hover { border-color: var(--accent) !important; }
 
 /* ── Post nav ───────────────────────────────────────── */
 .post-nav-link {

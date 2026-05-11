@@ -19,7 +19,7 @@ export function Footer() {
         <span style={{ fontFamily: 'var(--font-mono)' }}>© {year} 404_Not_Found</span>
         <div style={{ display: 'flex', gap: '1.25rem' }}>
           <a
-            href="https://github.com/EvilsoulMMM"
+            href="https://github.com/404-deprecated"
             target="_blank"
             rel="noopener noreferrer"
             className="link-muted"

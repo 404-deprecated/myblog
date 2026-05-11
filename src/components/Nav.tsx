@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: '/', label: '首页' },
   { href: '/blog', label: '文章' },
   { href: '/archive', label: '归档' },
+  { href: '/market', label: '市场' },
   { href: '/about', label: '关于' },
 ]
 

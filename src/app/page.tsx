@@ -61,6 +61,39 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Market dashboard entry */}
+      <section style={{ marginBottom: '3.5rem' }}>
+        <Link
+          href="/market"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            padding: '1rem 1.25rem',
+            borderRadius: '10px',
+            border: '1px solid var(--border)',
+            backgroundColor: 'var(--surface)',
+            textDecoration: 'none',
+            transition: 'border-color 0.15s',
+          }}
+          className="market-entry-link"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+            <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>📈</span>
+            <div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.2rem' }}>
+                市场仪表盘
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                指数走势 · 风险指标 · AI 基金择时分析
+              </div>
+            </div>
+          </div>
+          <span style={{ fontSize: '0.85rem', color: 'var(--accent)', flexShrink: 0 }}>查看 →</span>
+        </Link>
+      </section>
+
       {/* Featured post */}
       {featured && (
         <section style={{ marginBottom: '3.5rem' }}>

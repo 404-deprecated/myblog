@@ -4,10 +4,14 @@ import { extractHeadings } from '@/lib/toc'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import rehypePrettyCode from 'rehype-pretty-code'
 import rehypeSlug from 'rehype-slug'
+import remarkGfm from 'remark-gfm'
 import { CategoryTag } from '@/components/CategoryTag'
 import { TableOfContents } from '@/components/TableOfContents'
 import { PostNav } from '@/components/PostNav'
 import { GiscusComments } from '@/components/GiscusComments'
+import { MarketIndicators } from '@/components/MarketIndicators'
+import { Callout } from '@/components/Callout'
+import { StockTracker } from '@/components/StockTracker'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import type { MDXRemoteProps } from 'next-mdx-remote/rsc'
@@ -18,6 +22,7 @@ interface PageProps {
 
 const mdxOptions: MDXRemoteProps['options'] = {
   mdxOptions: {
+    remarkPlugins: [remarkGfm],
     rehypePlugins: [
       rehypeSlug,
       [rehypePrettyCode, { theme: { dark: 'github-dark', light: 'github-light' }, keepBackground: false }],
@@ -117,7 +122,7 @@ export default async function PostPage({ params }: PageProps) {
           <hr style={{ border: 'none', borderTop: '1px solid var(--border)', marginBottom: '3rem' }} />
 
           <div className="prose">
-            <MDXRemote source={post.content} options={mdxOptions} />
+            <MDXRemote source={post.content} options={mdxOptions} components={{ MarketIndicators, Callout, StockTracker }} />
           </div>
 
           <PostNav prev={prev} next={next} />
