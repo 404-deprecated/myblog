@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import { logPrediction } from '@/lib/review-store'
+import { getStockFundamentals } from '@/lib/fundamentals'
 
 export const dynamic = 'force-dynamic'
 const execAsync = promisify(exec)
@@ -650,6 +651,12 @@ export async function GET() {
         methods[3].weight = 0.20 // rsi
       }
     } else if (asset.type === 'stock') {
+      // Enrich with live fundamentals from data store
+      const liveFund = await getStockFundamentals(asset.ticker).catch(() => null)
+      if (liveFund) {
+        asset.forwardPE = liveFund.forwardPe ?? asset.forwardPE
+        asset.revenueGrowthPct = liveFund.revenueGrowthPct ?? asset.revenueGrowthPct
+      }
       const valuation = calcValuationSafe(asset, currentPrice)
       if (valuation) methods.push(valuation)
     }
