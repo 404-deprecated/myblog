@@ -95,6 +95,63 @@ const SHANGHAI_DATA = [
   // 2025-06 onwards: use 1Y/2Y live range (Yahoo Finance) for accurate data
 ]
 
+// ─── 恒生指数月度收盘（2016-01 ~ 2026-05）────────────────────────────────────
+const HANG_SENG_DATA = [
+  { m: '2016-01', p: 19111 }, { m: '2016-02', p: 19112 }, { m: '2016-03', p: 20777 },
+  { m: '2016-04', p: 21067 }, { m: '2016-05', p: 20815 }, { m: '2016-06', p: 20794 },
+  { m: '2016-07', p: 22001 }, { m: '2016-08', p: 23024 }, { m: '2016-09', p: 23297 },
+  { m: '2016-10', p: 23142 }, { m: '2016-11', p: 22790 }, { m: '2016-12', p: 22001 },
+  { m: '2017-01', p: 23360 }, { m: '2017-02', p: 23740 }, { m: '2017-03', p: 24112 },
+  { m: '2017-04', p: 24616 }, { m: '2017-05', p: 25924 }, { m: '2017-06', p: 25765 },
+  { m: '2017-07', p: 27323 }, { m: '2017-08', p: 27917 }, { m: '2017-09', p: 28196 },
+  { m: '2017-10', p: 28245 }, { m: '2017-11', p: 29866 }, { m: '2017-12', p: 29919 },
+  { m: '2018-01', p: 32887 }, { m: '2018-02', p: 30844 }, { m: '2018-03', p: 30093 },
+  { m: '2018-04', p: 30808 }, { m: '2018-05', p: 31064 }, { m: '2018-06', p: 29315 },
+  { m: '2018-07', p: 28583 }, { m: '2018-08', p: 27888 }, { m: '2018-09', p: 27789 },
+  { m: '2018-10', p: 24979 }, { m: '2018-11', p: 26341 }, { m: '2018-12', p: 25846 },
+  { m: '2019-01', p: 27930 }, { m: '2019-02', p: 28963 }, { m: '2019-03', p: 29051 },
+  { m: '2019-04', p: 29699 }, { m: '2019-05', p: 27353 }, { m: '2019-06', p: 28542 },
+  { m: '2019-07', p: 28189 }, { m: '2019-08', p: 25724 }, { m: '2019-09', p: 26093 },
+  { m: '2019-10', p: 27101 }, { m: '2019-11', p: 26346 }, { m: '2019-12', p: 28189 },
+  { m: '2020-01', p: 26313 }, { m: '2020-02', p: 26129 }, { m: '2020-03', p: 23603 },
+  { m: '2020-04', p: 24644 }, { m: '2020-05', p: 23868 }, { m: '2020-06', p: 24427 },
+  { m: '2020-07', p: 25389 }, { m: '2020-08', p: 25178 }, { m: '2020-09', p: 23459 },
+  { m: '2020-10', p: 24107 }, { m: '2020-11', p: 26341 }, { m: '2020-12', p: 27231 },
+  { m: '2021-01', p: 29103 }, { m: '2021-02', p: 30633 }, { m: '2021-03', p: 28530 },
+  { m: '2021-04', p: 28969 }, { m: '2021-05', p: 29151 }, { m: '2021-06', p: 28828 },
+  { m: '2021-07', p: 25757 }, { m: '2021-08', p: 25879 }, { m: '2021-09', p: 24099 },
+  { m: '2021-10', p: 25377 }, { m: '2021-11', p: 23476 }, { m: '2021-12', p: 23397 },
+  { m: '2022-01', p: 24573 }, { m: '2022-02', p: 23021 }, { m: '2022-03', p: 22502 },
+  { m: '2022-04', p: 21089 }, { m: '2022-05', p: 21415 }, { m: '2022-06', p: 21859 },
+  { m: '2022-07', p: 20165 }, { m: '2022-08', p: 20200 }, { m: '2022-09', p: 17222 },
+  { m: '2022-10', p: 14687 }, { m: '2022-11', p: 18204 }, { m: '2022-12', p: 19781 },
+  { m: '2023-01', p: 21842 }, { m: '2023-02', p: 20606 }, { m: '2023-03', p: 20401 },
+  { m: '2023-04', p: 19895 }, { m: '2023-05', p: 18534 }, { m: '2023-06', p: 18916 },
+  { m: '2023-07', p: 19539 }, { m: '2023-08', p: 17956 }, { m: '2023-09', p: 17809 },
+  { m: '2023-10', p: 17112 }, { m: '2023-11', p: 17042 }, { m: '2023-12', p: 16982 },
+  { m: '2024-01', p: 15485 }, { m: '2024-02', p: 16789 }, { m: '2024-03', p: 16541 },
+  { m: '2024-04', p: 17763 }, { m: '2024-05', p: 18079 }, { m: '2024-06', p: 17718 },
+  { m: '2024-07', p: 17021 }, { m: '2024-08', p: 17989 }, { m: '2024-09', p: 21134 },
+  { m: '2024-10', p: 20318 }, { m: '2024-11', p: 19424 }, { m: '2024-12', p: 19864 },
+  { m: '2025-01', p: 20197 }, { m: '2025-02', p: 22941 }, { m: '2025-03', p: 23342 },
+  { m: '2025-04', p: 21971 }, { m: '2025-05', p: 23549 },
+  // 2025-06 onwards: use 1Y/2Y live range (Yahoo Finance) for accurate data
+]
+
+const HANG_SENG_EVENTS: ChartEvent[] = [
+  { d: '2018-01-29', label: '恒指见顶', impact: 'neg', detail: '恒生指数触及33,484历史高位后急转直下，贸易战忧虑叠加美债利率飙升，港股开始漫长回调。' },
+  { d: '2018-10-11', label: '贸易战港股', impact: 'neg', detail: '中美贸易战冲击港股，恒指单月跌超11%，科技股和消费股首当其冲，南向资金大幅回撤。' },
+  { d: '2020-03-19', label: 'COVID港股暴跌', impact: 'neg', detail: '全球疫情冲击，港股跌至23,603，腾讯、美团等互联网股跌幅较小，港股跌幅好于欧美。' },
+  { d: '2021-02-17', label: '港股牛市高点', impact: 'pos', detail: '恒指升至31,084，科技+消费双轮驱动，南向资金持续涌入，腾讯、美团均创历史新高。' },
+  { d: '2021-07-26', label: '监管风暴', impact: 'neg', detail: '教育双减政策+平台经济反垄断+游戏版号停发集中爆发，恒科指单月跌超20%，中概股崩跌。' },
+  { d: '2022-10-24', label: '多年新低', impact: 'neg', detail: '恒指跌至14,687，为近13年最低。担忧习近平连任政策不确定性+美联储暴力加息+地产危机三重压制。' },
+  { d: '2022-11-04', label: '防疫放开预期', impact: 'pos', detail: '防疫政策转向预期+房地产"三支箭"，恒指单月暴涨+26%，为历史最大单月涨幅之一。' },
+  { d: '2024-01-22', label: '港股历史低谷', impact: 'neg', detail: '恒指跌至15,485，外资持续撤离中国资产，中国经济复苏不及预期，恒指估值历史性低估。' },
+  { d: '2024-09-24', label: '政策大礼包', impact: 'pos', detail: '国务院一揽子增量政策落地，港股单月涨超+18%，南向资金单日净买入创历史纪录，腾讯、阿里领涨。' },
+  { d: '2025-01-27', label: 'DeepSeek颠覆', impact: 'pos', detail: 'DeepSeek R1以低成本实现GPT-4级别能力震惊全球，中国AI重新定价，恒科指持续上行。' },
+  { d: '2025-04-22', label: '中美缓和', impact: 'pos', detail: '中美90天关税暂停协议，港股外资回流加速，科技板块估值修复，腾讯、小米屡创新高。' },
+]
+
 const NASDAQ_EVENTS: ChartEvent[] = [
   { d:'2018-10-10', label:'贸易战冲击', impact:'neg', detail:'中美贸易战升级，科技股抛售，纳指单月跌-9.2%，FAANG全线下跌。' },
   { d:'2018-12-24', label:'年末暴跌', impact:'neg', detail:'美联储持续加息+贸易战忧虑，纳指全年跌近18%，12月单月跌幅为历史第三大。' },
@@ -128,9 +185,9 @@ const SHANGHAI_EVENTS: ChartEvent[] = [
 ]
 
 // Combined + sorted timeline for the events list panel
-const TIMELINE_EVENTS = [...NASDAQ_EVENTS, ...SHANGHAI_EVENTS]
+const TIMELINE_EVENTS = [...NASDAQ_EVENTS, ...SHANGHAI_EVENTS, ...HANG_SENG_EVENTS]
   .sort((a, b) => a.d.localeCompare(b.d))
-  .filter((ev, i, arr) => i === 0 || ev.d !== arr[i - 1].d)  // dedupe same month
+  .filter((ev, i, arr) => i === 0 || ev.d !== arr[i - 1].d)  // dedupe same date
 
 // Manually maintained — update when market conditions change significantly
 // Last updated: 2026-05
@@ -250,18 +307,21 @@ function toChartPts(arr: { m: string; p: number }[]) {
   return arr.map(pt => ({ d: pt.m, p: pt.p }))
 }
 
-function TrendPredictionPanel({ nasdaqData, shanghaiData }: {
+function TrendPredictionPanel({ nasdaqData, shanghaiData, hangSengData }: {
   nasdaqData: { m: string; p: number }[]
   shanghaiData: { m: string; p: number }[]
+  hangSengData: { m: string; p: number }[]
 }) {
   const nasdaq = predictTrend(nasdaqData)
   const shanghai = predictTrend(shanghaiData)
+  const hangSeng = predictTrend(hangSengData)
 
   if (!nasdaq || !shanghai) return null
 
   const markets = [
     { name: '纳斯达克', ticker: 'NASDAQ', pred: nasdaq, color: '#2563eb' },
     { name: '上证指数', ticker: 'SSE', pred: shanghai, color: '#d97706' },
+    ...(hangSeng ? [{ name: '恒生指数', ticker: 'HSI', pred: hangSeng, color: '#7c3aed' }] : []),
   ]
 
   return (
@@ -348,7 +408,7 @@ export default function MarketDashboard() {
   const [error, setError] = useState('')
 
   // Live daily data for index charts (1M/3M/6M)
-  const [indexDaily, setIndexDaily] = useState<{ nasdaq: ChartPoint[]; shanghai: ChartPoint[] } | null>(null)
+  const [indexDaily, setIndexDaily] = useState<{ nasdaq: ChartPoint[]; shanghai: ChartPoint[]; hangSeng: ChartPoint[] } | null>(null)
   const [indexDailyLoading, setIndexDailyLoading] = useState(false)
   const [indexDailyUpdated, setIndexDailyUpdated] = useState<string | null>(null)
 
@@ -356,14 +416,16 @@ export default function MarketDashboard() {
     setIndexDailyLoading(true)
     setIndexDaily(null)
     try {
-      const [nRes, sRes] = await Promise.all([
+      const [nRes, sRes, hRes] = await Promise.all([
         fetch(`/api/stock-daily?ticker=^IXIC&range=${r}`, { cache: 'no-store' }),
         fetch(`/api/stock-daily?ticker=000001.SS&range=${r}`, { cache: 'no-store' }),
+        fetch(`/api/stock-daily?ticker=^HSI&range=${r}`, { cache: 'no-store' }),
       ])
-      const [nJson, sJson] = await Promise.all([nRes.json(), sRes.json()])
+      const [nJson, sJson, hJson] = await Promise.all([nRes.json(), sRes.json(), hRes.json()])
       setIndexDaily({
-        nasdaq: (nJson.prices ?? []) as ChartPoint[],
+        nasdaq:   (nJson.prices ?? []) as ChartPoint[],
         shanghai: (sJson.prices ?? []) as ChartPoint[],
+        hangSeng: (hJson.prices ?? []) as ChartPoint[],
       })
       if (nJson.fetchedAt) setIndexDailyUpdated(
         new Date(nJson.fetchedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
@@ -383,13 +445,16 @@ export default function MarketDashboard() {
 
   const isLiveRange = MARKET_LIVE_RANGES.includes(range)
   // TrendPredictionPanel always uses 5Y of static monthly data (needs 13+ points for SMA)
-  const nasdaqFiltered = filterByRange(NASDAQ_DATA, '5Y')
+  const nasdaqFiltered  = filterByRange(NASDAQ_DATA,    '5Y')
   const shanghaiFiltered = filterByRange(SHANGHAI_DATA, '5Y')
+  const hangSengFiltered = filterByRange(HANG_SENG_DATA, '5Y')
   // Charts: live Yahoo data when available, else static monthly
-  const nasdaqChartData: ChartPoint[] = isLiveRange && indexDaily
-    ? indexDaily.nasdaq : toChartPts(filterByRange(NASDAQ_DATA, range))
+  const nasdaqChartData: ChartPoint[]  = isLiveRange && indexDaily
+    ? indexDaily.nasdaq   : toChartPts(filterByRange(NASDAQ_DATA,    range))
   const shanghaiChartData: ChartPoint[] = isLiveRange && indexDaily
-    ? indexDaily.shanghai : toChartPts(filterByRange(SHANGHAI_DATA, range))
+    ? indexDaily.shanghai : toChartPts(filterByRange(SHANGHAI_DATA,  range))
+  const hangSengChartData: ChartPoint[] = isLiveRange && indexDaily
+    ? indexDaily.hangSeng : toChartPts(filterByRange(HANG_SENG_DATA, range))
 
   const analyze = useCallback(async (name?: string) => {
     const fund = (name ?? fundInput).trim()
@@ -506,7 +571,7 @@ export default function MarketDashboard() {
             )}
 
             {!indexDailyLoading && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
                 <div style={{ borderRadius: '10px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '0.875rem' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-muted)', marginBottom: '0.375rem' }}>纳斯达克综合指数</div>
                   <InteractiveChart
@@ -531,6 +596,18 @@ export default function MarketDashboard() {
                     title="上证综合指数"
                   />
                 </div>
+                <div style={{ borderRadius: '10px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '0.875rem' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-muted)', marginBottom: '0.375rem' }}>恒生指数</div>
+                  <InteractiveChart
+                    data={hangSengChartData}
+                    color="#7c3aed"
+                    height={150}
+                    events={HANG_SENG_EVENTS}
+                    isDaily={isLiveRange && !!indexDaily}
+                    allowFullscreen={true}
+                    title="恒生指数"
+                  />
+                </div>
               </div>
             )}
 
@@ -544,7 +621,7 @@ export default function MarketDashboard() {
           {/* 趋势预测 */}
           <section>
             <SectionLabel>趋势预测（技术分析模型）</SectionLabel>
-            <TrendPredictionPanel nasdaqData={nasdaqFiltered} shanghaiData={shanghaiFiltered} />
+            <TrendPredictionPanel nasdaqData={nasdaqFiltered} shanghaiData={shanghaiFiltered} hangSengData={hangSengFiltered} />
           </section>
 
           {/* 风险指标 */}

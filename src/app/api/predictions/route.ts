@@ -222,6 +222,7 @@ const TRACKED: TrackedAsset[] = [
   // ── 持仓股 (portfolio) ──────────────────────────────────────────────────────
   { ticker: '^IXIC',      name: '纳斯达克',  type: 'index',  currency: 'USD', group: 'portfolio' },
   { ticker: '000001.SS',  name: '上证指数',  type: 'index',  currency: 'CNY', group: 'portfolio' },
+  { ticker: '^HSI',       name: '恒生指数',  type: 'index',  currency: 'HKD', group: 'portfolio' },
   { ticker: 'NVDA',       name: '英伟达',    type: 'stock',  currency: 'USD', group: 'portfolio' },
   { ticker: '0700.HK',    name: '腾讯控股',  type: 'stock',  currency: 'HKD', group: 'portfolio' },
   { ticker: 'ORCL',       name: '甲骨文',    type: 'stock',  currency: 'USD', group: 'portfolio' },
