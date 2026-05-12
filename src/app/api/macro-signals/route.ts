@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
+import { exec } from 'child_process'
+import { promisify } from 'util'
 
 export const revalidate = 3600 // 1 hour
+const execAsync = promisify(exec)
 
 export interface MacroSignal {
   key: string
@@ -27,23 +30,33 @@ export interface MacroResponse {
   errors?: string[]
 }
 
-async function fetchFred(id: string, periods = 5): Promise<{ current: number; prev: number; values: number[]; latestDate: string }> {
-  const url = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}`
-  const res = await fetch(url, {
-    headers: { 'User-Agent': 'Mozilla/5.0' },
-    signal: AbortSignal.timeout(8000), // 8s timeout per FRED request
-  })
-  if (!res.ok) throw new Error(`FRED ${id}: ${res.status}`)
-  const lines = (await res.text()).trim().split('\n').slice(1)
-  const parsed = lines
-    .map(l => { const c = l.indexOf(','); return { date: l.slice(0, c).trim(), v: parseFloat(l.slice(c + 1).trim()) } })
-    .filter(r => !isNaN(r.v))
-  const recent = parsed.slice(-periods)
+// Yahoo Finance macro proxies — more reliable than FRED for automated access
+const YF_MACRO = [
+  { yfTicker: '^VIX',    key: 'vix',  periods: 6, label: 'VIX' },
+  { yfTicker: '^TNX',    key: 'yield10', periods: 6, label: '10Y Yield' },
+  { yfTicker: 'CL=F',    key: 'oil',  periods: 6, label: 'WTI Oil' },
+  { yfTicker: 'DX-Y.NYB', key: 'usd', periods: 6, label: 'USD Index' },
+]
+
+async function fetchYahooMacro(ticker: string): Promise<{ values: number[]; latestDate: string }> {
+  const enc = ticker.replace('^', '%5E')
+  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${enc}?range=3mo&interval=1wk&includePrePost=false`
+  const { stdout } = await execAsync(
+    `curl -s --max-time 10 -H "User-Agent: Mozilla/5.0" "${url}"`
+  )
+  const result = JSON.parse(stdout).chart?.result?.[0]
+  if (!result) throw new Error(`Yahoo ${ticker}: no data`)
+  const ts: number[] = result.timestamp || []
+  const closes: number[] = result.indicators?.adjclose?.[0]?.adjclose
+    || result.indicators?.quote?.[0]?.close || []
+  const pts = ts
+    .map((t, i) => ({ d: new Date(t * 1000).toISOString().slice(0, 10), p: closes[i] }))
+    .filter(x => x.p != null && !isNaN(x.p) && x.p > 0)
+  if (!pts.length) throw new Error(`Yahoo ${ticker}: no valid prices`)
+  const recent = pts.slice(-6)
   return {
-    current: recent[recent.length - 1].v,
-    prev: recent[0].v,
-    values: recent.map(r => r.v),
-    latestDate: recent[recent.length - 1].date,
+    values: recent.map(r => r.p),
+    latestDate: recent[recent.length - 1].d,
   }
 }
 
@@ -103,117 +116,87 @@ const STATIC_SIGNALS: MacroSignal[] = [
 export async function GET() {
   const errors: string[] = []
 
-  // Run all FRED fetches in parallel with individual timeouts
-  const results = await Promise.allSettled([
-    (async () => {
-      const { current, prev } = await fetchFred('FEDFUNDS', 6)
-      const t = trend(current, prev, 0.01)
-      const score = current <= 3.5 ? 0.7 : current <= 4.5 ? 0.3 : current <= 5.5 ? -0.2 : -0.6
-      return {
-        key: 'rate', name: '联邦基金利率', value: +current.toFixed(2), unit: '%',
-        trend: t, impact: t === 'down' ? 'bullish' : t === 'up' ? 'bearish' : 'neutral',
-        score,
-        note: `当前 ${current.toFixed(2)}%，近6月${t === 'down' ? '下行' : t === 'up' ? '上行' : '持平'}；${current <= 4.0 ? '降息周期利好成长股' : '利率偏高，压制估值'}`,
-        layer: 'macro', source: 'live', weight: 0.20,
-      } as MacroSignal
-    })(),
-    (async () => {
-      const { values } = await fetchFred('CPIAUCSL', 14)
-      const current = values[values.length - 1]
-      const yearAgo = values[values.length - 13] ?? values[0]
-      const yoy = ((current - yearAgo) / yearAgo) * 100
-      const prev12 = values[values.length - 2]
-      const prevYoy = ((prev12 - (values[values.length - 14] ?? values[0])) / (values[values.length - 14] ?? values[0])) * 100
-      const t = trend(yoy, prevYoy, 0.1)
-      const score = yoy < 2.5 ? 0.6 : yoy < 3.5 ? 0.2 : yoy < 5.0 ? -0.3 : -0.7
-      return {
-        key: 'inflation', name: 'CPI通货膨胀', value: +yoy.toFixed(1), unit: '% YoY',
-        trend: t, impact: yoy < 3 ? 'bullish' : yoy < 4.5 ? 'neutral' : 'bearish',
-        score,
-        note: `同比 ${yoy.toFixed(1)}%，${yoy < 3 ? '接近目标区间，美联储压力减轻' : yoy < 4.5 ? '高于目标但可控' : '高通胀持续，加息压力大'}`,
-        layer: 'macro', source: 'live', weight: 0.15,
-      } as MacroSignal
-    })(),
-    (async () => {
-      const { current, values } = await fetchFred('DGS10', 6)
-      const prev = values[0]
-      const t = trend(current, prev, 0.02)
-      const score = current < 3.5 ? 0.6 : current < 4.2 ? 0.2 : current < 5.0 ? -0.2 : -0.5
-      return {
-        key: 'yield10', name: '10年期美债收益率', value: +current.toFixed(2), unit: '%',
-        trend: t, impact: t === 'down' ? 'bullish' : t === 'up' ? 'bearish' : 'neutral',
-        score,
-        note: `${current.toFixed(2)}%，${current < 4.2 ? '收益率温和，股票吸引力强' : '高收益率压制股票估值，尤其成长股'}`,
-        layer: 'macro', source: 'live', weight: 0.15,
-      } as MacroSignal
-    })(),
-    (async () => {
-      const { current, values } = await fetchFred('T10Y2Y', 6)
-      const prev = values[0]
-      const t = trend(current, prev, 0.05)
-      const score = current > 0.5 ? 0.6 : current > 0 ? 0.2 : current > -0.5 ? -0.2 : -0.6
-      return {
-        key: 'yield_curve', name: '收益率曲线（10Y-2Y）', value: +current.toFixed(2), unit: 'pts',
-        trend: t, impact: current > 0 ? 'bullish' : current > -0.5 ? 'neutral' : 'bearish',
-        score,
-        note: `利差 ${current > 0 ? '+' : ''}${current.toFixed(2)}，${current > 0.3 ? '曲线陡峭化，经济扩张信号' : current > 0 ? '曲线正常化中' : '仍倒挂，衰退风险存在'}`,
-        layer: 'macro', source: 'live', weight: 0.15,
-      } as MacroSignal
-    })(),
-    (async () => {
-      const { current, values } = await fetchFred('VIXCLS', 6)
-      const prev = values[0]
-      const t = trend(current, prev, 0.05)
-      const score = current < 15 ? 0.7 : current < 20 ? 0.4 : current < 25 ? 0 : current < 35 ? -0.5 : -0.9
-      return {
-        key: 'vix', name: 'VIX 恐慌指数', value: +current.toFixed(1), unit: '',
-        trend: t, impact: current < 20 ? 'bullish' : current < 28 ? 'neutral' : 'bearish',
-        score,
-        note: `VIX ${current.toFixed(1)}，${current < 15 ? '极度低波动，市场乐观' : current < 20 ? '正常偏低，风险偏好健康' : current < 28 ? '波动率偏高，市场紧张' : '恐慌指数高企，建议降低风险仓位'}`,
-        layer: 'sentiment', source: 'live', weight: 0.50,
-      } as MacroSignal
-    })(),
-    (async () => {
-      const { current, values, latestDate } = await fetchFred('DCOILWTICO', 6)
-      const prev = values[0]
-      const t = trend(current, prev, 0.03)
-      const score = current < 60 ? 0.5 : current < 80 ? 0.3 : current < 100 ? -0.2 : -0.6
-      return {
-        key: 'oil', name: 'WTI原油价格', value: +current.toFixed(1), unit: '$/bbl',
-        trend: t, impact: current < 80 ? 'bullish' : current < 100 ? 'neutral' : 'bearish',
-        score,
-        note: `WTI $${current.toFixed(1)}（${latestDate}）${current < 70 ? '，低油价抑制通胀，利好科技/消费' : current < 90 ? '，油价温和，经济可承受' : '，高油价推升通胀，侵蚀企业利润'}`,
-        layer: 'macro', source: 'live', weight: 0.10,
-      } as MacroSignal
-    })(),
-    (async () => {
-      const { current, values, latestDate } = await fetchFred('DTWEXBGS', 6)
-      const prev = values[0]
-      const t = trend(current, prev, 0.003)
-      const score = t === 'down' ? 0.4 : t === 'up' ? -0.3 : 0.1
-      return {
-        key: 'usd', name: '美元贸易加权指数', value: +current.toFixed(1), unit: 'idx',
-        trend: t, impact: t === 'down' ? 'bullish' : t === 'up' ? 'bearish' : 'neutral',
-        score,
-        note: `DTWEXBGS ${current.toFixed(1)}（${latestDate}，非DXY）${t === 'down' ? '，美元走弱，利好出口企业和新兴市场' : t === 'up' ? '，美元走强，压制海外营收和大宗商品' : '，美元相对稳定，影响中性'}`,
-        layer: 'macro', source: 'live', weight: 0.10,
-      } as MacroSignal
-    })(),
-  ])
+  // Fetch Yahoo macro data in parallel
+  const yahooResults = await Promise.allSettled(
+    YF_MACRO.map(async ({ yfTicker, key, label }) => {
+      const data = await fetchYahooMacro(yfTicker)
+      return { key, label, ...data }
+    })
+  )
+
+  const yahooData = new Map<string, { values: number[]; latestDate: string }>()
+  for (const r of yahooResults) {
+    if (r.status === 'fulfilled') {
+      yahooData.set(r.value.key, { values: r.value.values, latestDate: r.value.latestDate })
+    } else {
+      errors.push('Yahoo ' + (r as PromiseRejectedResult).reason?.toString?.().slice(0, 40) || 'fetch failed')
+    }
+  }
 
   const liveSignals: MacroSignal[] = []
-  for (const r of results) {
-    if (r.status === 'fulfilled') {
-      liveSignals.push(r.value)
-    } else {
-      // Don't leak raw error details — use a clean message
-      const msg = String(r.reason)
-      if (msg.includes('timeout') || msg.includes('abort')) {
-        errors.push('FRED数据源暂时不可达')
-      } else {
-        errors.push(msg)
-      }
-    }
+
+  // ── VIX from Yahoo ^VIX ──────────────────────────────────────────────────
+  const vixData = yahooData.get('vix')
+  if (vixData) {
+    const current = vixData.values[vixData.values.length - 1]
+    const prev = vixData.values[0]
+    const t = trend(current, prev, 0.05)
+    const score = current < 15 ? 0.7 : current < 20 ? 0.4 : current < 25 ? 0 : current < 35 ? -0.5 : -0.9
+    liveSignals.push({
+      key: 'vix', name: 'VIX 恐慌指数', value: +current.toFixed(1), unit: '',
+      trend: t, impact: current < 20 ? 'bullish' : current < 28 ? 'neutral' : 'bearish',
+      score,
+      note: `VIX ${current.toFixed(1)}，${current < 15 ? '极度低波动，市场乐观' : current < 20 ? '正常偏低，风险偏好健康' : current < 28 ? '波动率偏高，市场紧张' : '恐慌指数高企，建议降低风险仓位'}`,
+      layer: 'sentiment', source: 'live', weight: 0.50,
+    })
+  }
+
+  // ── 10Y Yield from Yahoo ^TNX ────────────────────────────────────────────
+  const yieldData = yahooData.get('yield10')
+  if (yieldData) {
+    const current = yieldData.values[yieldData.values.length - 1]
+    const prev = yieldData.values[0]
+    const t = trend(current, prev, 0.02)
+    const score = current < 3.5 ? 0.6 : current < 4.2 ? 0.2 : current < 5.0 ? -0.2 : -0.5
+    liveSignals.push({
+      key: 'yield10', name: '10年期美债收益率', value: +current.toFixed(2), unit: '%',
+      trend: t, impact: t === 'down' ? 'bullish' : t === 'up' ? 'bearish' : 'neutral',
+      score,
+      note: `${current.toFixed(2)}%，${current < 4.2 ? '收益率温和，股票吸引力强' : '高收益率压制股票估值，尤其成长股'}`,
+      layer: 'macro', source: 'live', weight: 0.20,
+    })
+  }
+
+  // ── WTI Oil from Yahoo CL=F ──────────────────────────────────────────────
+  const oilData = yahooData.get('oil')
+  if (oilData) {
+    const current = oilData.values[oilData.values.length - 1]
+    const prev = oilData.values[0]
+    const t = trend(current, prev, 0.03)
+    const score = current < 60 ? 0.5 : current < 80 ? 0.3 : current < 100 ? -0.2 : -0.6
+    liveSignals.push({
+      key: 'oil', name: 'WTI原油价格', value: +current.toFixed(1), unit: '$/bbl',
+      trend: t, impact: current < 80 ? 'bullish' : current < 100 ? 'neutral' : 'bearish',
+      score,
+      note: `WTI $${current.toFixed(1)}（${oilData.latestDate}）${current < 70 ? '，低油价抑制通胀，利好科技/消费' : current < 90 ? '，油价温和，经济可承受' : '，高油价推升通胀，侵蚀企业利润'}`,
+      layer: 'macro', source: 'live', weight: 0.10,
+    })
+  }
+
+  // ── USD Index from Yahoo DX-Y.NYB ────────────────────────────────────────
+  const usdData = yahooData.get('usd')
+  if (usdData) {
+    const current = usdData.values[usdData.values.length - 1]
+    const prev = usdData.values[0]
+    const t = trend(current, prev, 0.005)
+    const score = t === 'down' ? 0.4 : t === 'up' ? -0.3 : 0.1
+    liveSignals.push({
+      key: 'usd', name: '美元指数 (DXY)', value: +current.toFixed(1), unit: '',
+      trend: t, impact: t === 'down' ? 'bullish' : t === 'up' ? 'bearish' : 'neutral',
+      score,
+      note: `DXY ${current.toFixed(1)}（${usdData.latestDate}）${t === 'down' ? '，美元走弱，利好出口企业和新兴市场' : t === 'up' ? '，美元走强，压制海外营收和大宗商品' : '，美元相对稳定，影响中性'}`,
+      layer: 'macro', source: 'live', weight: 0.15,
+    })
   }
 
   const allSignals = [...liveSignals, ...STATIC_SIGNALS]
