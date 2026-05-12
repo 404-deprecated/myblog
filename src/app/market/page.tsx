@@ -4,6 +4,9 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { SectorValuation } from '@/components/SectorValuation'
 import { FundImageAnalysis } from '@/components/FundImageAnalysis'
 import { PortfolioWatchlist } from '@/components/PortfolioWatchlist'
+import MacroScorePanel from '@/components/MacroScorePanel'
+import { GoldAnalysis } from '@/components/GoldAnalysis'
+import { InteractiveChart, type ChartEvent, type ChartPoint } from '@/components/InteractiveChart'
 
 // ─── 纳斯达克综合指数月度收盘（2016-01 ~ 2026-05）────────────────────────────
 const NASDAQ_DATA = [
@@ -44,11 +47,8 @@ const NASDAQ_DATA = [
   { m: '2024-07', p: 17446 }, { m: '2024-08', p: 17713 }, { m: '2024-09', p: 18189 },
   { m: '2024-10', p: 18129 }, { m: '2024-11', p: 19218 }, { m: '2024-12', p: 19311 },
   { m: '2025-01', p: 19533 }, { m: '2025-02', p: 19149 }, { m: '2025-03', p: 17500 },
-  { m: '2025-04', p: 17648 }, { m: '2025-05', p: 19211 }, { m: '2025-06', p: 19800 },
-  { m: '2025-07', p: 20300 }, { m: '2025-08', p: 21100 }, { m: '2025-09', p: 22300 },
-  { m: '2025-10', p: 23638 }, { m: '2025-11', p: 23300 }, { m: '2025-12', p: 23546 },
-  { m: '2026-01', p: 24000 }, { m: '2026-02', p: 24400 }, { m: '2026-03', p: 23254 },
-  { m: '2026-04', p: 25800 }, { m: '2026-05', p: 26247 },
+  { m: '2025-04', p: 17648 }, { m: '2025-05', p: 19211 },
+  // 2025-06 onwards: use 1Y/2Y live range (Yahoo Finance) for accurate data
 ]
 
 // ─── 上证综合指数月度收盘（2016-01 ~ 2026-05）────────────────────────────────
@@ -90,33 +90,56 @@ const SHANGHAI_DATA = [
   { m: '2024-07', p: 2938 }, { m: '2024-08', p: 2842 }, { m: '2024-09', p: 3336 },
   { m: '2024-10', p: 3280 }, { m: '2024-11', p: 3310 }, { m: '2024-12', p: 3352 },
   { m: '2025-01', p: 3251 }, { m: '2025-02', p: 3321 }, { m: '2025-03', p: 3349 },
-  { m: '2025-04', p: 3288 }, { m: '2025-05', p: 3370 }, { m: '2025-06', p: 3450 },
-  { m: '2025-07', p: 3520 }, { m: '2025-08', p: 3480 }, { m: '2025-09', p: 3600 },
-  { m: '2025-10', p: 3580 }, { m: '2025-11', p: 3510 }, { m: '2025-12', p: 3350 },
-  { m: '2026-01', p: 3410 }, { m: '2026-02', p: 3380 }, { m: '2026-03', p: 3290 },
-  { m: '2026-04', p: 3450 }, { m: '2026-05', p: 3350 },
+  { m: '2025-04', p: 3288 }, { m: '2025-05', p: 3370 },
+  // 2025-06 onwards: use 1Y/2Y live range (Yahoo Finance) for accurate data
 ]
 
-const EVENTS = [
-  { date: '2020-03', label: '疫情暴跌', impact: 'negative', desc: '新冠疫情全球蔓延，纳指单月跌-18%' },
-  { date: '2020-08', label: '疫情反弹', impact: 'positive', desc: '流动性宽松驱动，纳指创历史新高' },
-  { date: '2022-01', label: '加息周期', impact: 'negative', desc: '美联储激进加息，纳指全年跌33%' },
-  { date: '2023-05', label: 'AI浪潮', impact: 'positive', desc: 'ChatGPT引爆AI行情，科技股强势反弹' },
-  { date: '2024-09', label: 'A股政策刺激', impact: 'positive', desc: '国内推出一揽子增量政策，上证单月涨12%' },
-  { date: '2025-03', label: '关税冲击', impact: 'negative', desc: '特朗普"解放日"关税，纳指单月跌-8.2%' },
-  { date: '2025-04', label: '中美缓和', impact: 'positive', desc: '中美宣布90天暂停关税，科技股强势反弹' },
-  { date: '2025-09', label: '纳指新高', impact: 'positive', desc: 'AI算力需求持续爆发，纳指突破历史新高' },
-  { date: '2026-03', label: '美伊冲突', impact: 'negative', desc: '中东地缘风险升温，纳指回调约10%' },
-  { date: '2026-04', label: '停火反弹', impact: 'positive', desc: '美伊停火，科技股9连涨，纳指再创历史新高' },
+const NASDAQ_EVENTS: ChartEvent[] = [
+  { d:'2018-10-10', label:'贸易战冲击', impact:'neg', detail:'中美贸易战升级，科技股抛售，纳指单月跌-9.2%，FAANG全线下跌。' },
+  { d:'2018-12-24', label:'年末暴跌', impact:'neg', detail:'美联储持续加息+贸易战忧虑，纳指全年跌近18%，12月单月跌幅为历史第三大。' },
+  { d:'2020-03-20', label:'COVID暴跌', impact:'neg', detail:'新冠疫情全球蔓延+流动性危机，纳指单月跌-10%，为2008年以来最大月跌幅。' },
+  { d:'2020-04-06', label:'流动性反弹', impact:'pos', detail:'美联储无限QE+财政刺激，纳指单月涨+15.5%，V形反转起点。' },
+  { d:'2020-08-18', label:'疫情新高', impact:'pos', detail:'在家办公+科技需求爆发，纳指创历史新高，苹果首家市值破2万亿美元。' },
+  { d:'2022-01-05', label:'加息开始', impact:'neg', detail:'美联储宣布3月开始加息，纳指从峰值开始下跌，全年最终跌33%，科技股重挫。' },
+  { d:'2022-09-13', label:'加息最猛', impact:'neg', detail:'美联储连续四次加息75bp，纳指较峰值跌超35%，估值重置最惨烈阶段。' },
+  { d:'2023-01-09', label:'AI叙事兴起', impact:'pos', detail:'ChatGPT月活破亿，微软宣布投资OpenAI，AI概念引爆，纳指开始今年涨势。' },
+  { d:'2023-05-24', label:'NVDA超级财报', impact:'pos', detail:'英伟达Q1收入指引翻倍至$110亿，单日涨+24%，AI算力超级周期确立，科技股全面反弹。' },
+  { d:'2023-11-14', label:'降息预期升温', impact:'pos', detail:'美国通胀降温，市场开始押注2024年降息，纳指11月涨+10.7%，科技股持续上涨。' },
+  { d:'2025-03-04', label:'关税"解放日"', impact:'neg', detail:'特朗普对多国征收对等关税，纳指单月跌-8.2%，为2022年以来最大单月跌幅。' },
+  { d:'2025-04-22', label:'90天暂停', impact:'pos', detail:'中美宣布90天暂停关税+停火协议，纳指大幅反弹，科技股领涨。' },
+  { d:'2026-03-04', label:'美伊冲突', impact:'neg', detail:'中东地缘风险急剧升温，油价飙升+避险情绪，纳指回调约10%。' },
+  { d:'2026-04-14', label:'停火创新高', impact:'pos', detail:'美伊停火协议签订，地缘风险溢价消退，叠加AI财报超预期，纳指再破历史新高。' },
 ]
 
+const SHANGHAI_EVENTS: ChartEvent[] = [
+  { d:'2018-06-19', label:'贸易战冲击', impact:'neg', detail:'中美贸易战正式打响，关税清单落地，上证单月跌-8%，外资加速撤离。' },
+  { d:'2018-12-26', label:'熊市低点', impact:'neg', detail:'贸易战+去杠杆双重压力，上证跌至2494点，为2014年以来新低，全年跌约24%。' },
+  { d:'2019-02-18', label:'贸易战缓和', impact:'pos', detail:'中美贸易谈判取得阶段成果，外资回流，上证单月涨+14%，成交量创历史纪录。' },
+  { d:'2020-03-19', label:'疫情暴跌', impact:'neg', detail:'全球疫情蔓延，外需崩塌担忧，上证跌破2700，但A股率先企稳，跌幅小于全球。' },
+  { d:'2020-07-06', label:'牛市情绪', impact:'pos', detail:'流动性宽松+经济率先复苏，上证单月涨+11%，市场进入短暂局部牛市行情。' },
+  { d:'2021-07-26', label:'监管重拳', impact:'neg', detail:'教育双减+平台经济反垄断+游戏管控集中出台，中概股和互联网板块暴跌。' },
+  { d:'2022-04-26', label:'疫情+俄乌', impact:'neg', detail:'上海封城+俄乌冲突油价飙升，上证跌破3000点，为2020年以来新低。' },
+  { d:'2022-11-11', label:'防疫放开', impact:'pos', detail:'防疫政策转向+房地产"三支箭"，上证单月涨+8.9%，港股涨超25%。' },
+  { d:'2024-02-05', label:'量化打压', impact:'neg', detail:'市场流动性危机，量化策略止损引发螺旋下跌，上证跌至2635点，央行出手托市。' },
+  { d:'2024-09-24', label:'政策大礼包', impact:'pos', detail:'国务院一揽子增量政策（降准+降息+地产松绑+央行互换便利），上证单月涨+17.4%，为2008年以来最大月涨幅。' },
+  { d:'2025-04-22', label:'中美关税缓和', impact:'pos', detail:'中美90天关税暂停协议，A股跟随全球风险偏好回升，外资净流入加速。' },
+  { d:'2026-01-20', label:'DeepSeek行情', impact:'pos', detail:'DeepSeek R1震惊全球，中国AI实力重新定价，A股科技板块持续走强，上证站上3400。' },
+]
+
+// Combined + sorted timeline for the events list panel
+const TIMELINE_EVENTS = [...NASDAQ_EVENTS, ...SHANGHAI_EVENTS]
+  .sort((a, b) => a.d.localeCompare(b.d))
+  .filter((ev, i, arr) => i === 0 || ev.d !== arr[i - 1].d)  // dedupe same month
+
+// Manually maintained — update when market conditions change significantly
+// Last updated: 2026-05
 const RISK_INDICATORS = [
-  { label: '纳指估值 (前向PE)', value: '~25x', status: 'danger', note: '历史均值约23x，偏高' },
-  { label: '巴菲特指标', value: '223%', status: 'danger', note: '超2000年互联网泡沫183%' },
-  { label: 'A股估值 (沪深PE)', value: '~14x', status: 'safe', note: '历史均值附近，合理' },
-  { label: '美联储利率', value: '3.5-3.75%', status: 'warn', note: '高位维持，降息预期延后' },
-  { label: '中东地缘风险', value: '缓和中', status: 'warn', note: '停火但局势仍脆弱' },
-  { label: 'AI算力叙事', value: '强劲', status: 'safe', note: 'Q1科技财报普遍超预期' },
+  { label: '纳指估值 (前向PE)', value: '~30x', status: 'danger', note: '历史均值约23x，AI叙事驱动估值显著扩张，追高需谨慎' },
+  { label: '巴菲特指标', value: '~250%', status: 'danger', note: '远超历史均值(~150%)，美股整体估值处于历史高位' },
+  { label: 'A股估值 (沪深300PE)', value: '~13x', status: 'safe', note: '历史均值附近，相对美股低估，安全边际更高' },
+  { label: '美联储利率', value: '3.5-3.75%', status: 'warn', note: '降息周期进行中，但仍高于中性水平，对成长股有压制' },
+  { label: '中美贸易风险', value: '缓和中', status: 'safe', note: '90天关税暂停协议有效，期间不确定性减少' },
+  { label: 'AI算力叙事', value: '强劲', status: 'safe', note: 'Blackwell超级周期+数据中心资本开支持续超预期，叙事溢价仍在扩张' },
 ]
 
 const PRESET_FUNDS = [
@@ -128,6 +151,8 @@ const PRESET_FUNDS = [
 type Range = '1M' | '3M' | '6M' | '1Y' | '2Y' | '5Y' | '10Y'
 const RANGES: Range[] = ['1M', '3M', '6M', '1Y', '2Y', '5Y', '10Y']
 const RANGE_MONTHS: Record<Range, number> = { '1M': 1, '3M': 3, '6M': 6, '1Y': 12, '2Y': 24, '5Y': 60, '10Y': 120 }
+// 1Y/2Y use Yahoo weekly data; 1M/3M/6M use daily — all live from Yahoo Finance
+const MARKET_LIVE_RANGES: Range[] = ['1M', '3M', '6M', '1Y', '2Y']
 
 function filterByRange(data: { m: string; p: number }[], range: Range) {
   const last = data[data.length - 1].m
@@ -219,138 +244,9 @@ const ZONE_COLORS: Record<string, { bg: string; border: string; text: string; ba
   sell: { bg: '#fff1f2', border: '#fca5a5', text: '#991b1b', badge: '#fee2e2', badgeText: '#dc2626' },
 }
 
-// ─── Canvas 折线图（带放大） ──────────────────────────────────────────────────
-function drawChart(
-  canvas: HTMLCanvasElement,
-  data: { m: string; p: number }[],
-  color: string,
-  events: { date: string; impact: string }[],
-) {
-  const ctx = canvas.getContext('2d'); if (!ctx) return
-  const dpr = window.devicePixelRatio || 1
-  const W = canvas.offsetWidth; const H = canvas.offsetHeight
-  canvas.width = W * dpr; canvas.height = H * dpr
-  ctx.scale(dpr, dpr)
-
-  const vals = data.map(d => d.p)
-  const min = Math.min(...vals); const max = Math.max(...vals)
-  const pad = { t: 14, r: 10, b: 26, l: 10 }
-  const w = W - pad.l - pad.r; const h = H - pad.t - pad.b
-
-  const xOf = (i: number) => pad.l + (i / (vals.length - 1)) * w
-  const yOf = (v: number) => pad.t + h - ((v - min) / (max - min || 1)) * h
-
-  // gridlines
-  const steps = 4
-  ctx.strokeStyle = '#e5e7eb30'; ctx.lineWidth = 0.5
-  for (let s = 1; s < steps; s++) {
-    const y = pad.t + (h / steps) * s
-    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke()
-  }
-
-  // event markers
-  events.forEach(ev => {
-    const idx = data.findIndex(d => d.m === ev.date)
-    if (idx < 0) return
-    const x = xOf(idx)
-    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, H - pad.b)
-    ctx.strokeStyle = ev.impact === 'positive' ? '#22c55e40' : '#ef444440'
-    ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([])
-    ctx.beginPath(); ctx.arc(x, yOf(data[idx].p), 3, 0, Math.PI * 2)
-    ctx.fillStyle = ev.impact === 'positive' ? '#22c55e' : '#ef4444'; ctx.fill()
-  })
-
-  // line
-  ctx.beginPath(); ctx.moveTo(xOf(0), yOf(vals[0]))
-  vals.forEach((v, i) => { if (i > 0) ctx.lineTo(xOf(i), yOf(v)) })
-  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke()
-
-  // fill
-  ctx.lineTo(xOf(vals.length - 1), H - pad.b); ctx.lineTo(xOf(0), H - pad.b); ctx.closePath()
-  const grad = ctx.createLinearGradient(0, pad.t, 0, H - pad.b)
-  grad.addColorStop(0, color + '30'); grad.addColorStop(1, color + '00')
-  ctx.fillStyle = grad; ctx.fill()
-
-  // axis labels
-  ctx.fillStyle = '#6b7280'; ctx.font = '11px system-ui'
-  ctx.textAlign = 'left'; ctx.fillText(data[0].m.replace('-', '/'), pad.l, H - 5)
-  ctx.textAlign = 'right'; ctx.fillText(data[data.length - 1].m.replace('-', '/'), W - pad.r, H - 5)
-
-  // y min/max
-  ctx.fillStyle = '#9ca3af'; ctx.font = '10px system-ui'; ctx.textAlign = 'left'
-  ctx.fillText(min.toLocaleString(), pad.l, H - pad.b)
-  ctx.fillText(max.toLocaleString(), pad.l, pad.t + 10)
-
-  // change pct
-  const chg = ((vals[vals.length - 1] - vals[0]) / vals[0] * 100).toFixed(1)
-  ctx.fillStyle = parseFloat(chg) >= 0 ? '#16a34a' : '#dc2626'
-  ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'right'
-  ctx.fillText((parseFloat(chg) >= 0 ? '+' : '') + chg + '%', W - pad.r, pad.t + 1)
-}
-
-function MiniChart({ data, color, label, events }: {
-  data: { m: string; p: number }[]
-  color: string
-  label: string
-  events: { date: string; impact: string }[]
-}) {
-  const ref = useRef<HTMLCanvasElement>(null)
-  const modalRef = useRef<HTMLCanvasElement>(null)
-  const [expanded, setExpanded] = useState(false)
-
-  useEffect(() => {
-    if (ref.current) drawChart(ref.current, data, color, events)
-  }, [data, color, events])
-
-  useEffect(() => {
-    if (expanded && modalRef.current) {
-      setTimeout(() => { if (modalRef.current) drawChart(modalRef.current, data, color, events) }, 30)
-    }
-  }, [expanded, data, color, events])
-
-  useEffect(() => {
-    if (!expanded) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setExpanded(false) }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [expanded])
-
-  return (
-    <>
-      <div style={{ borderRadius: '10px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '0.875rem', position: 'relative' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.375rem' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-muted)' }}>{label}</div>
-          <button
-            onClick={() => setExpanded(true)}
-            title="放大查看"
-            style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem', borderRadius: '5px', border: '1px solid var(--border)', background: 'none', color: 'var(--text-muted)', cursor: 'pointer', lineHeight: 1 }}
-          >⛶</button>
-        </div>
-        <canvas ref={ref} style={{ width: '100%', height: '120px', display: 'block' }} />
-      </div>
-
-      {expanded && (
-        <div
-          onClick={() => setExpanded(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{ borderRadius: '14px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '1.25rem', width: '100%', maxWidth: '1000px' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
-              <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text)' }}>{label}</span>
-              <button onClick={() => setExpanded(false)} style={{ fontSize: '0.85rem', padding: '0.25rem 0.625rem', borderRadius: '6px', border: '1px solid var(--border)', background: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>✕ 关闭</button>
-            </div>
-            <canvas ref={modalRef} style={{ width: '100%', height: '400px', display: 'block' }} />
-            <p style={{ marginTop: '0.5rem', fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-              按 Esc 或点击外部关闭 · 🟢 绿色虚线 = 正面事件 · 🔴 红色虚线 = 负面事件
-            </p>
-          </div>
-        </div>
-      )}
-    </>
-  )
+// Map { m, p } → { d, p } for InteractiveChart
+function toChartPts(arr: { m: string; p: number }[]) {
+  return arr.map(pt => ({ d: pt.m, p: pt.p }))
 }
 
 function TrendPredictionPanel({ nasdaqData, shanghaiData }: {
@@ -431,17 +327,67 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
+type TabId = 'market' | 'stocks' | 'sectors' | 'fund' | 'gold'
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'market',  label: '大盘分析' },
+  { id: 'stocks',  label: '个股分析' },
+  { id: 'sectors', label: '赛道估值' },
+  { id: 'fund',    label: '基金工具' },
+  { id: 'gold',    label: '黄金分析' },
+]
+
 // ─── 主组件 ────────────────────────────────────────────────────────────────────
 export default function MarketDashboard() {
+  const [activeTab, setActiveTab] = useState<TabId>('market')
   const [range, setRange] = useState<Range>('2Y')
   const [fundInput, setFundInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<FundResult | null>(null)
   const [error, setError] = useState('')
 
-  const nasdaqFiltered = filterByRange(NASDAQ_DATA, range)
-  const shanghaiFiltered = filterByRange(SHANGHAI_DATA, range)
-  const eventsInRange = EVENTS.filter(ev => nasdaqFiltered.some(d => d.m === ev.date))
+  // Live daily data for index charts (1M/3M/6M)
+  const [indexDaily, setIndexDaily] = useState<{ nasdaq: ChartPoint[]; shanghai: ChartPoint[] } | null>(null)
+  const [indexDailyLoading, setIndexDailyLoading] = useState(false)
+  const [indexDailyUpdated, setIndexDailyUpdated] = useState<string | null>(null)
+
+  const fetchIndexDaily = useCallback(async (r: Range) => {
+    setIndexDailyLoading(true)
+    setIndexDaily(null)
+    try {
+      const [nRes, sRes] = await Promise.all([
+        fetch(`/api/stock-daily?ticker=^IXIC&range=${r}`, { cache: 'no-store' }),
+        fetch(`/api/stock-daily?ticker=000001.SS&range=${r}`, { cache: 'no-store' }),
+      ])
+      const [nJson, sJson] = await Promise.all([nRes.json(), sRes.json()])
+      setIndexDaily({
+        nasdaq: (nJson.prices ?? []) as ChartPoint[],
+        shanghai: (sJson.prices ?? []) as ChartPoint[],
+      })
+      if (nJson.fetchedAt) setIndexDailyUpdated(
+        new Date(nJson.fetchedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+      )
+    } catch { /* fall back to monthly */ }
+    finally { setIndexDailyLoading(false) }
+  }, [])
+
+  useEffect(() => {
+    if (MARKET_LIVE_RANGES.includes(range)) {
+      fetchIndexDaily(range)
+    } else {
+      setIndexDaily(null)
+      setIndexDailyUpdated(null)
+    }
+  }, [range, fetchIndexDaily])
+
+  const isLiveRange = MARKET_LIVE_RANGES.includes(range)
+  // TrendPredictionPanel always uses 5Y of static monthly data (needs 13+ points for SMA)
+  const nasdaqFiltered = filterByRange(NASDAQ_DATA, '5Y')
+  const shanghaiFiltered = filterByRange(SHANGHAI_DATA, '5Y')
+  // Charts: live Yahoo data when available, else static monthly
+  const nasdaqChartData: ChartPoint[] = isLiveRange && indexDaily
+    ? indexDaily.nasdaq : toChartPts(filterByRange(NASDAQ_DATA, range))
+  const shanghaiChartData: ChartPoint[] = isLiveRange && indexDaily
+    ? indexDaily.shanghai : toChartPts(filterByRange(SHANGHAI_DATA, range))
 
   const analyze = useCallback(async (name?: string) => {
     const fund = (name ?? fundInput).trim()
@@ -471,10 +417,10 @@ export default function MarketDashboard() {
   )) : 50
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
 
       {/* 页头 */}
-      <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ marginBottom: '1.75rem' }}>
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--accent)', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
           $ market --watch
         </p>
@@ -482,234 +428,321 @@ export default function MarketDashboard() {
           市场仪表盘
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-          指数走势 · 趋势预测 · 赛道估值 · 持仓观察 · AI 基金择时
+          宏观因子 · 指数走势 · 赛道估值 · 持仓观察 · AI 基金择时
         </p>
       </div>
 
-      {/* 指数走势 */}
-      <section style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <SectionLabel>指数走势</SectionLabel>
-          <div style={{ display: 'flex', gap: '0.25rem' }}>
-            {RANGES.map(r => (
-              <button
-                key={r}
-                onClick={() => setRange(r)}
-                style={{
-                  padding: '0.2rem 0.6rem', fontSize: '0.72rem', borderRadius: '6px',
-                  border: '1px solid',
-                  borderColor: r === range ? 'var(--accent)' : 'var(--border)',
-                  backgroundColor: r === range ? 'var(--accent)' : 'transparent',
-                  color: r === range ? '#fff' : 'var(--text-muted)',
-                  cursor: 'pointer', fontFamily: 'var(--font-mono)', fontWeight: r === range ? 700 : 400,
-                  transition: 'all 0.15s',
-                }}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-          <MiniChart data={nasdaqFiltered} color="#2563eb" label="纳斯达克综合指数" events={eventsInRange} />
-          <MiniChart data={shanghaiFiltered} color="#d97706" label="上证综合指数" events={eventsInRange} />
-        </div>
-        <p style={{ marginTop: '0.5rem', fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-          点击 ⛶ 放大图表 &nbsp;·&nbsp; 🟢 绿色虚线 = 正面事件 &nbsp;·&nbsp; 🔴 红色虚线 = 负面事件
-        </p>
-      </section>
-
-      {/* 趋势预测 */}
-      <section style={{ marginBottom: '2rem' }}>
-        <SectionLabel>明日趋势预测（AI + 技术分析）</SectionLabel>
-        <TrendPredictionPanel nasdaqData={nasdaqFiltered} shanghaiData={shanghaiFiltered} />
-      </section>
-
-      {/* 风险指标 */}
-      <section style={{ marginBottom: '2rem' }}>
-        <SectionLabel>当前风险指标</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.625rem' }}>
-          {RISK_INDICATORS.map(r => {
-            const s = RISK_STATUS_STYLES[r.status]
-            return (
-              <div key={r.label} style={{ borderRadius: '10px', border: `1px solid ${s.border}`, backgroundColor: s.bg, padding: '0.875rem' }}>
-                <div style={{ fontSize: '0.7rem', color: s.text, opacity: 0.7, marginBottom: '0.25rem' }}>{r.label}</div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: s.text, marginBottom: '0.2rem' }}>{r.value}</div>
-                <div style={{ fontSize: '0.7rem', color: s.text, opacity: 0.6, lineHeight: 1.4 }}>{r.note}</div>
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
-      {/* 大事件时间线 */}
-      <section style={{ marginBottom: '2rem' }}>
-        <SectionLabel>影响市场的重大事件</SectionLabel>
-        <div style={{ borderRadius: '10px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '1rem 1.25rem' }}>
-          {EVENTS.map((ev, i) => (
-            <div key={ev.date} style={{ display: 'flex', gap: '1rem', paddingTop: i === 0 ? 0 : '0.875rem', paddingBottom: i === EVENTS.length - 1 ? 0 : '0.875rem', borderBottom: i < EVENTS.length - 1 ? '1px solid var(--border)' : 'none' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: ev.impact === 'positive' ? '#22c55e' : '#ef4444', flexShrink: 0, marginTop: '5px' }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap', marginBottom: '0.2rem' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{ev.date}</span>
-                  <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text)' }}>{ev.label}</span>
-                </div>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>{ev.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 赛道估值仪表盘 */}
-      <section style={{ marginBottom: '2rem' }}>
-        <SectionLabel>赛道估值 &amp; 财报日历</SectionLabel>
-        <SectorValuation />
-      </section>
-
-      <div style={{ borderTop: '1px solid var(--border)', margin: '2rem 0' }} />
-
-      {/* 个股观察 */}
-      <section style={{ marginBottom: '2rem' }}>
-        <SectionLabel>我的持仓观察</SectionLabel>
-        <PortfolioWatchlist />
-      </section>
-
-      <div style={{ borderTop: '1px solid var(--border)', margin: '2rem 0' }} />
-
-      {/* 持仓图片分析 */}
-      <section style={{ marginBottom: '2rem' }}>
-        <SectionLabel>持仓截图 AI 分析</SectionLabel>
-        <FundImageAnalysis />
-      </section>
-
-      <div style={{ borderTop: '1px solid var(--border)', margin: '2rem 0' }} />
-
-      {/* 基金择时分析 */}
-      <section>
-        <SectionLabel>基金择时分析（AI 驱动）</SectionLabel>
-
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.875rem' }}>
-          {PRESET_FUNDS.map(f => (
-            <button
-              key={f}
-              onClick={() => { setFundInput(f); analyze(f) }}
-              style={{ fontSize: '0.78rem', padding: '0.3rem 0.75rem', borderRadius: '20px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', transition: 'all 0.15s' }}
-              onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'var(--accent)'; b.style.color = 'var(--accent)' }}
-              onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'var(--border)'; b.style.color = 'var(--text-muted)' }}
-            >
-              {f.length > 8 ? f.slice(0, 8) + '…' : f}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <input
-            type="text"
-            value={fundInput}
-            onChange={e => setFundInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') analyze() }}
-            placeholder="输入基金名称，按 Enter 分析…"
-            style={{ flex: 1, fontSize: '0.9rem', padding: '0.55rem 0.875rem', borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', color: 'var(--text)', outline: 'none', fontFamily: 'var(--font-sans)', transition: 'border-color 0.15s' }}
-            onFocus={e => { (e.target as HTMLInputElement).style.borderColor = 'var(--accent)' }}
-            onBlur={e => { (e.target as HTMLInputElement).style.borderColor = 'var(--border)' }}
-          />
+      {/* Tab 导航 */}
+      <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '2rem', borderBottom: '1px solid var(--border)', paddingBottom: '0' }}>
+        {TABS.map(tab => (
           <button
-            onClick={() => analyze()}
-            disabled={loading || !fundInput.trim()}
-            style={{ padding: '0.55rem 1.125rem', fontSize: '0.875rem', borderRadius: '8px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 600, cursor: loading || !fundInput.trim() ? 'not-allowed' : 'pointer', opacity: loading || !fundInput.trim() ? 0.45 : 1, transition: 'opacity 0.15s', whiteSpace: 'nowrap' }}
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: '0.55rem 1.1rem',
+              fontSize: '0.88rem',
+              fontWeight: activeTab === tab.id ? 700 : 400,
+              border: 'none',
+              borderBottom: `2px solid ${activeTab === tab.id ? 'var(--accent)' : 'transparent'}`,
+              background: 'none',
+              color: activeTab === tab.id ? 'var(--accent)' : 'var(--text-muted)',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              marginBottom: '-1px',
+              whiteSpace: 'nowrap',
+            }}
           >
-            {loading ? '分析中…' : '分析'}
+            {tab.label}
           </button>
+        ))}
+      </div>
+
+      {/* ── Tab 1：大盘分析 ─────────────────────────────────────────────────── */}
+      {activeTab === 'market' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+
+          {/* 宏观评分面板 */}
+          <section>
+            <SectionLabel>宏观/中观/情绪三层评分（每小时更新）</SectionLabel>
+            <MacroScorePanel />
+          </section>
+
+          {/* 指数走势 */}
+          <section>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <SectionLabel>指数走势</SectionLabel>
+              <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                {RANGES.map(r => (
+                  <button
+                    key={r}
+                    onClick={() => setRange(r)}
+                    style={{
+                      padding: '0.2rem 0.6rem', fontSize: '0.72rem', borderRadius: '6px',
+                      border: '1px solid',
+                      borderColor: r === range ? 'var(--accent)' : 'var(--border)',
+                      backgroundColor: r === range ? 'var(--accent)' : 'transparent',
+                      color: r === range ? '#fff' : 'var(--text-muted)',
+                      cursor: 'pointer', fontFamily: 'var(--font-mono)', fontWeight: r === range ? 700 : 400,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {r}
+                  </button>
+                ))}
+                {isLiveRange && indexDailyUpdated && (
+                  <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', marginLeft: '0.25rem' }}>
+                    更新 {indexDailyUpdated}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {indexDailyLoading && (
+              <div style={{ height: 150, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.8rem', border: '1px solid var(--border)', borderRadius: 10 }}>
+                加载日线数据中…
+              </div>
+            )}
+
+            {!indexDailyLoading && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div style={{ borderRadius: '10px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '0.875rem' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-muted)', marginBottom: '0.375rem' }}>纳斯达克综合指数</div>
+                  <InteractiveChart
+                    data={nasdaqChartData}
+                    color="#2563eb"
+                    height={150}
+                    events={NASDAQ_EVENTS}
+                    isDaily={isLiveRange && !!indexDaily}
+                    allowFullscreen={true}
+                    title="纳斯达克综合指数"
+                  />
+                </div>
+                <div style={{ borderRadius: '10px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '0.875rem' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-muted)', marginBottom: '0.375rem' }}>上证综合指数</div>
+                  <InteractiveChart
+                    data={shanghaiChartData}
+                    color="#d97706"
+                    height={150}
+                    events={SHANGHAI_EVENTS}
+                    isDaily={isLiveRange && !!indexDaily}
+                    allowFullscreen={true}
+                    title="上证综合指数"
+                  />
+                </div>
+              </div>
+            )}
+
+            <p style={{ marginTop: '0.5rem', fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+              {isLiveRange
+                ? (range === '1Y' || range === '2Y' ? '周线实时数据 (Yahoo Finance)' : '日线实时数据 (Yahoo Finance)')
+                : '月度静态数据（截至 2025-05）'} · 滚轮缩放 · 拖拽平移 · 双击复原 · 悬停查看数据 · 菱形 = 重大事件
+            </p>
+          </section>
+
+          {/* 趋势预测 */}
+          <section>
+            <SectionLabel>趋势预测（技术分析模型）</SectionLabel>
+            <TrendPredictionPanel nasdaqData={nasdaqFiltered} shanghaiData={shanghaiFiltered} />
+          </section>
+
+          {/* 风险指标 */}
+          <section>
+            <SectionLabel>当前风险指标</SectionLabel>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.625rem' }}>
+              {RISK_INDICATORS.map(r => {
+                const s = RISK_STATUS_STYLES[r.status]
+                return (
+                  <div key={r.label} style={{ borderRadius: '10px', border: `1px solid ${s.border}`, backgroundColor: s.bg, padding: '0.875rem' }}>
+                    <div style={{ fontSize: '0.7rem', color: s.text, opacity: 0.7, marginBottom: '0.25rem' }}>{r.label}</div>
+                    <div style={{ fontSize: '1.05rem', fontWeight: 700, color: s.text, marginBottom: '0.2rem' }}>{r.value}</div>
+                    <div style={{ fontSize: '0.7rem', color: s.text, opacity: 0.6, lineHeight: 1.4 }}>{r.note}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+
+          {/* 大事件时间线 */}
+          <section>
+            <SectionLabel>影响市场的重大事件</SectionLabel>
+            <div style={{ borderRadius: '10px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '1rem 1.25rem' }}>
+              {TIMELINE_EVENTS.map((ev, i) => (
+                <div key={`${ev.d}-${ev.label}`} style={{ display: 'flex', gap: '1rem', paddingTop: i === 0 ? 0 : '0.875rem', paddingBottom: i === TIMELINE_EVENTS.length - 1 ? 0 : '0.875rem', borderBottom: i < TIMELINE_EVENTS.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: ev.impact === 'pos' ? '#22c55e' : '#ef4444', flexShrink: 0, marginTop: '5px' }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap', marginBottom: '0.2rem' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{ev.d}</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text)' }}>{ev.label}</span>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>{ev.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
+      )}
 
-        {error && (
-          <div style={{ marginTop: '0.875rem', fontSize: '0.8rem', color: '#991b1b', backgroundColor: '#fff1f2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '0.625rem 0.875rem' }}>
-            分析失败：{error}
-          </div>
-        )}
+      {/* ── Tab 2：个股分析 ─────────────────────────────────────────────────── */}
+      {activeTab === 'stocks' && (
+        <section>
+          <SectionLabel>我的持仓观察</SectionLabel>
+          <PortfolioWatchlist />
+        </section>
+      )}
 
-        {loading && (
-          <div style={{ marginTop: '1rem', borderRadius: '10px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {[75, 50, 65, 40].map((w, i) => (
-              <div key={i} style={{ height: '12px', borderRadius: '6px', backgroundColor: 'var(--bg-secondary)', width: `${w}%`, animation: 'pulse 1.5s ease-in-out infinite' }} />
-            ))}
-          </div>
-        )}
+      {/* ── Tab 3：赛道估值 ─────────────────────────────────────────────────── */}
+      {activeTab === 'sectors' && (
+        <section>
+          <SectionLabel>赛道估值 &amp; 财报日历</SectionLabel>
+          <SectorValuation />
+        </section>
+      )}
 
-        {result && zc && (
-          <div style={{ marginTop: '1rem', borderRadius: '10px', border: `1px solid ${zc.border}`, backgroundColor: zc.bg, padding: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '1rem' }}>
-              <div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: zc.text }}>{result.fund_name}</div>
-                <div style={{ fontSize: '0.78rem', color: zc.text, opacity: 0.65, marginTop: '0.2rem' }}>{result.category}</div>
-              </div>
-              <span style={{ fontSize: '0.75rem', padding: '0.25rem 0.75rem', borderRadius: '20px', fontWeight: 600, backgroundColor: zc.badge, color: zc.badgeText, flexShrink: 0 }}>{result.zone_label}</span>
-            </div>
+      {/* ── Tab 4：基金工具 ─────────────────────────────────────────────────── */}
+      {activeTab === 'fund' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <section>
+            <SectionLabel>持仓截图 AI 分析</SectionLabel>
+            <FundImageAnalysis />
+          </section>
 
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', height: '6px', borderRadius: '3px', overflow: 'hidden', marginBottom: '6px' }}>
-                <div style={{ flex: 1, backgroundColor: '#4ade80', opacity: 0.8 }} />
-                <div style={{ flex: 1, backgroundColor: '#2dd4bf', opacity: 0.8 }} />
-                <div style={{ flex: 2, backgroundColor: 'var(--border)' }} />
-                <div style={{ flex: 1, backgroundColor: '#fbbf24', opacity: 0.8 }} />
-                <div style={{ flex: 1, backgroundColor: '#f87171', opacity: 0.8 }} />
-              </div>
-              <div style={{ position: 'relative', height: '10px' }}>
-                <div style={{ position: 'absolute', top: 0, left: `${needlePct}%`, transform: 'translateX(-50%)', width: '2px', height: '10px', backgroundColor: zc.text, borderRadius: '1px', transition: 'left 0.5s ease' }} />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: zc.text, opacity: 0.55, marginTop: '4px' }}>
-                <span>重仓买</span><span>轻仓买</span><span>持有</span><span>减仓</span><span>大减</span>
-              </div>
-            </div>
+          <div style={{ borderTop: '1px solid var(--border)' }} />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.875rem' }}>
-              {[
-                { label: '距近期高点', value: `${result.from_high_pct > 0 ? '+' : ''}${result.from_high_pct}%`, red: result.from_high_pct > -5 },
-                { label: '距近期低点', value: `+${result.from_low_pct}%`, red: result.from_low_pct > 60 },
-              ].map(item => (
-                <div key={item.label} style={{ borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.4)', padding: '0.625rem 0.75rem' }}>
-                  <div style={{ fontSize: '0.7rem', opacity: 0.6, marginBottom: '0.2rem', color: zc.text }}>{item.label}</div>
-                  <div style={{ fontSize: '1.05rem', fontWeight: 700, color: item.red ? '#dc2626' : '#16a34a' }}>{item.value}</div>
-                </div>
+          <section>
+            <SectionLabel>基金择时分析（AI 驱动）</SectionLabel>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.875rem' }}>
+              {PRESET_FUNDS.map(f => (
+                <button
+                  key={f}
+                  onClick={() => { setFundInput(f); analyze(f) }}
+                  style={{ fontSize: '0.78rem', padding: '0.3rem 0.75rem', borderRadius: '20px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', transition: 'all 0.15s' }}
+                  onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'var(--accent)'; b.style.color = 'var(--accent)' }}
+                  onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'var(--border)'; b.style.color = 'var(--text-muted)' }}
+                >
+                  {f.length > 8 ? f.slice(0, 8) + '…' : f}
+                </button>
               ))}
             </div>
 
-            <div style={{ fontSize: '0.9rem', fontWeight: 600, color: zc.text, marginBottom: '0.875rem', lineHeight: 1.5 }}>{result.monthly_action}</div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input
+                type="text"
+                value={fundInput}
+                onChange={e => setFundInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') analyze() }}
+                placeholder="输入基金名称，按 Enter 分析…"
+                style={{ flex: 1, fontSize: '0.9rem', padding: '0.55rem 0.875rem', borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', color: 'var(--text)', outline: 'none', fontFamily: 'var(--font-sans)', transition: 'border-color 0.15s' }}
+                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = 'var(--accent)' }}
+                onBlur={e => { (e.target as HTMLInputElement).style.borderColor = 'var(--border)' }}
+              />
+              <button
+                onClick={() => analyze()}
+                disabled={loading || !fundInput.trim()}
+                style={{ padding: '0.55rem 1.125rem', fontSize: '0.875rem', borderRadius: '8px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 600, cursor: loading || !fundInput.trim() ? 'not-allowed' : 'pointer', opacity: loading || !fundInput.trim() ? 0.45 : 1, transition: 'opacity 0.15s', whiteSpace: 'nowrap' }}
+              >
+                {loading ? '分析中…' : '分析'}
+              </button>
+            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.875rem' }}>
-              {[
-                { label: '买入条件', value: result.buy_condition, color: '#16a34a' },
-                { label: '减仓条件', value: result.sell_condition, color: '#dc2626' },
-                { label: '主要风险', value: result.key_risk, color: '#b45309' },
-                { label: '主要机会', value: result.key_opportunity, color: '#1d4ed8' },
-              ].map(row => (
-                <div key={row.label} style={{ display: 'flex', gap: '0.75rem', fontSize: '0.8rem' }}>
-                  <span style={{ color: zc.text, opacity: 0.5, flexShrink: 0, width: '4rem' }}>{row.label}</span>
-                  <span style={{ color: row.color, lineHeight: 1.5 }}>{row.value}</span>
+            {error && (
+              <div style={{ marginTop: '0.875rem', fontSize: '0.8rem', color: '#991b1b', backgroundColor: '#fff1f2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '0.625rem 0.875rem' }}>
+                分析失败：{error}
+              </div>
+            )}
+
+            {loading && (
+              <div style={{ marginTop: '1rem', borderRadius: '10px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {[75, 50, 65, 40].map((w, i) => (
+                  <div key={i} style={{ height: '12px', borderRadius: '6px', backgroundColor: 'var(--bg-secondary)', width: `${w}%`, animation: 'pulse 1.5s ease-in-out infinite' }} />
+                ))}
+              </div>
+            )}
+
+            {result && zc && (
+              <div style={{ marginTop: '1rem', borderRadius: '10px', border: `1px solid ${zc.border}`, backgroundColor: zc.bg, padding: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: zc.text }}>{result.fund_name}</div>
+                    <div style={{ fontSize: '0.78rem', color: zc.text, opacity: 0.65, marginTop: '0.2rem' }}>{result.category}</div>
+                  </div>
+                  <span style={{ fontSize: '0.75rem', padding: '0.25rem 0.75rem', borderRadius: '20px', fontWeight: 600, backgroundColor: zc.badge, color: zc.badgeText, flexShrink: 0 }}>{result.zone_label}</span>
                 </div>
-              ))}
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', paddingTop: '0.75rem', borderTop: `1px solid ${zc.border}` }}>
-              <span style={{ fontSize: '0.75rem', color: zc.text, opacity: 0.45 }}>数据充分度</span>
-              <span style={{
-                fontSize: '0.72rem', padding: '0.2rem 0.625rem', borderRadius: '20px', fontWeight: 600,
-                ...(result.confidence === 'high' ? { backgroundColor: '#dcfce7', color: '#15803d' } :
-                   result.confidence === 'medium' ? { backgroundColor: '#fef3c7', color: '#b45309' } :
-                   { backgroundColor: '#fee2e2', color: '#dc2626' }),
-              }}>
-                {{ high: '充分', medium: '一般', low: '有限' }[result.confidence]}
-              </span>
-              {result.note && <span style={{ fontSize: '0.72rem', color: zc.text, opacity: 0.4, flex: 1, textAlign: 'right' }}>{result.note}</span>}
-            </div>
-          </div>
-        )}
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', height: '6px', borderRadius: '3px', overflow: 'hidden', marginBottom: '6px' }}>
+                    <div style={{ flex: 1, backgroundColor: '#4ade80', opacity: 0.8 }} />
+                    <div style={{ flex: 1, backgroundColor: '#2dd4bf', opacity: 0.8 }} />
+                    <div style={{ flex: 2, backgroundColor: 'var(--border)' }} />
+                    <div style={{ flex: 1, backgroundColor: '#fbbf24', opacity: 0.8 }} />
+                    <div style={{ flex: 1, backgroundColor: '#f87171', opacity: 0.8 }} />
+                  </div>
+                  <div style={{ position: 'relative', height: '10px' }}>
+                    <div style={{ position: 'absolute', top: 0, left: `${needlePct}%`, transform: 'translateX(-50%)', width: '2px', height: '10px', backgroundColor: zc.text, borderRadius: '1px', transition: 'left 0.5s ease' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: zc.text, opacity: 0.55, marginTop: '4px' }}>
+                    <span>重仓买</span><span>轻仓买</span><span>持有</span><span>减仓</span><span>大减</span>
+                  </div>
+                </div>
 
-        <p style={{ marginTop: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>
-          由 AI 实时分析 · 仅供参考，不构成投资建议
-        </p>
-      </section>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.875rem' }}>
+                  {[
+                    { label: '距近期高点', value: `${result.from_high_pct > 0 ? '+' : ''}${result.from_high_pct}%`, red: result.from_high_pct > -5 },
+                    { label: '距近期低点', value: `+${result.from_low_pct}%`, red: result.from_low_pct > 60 },
+                  ].map(item => (
+                    <div key={item.label} style={{ borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.4)', padding: '0.625rem 0.75rem' }}>
+                      <div style={{ fontSize: '0.7rem', opacity: 0.6, marginBottom: '0.2rem', color: zc.text }}>{item.label}</div>
+                      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: item.red ? '#dc2626' : '#16a34a' }}>{item.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: zc.text, marginBottom: '0.875rem', lineHeight: 1.5 }}>{result.monthly_action}</div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.875rem' }}>
+                  {[
+                    { label: '买入条件', value: result.buy_condition, color: '#16a34a' },
+                    { label: '减仓条件', value: result.sell_condition, color: '#dc2626' },
+                    { label: '主要风险', value: result.key_risk, color: '#b45309' },
+                    { label: '主要机会', value: result.key_opportunity, color: '#1d4ed8' },
+                  ].map(row => (
+                    <div key={row.label} style={{ display: 'flex', gap: '0.75rem', fontSize: '0.8rem' }}>
+                      <span style={{ color: zc.text, opacity: 0.5, flexShrink: 0, width: '4rem' }}>{row.label}</span>
+                      <span style={{ color: row.color, lineHeight: 1.5 }}>{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', paddingTop: '0.75rem', borderTop: `1px solid ${zc.border}` }}>
+                  <span style={{ fontSize: '0.75rem', color: zc.text, opacity: 0.45 }}>数据充分度</span>
+                  <span style={{
+                    fontSize: '0.72rem', padding: '0.2rem 0.625rem', borderRadius: '20px', fontWeight: 600,
+                    ...(result.confidence === 'high' ? { backgroundColor: '#dcfce7', color: '#15803d' } :
+                       result.confidence === 'medium' ? { backgroundColor: '#fef3c7', color: '#b45309' } :
+                       { backgroundColor: '#fee2e2', color: '#dc2626' }),
+                  }}>
+                    {{ high: '充分', medium: '一般', low: '有限' }[result.confidence]}
+                  </span>
+                  {result.note && <span style={{ fontSize: '0.72rem', color: zc.text, opacity: 0.4, flex: 1, textAlign: 'right' }}>{result.note}</span>}
+                </div>
+              </div>
+            )}
+
+            <p style={{ marginTop: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>
+              由 AI 实时分析 · 仅供参考，不构成投资建议
+            </p>
+          </section>
+        </div>
+      )}
+
+      {/* ── Tab 5：黄金分析 ─────────────────────────────────────────────────── */}
+      {activeTab === 'gold' && (
+        <section>
+          <SectionLabel>黄金 · 价格 · 宏观驱动因子 · 配置建议</SectionLabel>
+          <GoldAnalysis />
+        </section>
+      )}
 
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }

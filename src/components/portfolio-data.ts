@@ -126,3 +126,115 @@ export const PDD_HISTORY: MonthlyClose[] = [
   { d:'2025-01',p:109.0 },{ d:'2025-02',p:117.0 },{ d:'2025-03',p:104.0 },
   { d:'2025-04',p:118.0 },{ d:'2025-05',p:128.0 },
 ]
+
+// ─── Factor Sensitivity Matrices ─────────────────────────────────────────────
+
+export interface FactorItem {
+  level: 'high' | 'med' | 'low'
+  direction: 'pos' | 'neg' | 'neutral'
+  note: string
+}
+
+export interface FactorSensitivity {
+  rate:         FactorItem
+  inflation:    FactorItem
+  usd:          FactorItem
+  oil:          FactorItem
+  geopolitical: FactorItem
+  regulation:   FactorItem
+  sectorPos:    string
+  moat:         'wide' | 'narrow' | 'none'
+  policyRisk:   string
+}
+
+export const FACTOR_SENSITIVITY: Record<string, FactorSensitivity> = {
+  NVDA: {
+    rate:         { level: 'high', direction: 'neg', note: '高利率压制高估值成长股，降息周期大幅受益' },
+    inflation:    { level: 'med',  direction: 'neg', note: '通胀拉升成本，但定价权强可部分转移' },
+    usd:          { level: 'med',  direction: 'neg', note: '美元走强压制海外营收（约50%+来自海外）' },
+    oil:          { level: 'low',  direction: 'neutral', note: '数据中心能耗大，油价间接影响电力成本' },
+    geopolitical: { level: 'high', direction: 'neg', note: '对华芯片出口管制是核心尾部风险，H20受限' },
+    regulation:   { level: 'high', direction: 'neg', note: '半导体出口管制持续升级，是最大政策风险' },
+    sectorPos: 'AI算力基础设施垄断者，Blackwell超级周期，数据中心资本开支持续超预期',
+    moat: 'wide',
+    policyRisk: '对华出口管制（H20/B200）是最大不确定性，占营收约10-15%',
+  },
+  TENCENT: {
+    rate:         { level: 'low',  direction: 'neutral', note: '港股AH折价，利率影响通过估值折现率传导' },
+    inflation:    { level: 'low',  direction: 'neutral', note: '数字服务成本结构对通胀不敏感' },
+    usd:          { level: 'high', direction: 'neg', note: '港币与美元挂钩，人民币贬值利空ADR持有者' },
+    oil:          { level: 'low',  direction: 'neutral', note: '纯数字业务，能源成本占比极低' },
+    geopolitical: { level: 'high', direction: 'neg', note: '中美关系决定外资持仓情绪，港股流动性波动大' },
+    regulation:   { level: 'high', direction: 'neg', note: '中国监管周期是核心风险；游戏版号、数据安全' },
+    sectorPos: '中国互联网寡头，微信生态护城河深厚，AI（混元大模型）转型进行中',
+    moat: 'wide',
+    policyRisk: '国内监管周期（游戏版号/反垄断/数据安全）及外资限制',
+  },
+  ORCL: {
+    rate:         { level: 'med',  direction: 'neg', note: '中等利率敏感度，云转型叙事可抵消部分估值压力' },
+    inflation:    { level: 'low',  direction: 'neutral', note: '企业软件订阅制收入，定价权强，可转移通胀' },
+    usd:          { level: 'med',  direction: 'neg', note: '约45%海外营收，美元强势有一定汇率逆风' },
+    oil:          { level: 'low',  direction: 'neutral', note: '纯软件/云业务，能源价格影响可忽略' },
+    geopolitical: { level: 'low',  direction: 'neutral', note: '业务全球分散，单一地区风险较低' },
+    regulation:   { level: 'med',  direction: 'neg', note: '数据隐私监管（GDPR/CCPA）增加合规成本' },
+    sectorPos: '企业云基础设施第二梯队，AI数据库（Autonomous DB）+OCI云追赶AWS/Azure',
+    moat: 'wide',
+    policyRisk: '税务诉讼风险低；Oracle政府云（OCI IL5）受益于美国政府AI支出',
+  },
+  PDD: {
+    rate:         { level: 'med',  direction: 'neg', note: '成长股估值受利率影响，但低PE相对抗跌' },
+    inflation:    { level: 'med',  direction: 'pos', note: '消费降级趋势下，低价电商需求反而上升' },
+    usd:          { level: 'high', direction: 'neg', note: 'Temu美国业务占比提升，美元强势利好但关税风险大' },
+    oil:          { level: 'med',  direction: 'neg', note: '物流成本受油价影响，Temu重度依赖跨境物流' },
+    geopolitical: { level: 'high', direction: 'neg', note: 'Temu受中美贸易政策影响最直接，关税是最大变量' },
+    regulation:   { level: 'high', direction: 'neg', note: 'De minimis关税豁免取消直接冲击Temu商业模式' },
+    sectorPos: '中国电商寡头+Temu全球扩张，低价供应链优势突出，国内市场份额稳固',
+    moat: 'narrow',
+    policyRisk: 'De minimis关税豁免（$800以下免税）取消是Temu核心风险，美国征税方案持续不确定',
+  },
+}
+
+// ─── Key events for chart annotations ────────────────────────────────────────
+export interface StockEvent {
+  d: string        // YYYY-MM-DD for event annotations
+  label: string    // short badge
+  detail: string   // full explanation
+  impact: 'pos' | 'neg'
+}
+
+export const STOCK_EVENTS: Record<string, StockEvent[]> = {
+  NVDA: [
+    { d:'2020-03-18', label:'COVID暴跌', impact:'neg', detail:'新冠疫情引发全球恐慌抛售，NVDA单月跌-29%，但数据中心需求逻辑未变。' },
+    { d:'2020-08-20', label:'数据中心爆发', impact:'pos', detail:'Mellanox收购整合完毕，数据中心收入首次超越游戏业务，成为第一大营收来源。' },
+    { d:'2021-11-22', label:'A100算力峰值', impact:'pos', detail:'企业AI训练需求爆发，A100 GPU供不应求，股价触及历史前高$33.9（复权）。' },
+    { d:'2022-09-07', label:'芯片出口管制', impact:'neg', detail:'美国商务部宣布限制A100/H100向中国出口，NVDA中国区收入受损约4亿美元/季。' },
+    { d:'2022-10-13', label:'2022年熊市底', impact:'neg', detail:'美联储激进加息叠加出口管制双重打压，股价较高位下跌逾66%，PE回落至历史低位。' },
+    { d:'2023-05-24', label:'AI超级财报', impact:'pos', detail:'FY2024Q1收入$71亿，同比+19%，数据中心指引$110亿远超市场预期$72亿，单日涨+24%。' },
+    { d:'2023-08-23', label:'Blackwell预告', impact:'pos', detail:'FY2024Q2收入$135亿再超预期，H100订单能见度达18个月，毛利率71%创历史新高。' },
+    { d:'2025-01-27', label:'DeepSeek冲击', impact:'neg', detail:'DeepSeek R1以极低算力成本达到GPT-4水平，市场质疑高端算力需求，股价单日跌-17%。' },
+    { d:'2025-04-09', label:'关税风险', impact:'neg', detail:'特朗普对中国加征145%关税，中国市场贡献约17%收入面临压力，半导体出口管制再收紧。' },
+  ],
+  TENCENT: [
+    { d:'2021-07-26', label:'游戏监管', impact:'neg', detail:'国家新闻出版署暂停游戏版号审批，《人民日报》称游戏为"精神鸦片"，腾讯股价单月跌-13%。' },
+    { d:'2021-11-19', label:'反垄断重创', impact:'neg', detail:'中国互联网反垄断监管全面收紧，腾讯、阿里等被限制，港股科技股进入漫长熊市。' },
+    { d:'2022-10-24', label:'习连任大跌', impact:'neg', detail:'中共二十大习近平连任，市场对政策风险重新定价，恒生科技指数单日跌-9.7%。' },
+    { d:'2023-01-16', label:'游戏版号恢复', impact:'pos', detail:'国家游戏版号重新发放，腾讯多款新游获批，《元梦之星》上线，游戏业务复苏预期强烈。' },
+    { d:'2024-03-20', label:'AI+广告超预期', impact:'pos', detail:'Q4广告收入同比+21%（AI精准投放效果显著），微信小程序电商GMV超1.5万亿，超买入预期。' },
+    { d:'2024-09-24', label:'回购+A股刺激', impact:'pos', detail:'腾讯宣布1000亿港元回购计划，叠加中国推出一揽子刺激政策，港股大幅反弹。' },
+    { d:'2025-01-28', label:'DeepSeek受益', impact:'pos', detail:'腾讯混元大模型整合DeepSeek能力，AI成本大幅下降，腾讯云+广告AI化落地加速预期升温。' },
+  ],
+  ORCL: [
+    { d:'2022-12-12', label:'TikTok云合同', impact:'pos', detail:'甲骨文获TikTok美国数据存储合同，OCI云业务增速+42%，证明云迁移大周期成立。' },
+    { d:'2023-06-12', label:'OCI超预期', impact:'pos', detail:'FY2023Q4云基础设施收入+54%，剩余履约义务$640亿创历史新高，与微软、谷歌云合作扩大。' },
+    { d:'2023-09-11', label:'AI云爆发', impact:'pos', detail:'FY2024Q1 OCI+66%，宣布与NVDA合作建设AI超级算力集群，机构目标价普遍上调至150+。' },
+    { d:'2025-01-21', label:'Stargate项目', impact:'pos', detail:'与OpenAI、SoftBank、ARM联合宣布$5000亿Stargate AI基础设施项目，ORCL是核心云平台提供方。' },
+    { d:'2025-04-04', label:'关税冲击回调', impact:'neg', detail:'科技股整体因关税恐慌抛售，ORCL跟随回调，但分析师指出OCI算力合同不受关税影响。' },
+  ],
+  PDD: [
+    { d:'2023-08-28', label:'Temu全球扩张', impact:'pos', detail:'Temu进入49个国家，下载量超越亚马逊成美区购物App第一，"砍一刀"模式在美国爆火。' },
+    { d:'2024-02-26', label:'史上最强财报', impact:'pos', detail:'Q3营收同比+94%，净利润+167%，EBITDA利润率突破26%，成为首个季度净利润超阿里的中国电商。' },
+    { d:'2024-08-26', label:'财报黑天鹅', impact:'neg', detail:'Q2利润虽增但指引保守，管理层直言"未来盈利能力将面临压力"，股价单日跌-28%，市值蒸发$55亿。' },
+    { d:'2025-04-25', label:'关税关键冲击', impact:'neg', detail:'美国宣布取消$800以下包裹de minimis豁免，直接打击Temu商业模式，PDD股价累计跌超35%。' },
+    { d:'2025-05-12', label:'关税暂停反弹', impact:'pos', detail:'中美关税90天暂停谈判，de minimis政策暂缓执行，PDD跟随中概股大幅反弹+15%。' },
+  ],
+}

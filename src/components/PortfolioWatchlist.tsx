@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { NVDA_HISTORY, TENCENT_HISTORY, ORCL_HISTORY, PDD_HISTORY, type MonthlyClose } from './portfolio-data'
+import { NVDA_HISTORY, TENCENT_HISTORY, ORCL_HISTORY, PDD_HISTORY, FACTOR_SENSITIVITY, STOCK_EVENTS, type MonthlyClose } from './portfolio-data'
+import { InteractiveChart, type ChartEvent } from './InteractiveChart'
 
 interface LivePrice { price: number; changePct: number; error?: boolean }
 
-type WRange = '3Y' | '5Y' | '10Y' | 'MAX'
-const RANGE_MONTHS: Record<WRange, number> = { '3Y': 36, '5Y': 60, '10Y': 120, 'MAX': 9999 }
+type WRange = '1W' | '1M' | '3M' | '6M' | '3Y' | '5Y' | '10Y' | 'MAX'
+const RANGE_MONTHS: Record<WRange, number> = { '1W': 0, '1M': 0, '3M': 0, '6M': 0, '3Y': 36, '5Y': 60, '10Y': 120, 'MAX': 9999 }
+const LIVE_RANGES: WRange[] = ['1W', '1M', '3M', '6M']
 
 const WATCHLIST = [
   {
@@ -98,15 +100,15 @@ function computeAnalysis(data: MonthlyClose[]) {
   const signals: { name: string; value: string; bullish: boolean }[] = []
   if (s3 && s6) {
     const b = s3 > s6
-    signals.push({ name: 'MA3/MA6', value: b ? '金叉 — 短期多头' : '死叉 — 短期空头', bullish: b })
+    signals.push({ name: '短期均线（3月/6月）', value: b ? '金叉 — 短期多头' : '死叉 — 短期空头', bullish: b })
   }
   if (s6 && s12) {
     const b = s6 > s12
-    signals.push({ name: 'MA6/MA12', value: b ? '中线上升趋势' : '中线下降趋势', bullish: b })
+    signals.push({ name: '中期均线（6月/1年）', value: b ? '中线上升趋势' : '中线下降趋势', bullish: b })
   }
   if (s12 && s24) {
     const b = s12 > s24
-    signals.push({ name: 'MA12/MA24', value: b ? '长线多头排列' : '长线空头排列', bullish: b })
+    signals.push({ name: '长期均线（1年/2年）', value: b ? '长线多头排列' : '长线空头排列', bullish: b })
   }
   signals.push({
     name: 'RSI(14月)',
@@ -141,81 +143,11 @@ function computeAnalysis(data: MonthlyClose[]) {
   return { bullPct, signals, accuracy, samples: total, reason, rsi, mom3, mom6, ytdChg, s3, s6, s12, s24 }
 }
 
-// ─── Stock Chart ──────────────────────────────────────────────────────────
-function StockChart({ data, range, color }: { data: MonthlyClose[]; range: WRange; color: string }) {
-  const ref = useRef<HTMLCanvasElement>(null)
-  const months = RANGE_MONTHS[range]
-  const filtered = data.slice(-months)
-
-  useEffect(() => {
-    const canvas = ref.current; if (!canvas || filtered.length < 2) return
-    const ctx = canvas.getContext('2d'); if (!ctx) return
-    const dpr = window.devicePixelRatio || 1
-    const W = canvas.offsetWidth; const H = canvas.offsetHeight
-    canvas.width = W * dpr; canvas.height = H * dpr
-    ctx.scale(dpr, dpr)
-
-    const vals = filtered.map(d => d.p)
-    const pad = { t: 14, r: 50, b: 24, l: 10 }
-    const cw = W - pad.l - pad.r; const ch = H - pad.t - pad.b
-
-    const minP = Math.min(...vals); const maxP = Math.max(...vals)
-    const range2 = maxP - minP || 1
-    const xOf = (i: number) => pad.l + (i / (vals.length - 1)) * cw
-    const yOf = (v: number) => pad.t + ch - ((v - minP) / range2) * ch
-
-    // grid
-    ctx.strokeStyle = '#e5e7eb22'; ctx.lineWidth = 0.5
-    for (let s = 1; s < 4; s++) {
-      const y = pad.t + ch / 4 * s
-      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke()
-    }
-
-    // SMA lines
-    const smaLengths = [{ n: 6, c: '#f59e0b99' }, { n: 12, c: '#3b82f699' }, { n: 24, c: '#8b5cf699' }]
-    smaLengths.forEach(({ n, c }) => {
-      ctx.beginPath(); let started = false
-      vals.forEach((_, i) => {
-        if (i < n - 1) return
-        const avg = vals.slice(i - n + 1, i + 1).reduce((a, b) => a + b, 0) / n
-        const x = xOf(i); const y = yOf(avg)
-        if (!started) { ctx.moveTo(x, y); started = true } else ctx.lineTo(x, y)
-      })
-      ctx.strokeStyle = c; ctx.lineWidth = 1; ctx.setLineDash([4, 3]); ctx.stroke()
-      ctx.setLineDash([])
-    })
-
-    // Price line
-    ctx.beginPath()
-    vals.forEach((v, i) => { i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)) })
-    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke()
-
-    // Fill
-    ctx.lineTo(xOf(vals.length - 1), H - pad.b); ctx.lineTo(xOf(0), H - pad.b); ctx.closePath()
-    const grad = ctx.createLinearGradient(0, pad.t, 0, H - pad.b)
-    grad.addColorStop(0, color + '35'); grad.addColorStop(1, color + '00')
-    ctx.fillStyle = grad; ctx.fill()
-
-    // Y-axis labels
-    ctx.fillStyle = '#6b7280'; ctx.font = '10px system-ui'; ctx.textAlign = 'left'
-    const fmt = (v: number) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v >= 100 ? v.toFixed(0) : v.toFixed(1)
-    ctx.fillText(fmt(maxP), W - pad.r + 4, pad.t + 4)
-    ctx.fillText(fmt(minP), W - pad.r + 4, H - pad.b)
-
-    // X-axis labels
-    ctx.fillText(filtered[0].d.slice(0, 4), pad.l, H - 5)
-    ctx.textAlign = 'right'
-    ctx.fillText(filtered[filtered.length - 1].d.slice(0, 7), W - pad.r, H - 5)
-
-    // Change %
-    const chg = ((vals[vals.length - 1] - vals[0]) / vals[0] * 100).toFixed(1)
-    ctx.fillStyle = parseFloat(chg) >= 0 ? '#16a34a' : '#dc2626'
-    ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'right'
-    ctx.fillText(`${parseFloat(chg) >= 0 ? '+' : ''}${chg}%`, W - pad.r + 44, pad.t + 1)
-  }, [filtered, color])
-
-  return <canvas ref={ref} style={{ width: '100%', height: '200px', display: 'block' }} />
-}
+const SMA_LINES = [
+  { n: 6,  color: '#f59e0b99' },
+  { n: 12, color: '#3b82f699' },
+  { n: 24, color: '#8b5cf699' },
+]
 
 // ─── Prediction badge ─────────────────────────────────────────────────────
 function PredBadge({ bullPct, accuracy, samples }: { bullPct: number; accuracy: number; samples: number }) {
@@ -277,31 +209,134 @@ function EarningsBlock({ item }: { item: typeof WATCHLIST[0] }) {
   )
 }
 
+// ─── Factor Sensitivity Block ────────────────────────────────────────────
+function FactorBlock({ ticker }: { ticker: string }) {
+  const fs = FACTOR_SENSITIVITY[ticker]
+  if (!fs) return null
+
+  const levelColor = (level: 'high' | 'med' | 'low') =>
+    level === 'high' ? '#ef4444' : level === 'med' ? '#f59e0b' : '#22c55e'
+  const levelLabel = (level: 'high' | 'med' | 'low') =>
+    level === 'high' ? '高' : level === 'med' ? '中' : '低'
+  const dirIcon = (dir: 'pos' | 'neg' | 'neutral', field: string) => {
+    if (field === 'geopolitical' || field === 'regulation') return dir === 'neg' ? '⚠️' : dir === 'pos' ? '✓' : '—'
+    return dir === 'pos' ? '↑利好' : dir === 'neg' ? '↓利空' : '→中性'
+  }
+
+  const factors = [
+    { key: 'rate',         label: '利率变动',   item: fs.rate },
+    { key: 'inflation',    label: 'CPI通胀',    item: fs.inflation },
+    { key: 'usd',          label: '美元走势',   item: fs.usd },
+    { key: 'oil',          label: '原油价格',   item: fs.oil },
+    { key: 'geopolitical', label: '地缘政治',   item: fs.geopolitical },
+    { key: 'regulation',   label: '监管政策',   item: fs.regulation },
+  ]
+
+  const moatColors = { wide: '#22c55e', narrow: '#f59e0b', none: '#ef4444' }
+  const moatLabels = { wide: '宽护城河', narrow: '一般', none: '无护城河' }
+
+  return (
+    <div>
+      <div style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)', marginBottom: '0.5rem' }}>
+        宏观因子敏感度
+      </div>
+      <div style={{ fontSize: '0.75rem', color: 'var(--text)', lineHeight: 1.5, marginBottom: '0.5rem', padding: '6px 10px', borderRadius: 6, background: 'var(--bg-secondary)' }}>
+        {fs.sectorPos}
+      </div>
+      <div style={{ display: 'flex', gap: 6, marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: 10, background: moatColors[fs.moat] + '18', color: moatColors[fs.moat], border: `1px solid ${moatColors[fs.moat]}44` }}>
+          {moatLabels[fs.moat]}
+        </span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
+        {factors.map(({ key, label, item }) => {
+          const c = levelColor(item.level)
+          return (
+            <div key={key} style={{ padding: '6px 8px', borderRadius: 6, border: `1px solid ${c}33`, background: `${c}08` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text)' }}>{label}</span>
+                <span style={{ fontSize: '0.6rem', fontWeight: 700, color: c }}>{levelLabel(item.level)} · {dirIcon(item.direction, key)}</span>
+              </div>
+              <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>{item.note}</p>
+            </div>
+          )
+        })}
+      </div>
+      <div style={{ marginTop: '0.4rem', padding: '6px 8px', borderRadius: 6, background: '#ef444408', border: '1px solid #ef444433' }}>
+        <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#ef4444' }}>政策风险：</span>
+        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{fs.policyRisk}</span>
+      </div>
+    </div>
+  )
+}
+
 // ─── Stock Card ───────────────────────────────────────────────────────────
 function StockCard({ item }: { item: typeof WATCHLIST[0] }) {
   const [open, setOpen] = useState(false)
   const [wrange, setWrange] = useState<WRange>('5Y')
   const [live, setLive] = useState<LivePrice | null>(null)
-  const fetched = useRef(false)
+  const [dailyData, setDailyData] = useState<MonthlyClose[] | null>(null)
+  const [dailyLoading, setDailyLoading] = useState(false)
+  const [dailyError, setDailyError] = useState<string | null>(null)
+  const [dailyFetchedAt, setDailyFetchedAt] = useState<string | null>(null)
+  const livePriceFetched = useRef(false)
+  const dailyTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const fetchLive = useCallback(async () => {
-    if (fetched.current) return; fetched.current = true
+  const fetchLivePrice = useCallback(async () => {
+    if (livePriceFetched.current) return; livePriceFetched.current = true
     try {
       const res = await fetch(`/api/stocks?tickers=${item.yfTicker}`)
       const data = await res.json()
       const q = data?.[0]
       if (q && !q.error) setLive({ price: q.price, changePct: q.changePct })
-    } catch { /* live price optional */ }
+    } catch { /* optional */ }
   }, [item.yfTicker])
 
-  const toggle = () => { if (!open) fetchLive(); setOpen(o => !o) }
+  const fetchDailyData = useCallback(async (r: WRange) => {
+    setDailyLoading(true); setDailyError(null)
+    try {
+      const res = await fetch(`/api/stock-daily?ticker=${item.yfTicker}&range=${r}`, { cache: 'no-store' })
+      const json = await res.json()
+      if (json.error) throw new Error(json.error)
+      setDailyData(json.prices as MonthlyClose[])
+      setDailyFetchedAt(json.fetchedAt)
+    } catch (e) {
+      setDailyError(String(e))
+      setDailyData(null)
+    } finally {
+      setDailyLoading(false)
+    }
+  }, [item.yfTicker])
+
+  const isLive = LIVE_RANGES.includes(wrange)
+
+  useEffect(() => {
+    if (!open) return
+    if (isLive) {
+      fetchDailyData(wrange)
+      dailyTimer.current = setInterval(() => fetchDailyData(wrange), 60 * 60 * 1000)
+    } else {
+      if (dailyTimer.current) { clearInterval(dailyTimer.current); dailyTimer.current = null }
+    }
+    return () => { if (dailyTimer.current) { clearInterval(dailyTimer.current); dailyTimer.current = null } }
+  }, [open, wrange, isLive, fetchDailyData])
+
+  const toggle = () => { if (!open) fetchLivePrice(); setOpen(o => !o) }
 
   const analysis = computeAnalysis(item.history)
   const lastPrice = item.history[item.history.length - 1].p
   const displayPrice = live?.price || lastPrice
   const chgColor = live ? (live.changePct >= 0 ? '#16a34a' : '#dc2626') : 'var(--text-muted)'
 
-  const ranges: WRange[] = ['3Y', '5Y', '10Y', 'MAX']
+  const ranges: WRange[] = ['1W', '1M', '3M', '6M', '3Y', '5Y', '10Y', 'MAX']
+  const chartData = isLive ? (dailyData ?? []) : item.history
+  const updatedStr = dailyFetchedAt
+    ? new Date(dailyFetchedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+    : null
+  const stockKey = item.ticker === '0700.HK' ? 'TENCENT' : item.ticker
+  const stockEvents = (STOCK_EVENTS[stockKey] ?? []) as ChartEvent[]
+  const months = RANGE_MONTHS[wrange]
+  const slicedHistory = months > 0 ? item.history.slice(-months) : item.history
 
   return (
     <div style={{ borderRadius: '10px', border: '1px solid var(--border)', overflow: 'hidden', backgroundColor: 'var(--surface)' }}>
@@ -353,7 +388,7 @@ function StockCard({ item }: { item: typeof WATCHLIST[0] }) {
 
           {/* Chart range selector */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
               {ranges.map(r => (
                 <button
                   key={r} onClick={() => setWrange(r)}
@@ -364,13 +399,51 @@ function StockCard({ item }: { item: typeof WATCHLIST[0] }) {
                   }}
                 >{r}</button>
               ))}
-              <span style={{ marginLeft: 'auto', fontSize: '0.6rem', color: 'var(--text-muted)' }}>
-                — MA6 — MA12 — MA24
-              </span>
+              {!isLive && (
+                <span style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', fontSize: '0.6rem', color: 'var(--text-muted)' }}>
+                  <span><span style={{ color: '#f59e0b', fontWeight: 700 }}>—</span> 6月均线</span>
+                  <span><span style={{ color: '#3b82f6', fontWeight: 700 }}>—</span> 1年均线</span>
+                  <span><span style={{ color: '#8b5cf6', fontWeight: 700 }}>—</span> 2年均线</span>
+                </span>
+              )}
+              {isLive && updatedStr && (
+                <span style={{ marginLeft: 'auto', fontSize: '0.6rem', color: 'var(--text-muted)' }}>
+                  更新 {updatedStr} · 每小时自动刷新
+                </span>
+              )}
             </div>
-            <div style={{ borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'var(--bg-secondary)', padding: '0.5rem 0.5rem 0 0.5rem', overflow: 'hidden' }}>
-              <StockChart data={item.history} range={wrange} color={item.color} />
-            </div>
+
+            {/* Chart area */}
+            {isLive && dailyLoading && (
+              <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.8rem', border: '1px solid var(--border)', borderRadius: 8 }}>
+                加载日线数据中…
+              </div>
+            )}
+            {isLive && dailyError && !dailyLoading && (
+              <div style={{ padding: '12px', borderRadius: 8, background: '#fff1f2', border: '1px solid #fca5a5', fontSize: '0.75rem', color: '#991b1b' }}>
+                数据源暂时不可用：{dailyError}
+              </div>
+            )}
+            {(!isLive || (!dailyLoading && !dailyError && chartData.length > 0)) && (
+              <div style={{ borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'var(--bg-secondary)', padding: '0.5rem 0.5rem 0 0.5rem', overflow: 'hidden' }}>
+                <InteractiveChart
+                  data={isLive ? chartData : slicedHistory}
+                  color={item.color}
+                  height={200}
+                  events={isLive ? [] : stockEvents}
+                  smaLines={isLive ? [] : SMA_LINES}
+                  isDaily={isLive}
+                  currencySymbol={item.currency === 'HKD' ? 'HK$' : '$'}
+                  allowFullscreen={true}
+                  title={`${item.cnName} (${item.ticker})`}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Factor Sensitivity */}
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.875rem' }}>
+            <FactorBlock ticker={item.ticker === '0700.HK' ? 'TENCENT' : item.ticker} />
           </div>
 
           {/* Prediction */}
@@ -383,8 +456,11 @@ function StockCard({ item }: { item: typeof WATCHLIST[0] }) {
 
           {/* Signals */}
           <div>
-            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)', marginBottom: '0.4rem' }}>
+            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)', marginBottom: '0.25rem' }}>
               技术信号（月度数据）
+            </div>
+            <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: '0.4rem', lineHeight: 1.5 }}>
+              均线(MA) = 过去N个月收盘价均值。价格在均线上方为强势；短期均线上穿长期均线叫「金叉」，是买入信号；反之叫「死叉」，是卖出信号。RSI衡量超买/超卖，30以下超卖，70以上超买。
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.3rem' }}>
               {analysis.signals.map(s => (
