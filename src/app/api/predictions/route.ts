@@ -4,6 +4,7 @@ import { promisify } from 'util'
 import { readFile, writeFile, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, dirname } from 'path'
+import { logPrediction } from '@/lib/review-store'
 
 export const dynamic = 'force-dynamic'
 const execAsync = promisify(exec)
@@ -399,6 +400,31 @@ export async function POST() {
 
   store.daily.unshift(...newPreds)
   await writeStore(store)
+
+  // Auto-log to review store for continuous accuracy tracking
+  for (const pred of newPreds) {
+    await logPrediction({
+      id: `auto_${pred.id}`,
+      type: 'daily_price',
+      ticker: pred.ticker,
+      name: pred.name,
+      group: pred.group === 'portfolio' ? 'portfolio' : pred.group === 'sector' ? 'sector' : 'fund',
+      createdAt: pred.createdAt,
+      targetDate: pred.targetDate,
+      prediction: {
+        direction: pred.predictedDirection,
+        bullPct: pred.bullPct,
+        confidence: pred.confidence,
+        targetLow: pred.targetLow,
+        targetHigh: pred.targetHigh,
+        currentPrice: pred.currentPrice,
+        reasoning: pred.reasoning,
+        technicalScore: pred.technicalScore,
+        macroScore: pred.macroScore,
+      },
+    }).catch(() => { /* non-critical, don't block */ })
+  }
+
   return NextResponse.json({ generated: newPreds.length, store })
 }
 

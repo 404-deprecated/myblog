@@ -1,0 +1,570 @@
+{
+  "records": [
+    {
+      "id": "safebuy_20260512_GOLD",
+      "type": "safe_buy",
+      "ticker": "GOLD",
+      "name": "黄金现货",
+      "group": "gold",
+      "createdAt": "2026-05-12T06:13:57.956Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "flat",
+        "currentPrice": 4714.2,
+        "safeBuyPrice": 4412.6,
+        "currentSafety": 58.9,
+        "discountPct": 6.4,
+        "safetyProbability": 78.8,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "均线公允价值"
+        ],
+        "reasoning": "中等安全性（79%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 均线公允价值，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_IXIC",
+      "type": "safe_buy",
+      "ticker": "^IXIC",
+      "name": "纳斯达克",
+      "group": "index",
+      "createdAt": "2026-05-12T06:13:57.960Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 26274.13,
+        "safeBuyPrice": 23547.63,
+        "currentSafety": 27.2,
+        "discountPct": 10.4,
+        "safetyProbability": 87.9,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格"
+        ],
+        "reasoning": "中等安全性（80%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_000001SS",
+      "type": "safe_buy",
+      "ticker": "000001.SS",
+      "name": "上证指数",
+      "group": "index",
+      "createdAt": "2026-05-12T06:13:57.961Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "flat",
+        "currentPrice": 4207.14,
+        "safeBuyPrice": 3921.49,
+        "currentSafety": 27.2,
+        "discountPct": 6.8,
+        "safetyProbability": 84.6,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格"
+        ],
+        "reasoning": "中等安全性（74%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_HSI",
+      "type": "safe_buy",
+      "ticker": "^HSI",
+      "name": "恒生指数",
+      "group": "index",
+      "createdAt": "2026-05-12T06:13:57.961Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "flat",
+        "currentPrice": 26417.83,
+        "safeBuyPrice": 24709.11,
+        "currentSafety": 41.7,
+        "discountPct": 6.5,
+        "safetyProbability": 82.4,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格"
+        ],
+        "reasoning": "中等安全性（71%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_NVDA",
+      "type": "safe_buy",
+      "ticker": "NVDA",
+      "name": "英伟达",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.962Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 219.44,
+        "safeBuyPrice": 194.75,
+        "currentSafety": 40.5,
+        "discountPct": 11.3,
+        "safetyProbability": 75.4,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值支撑"
+        ],
+        "reasoning": "中等安全性（75%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_0700HK",
+      "type": "safe_buy",
+      "ticker": "0700.HK",
+      "name": "腾讯控股",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.963Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 460.4,
+        "safeBuyPrice": 377.85,
+        "currentSafety": 70.4,
+        "discountPct": 17.9,
+        "safetyProbability": 76.9,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值回归支撑"
+        ],
+        "reasoning": "中等安全性（77%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值回归支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_ORCL",
+      "type": "safe_buy",
+      "ticker": "ORCL",
+      "name": "甲骨文",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.964Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 193.84,
+        "safeBuyPrice": 130.64,
+        "currentSafety": 30.7,
+        "discountPct": 32.6,
+        "safetyProbability": 69,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值回归支撑"
+        ],
+        "reasoning": "偏低安全性（69%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值回归支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_PDD",
+      "type": "safe_buy",
+      "ticker": "PDD",
+      "name": "拼多多",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.964Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 98.8,
+        "safeBuyPrice": 88.91,
+        "currentSafety": 64.4,
+        "discountPct": 10,
+        "safetyProbability": 75.1,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值支撑"
+        ],
+        "reasoning": "中等安全性（75%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_AMD",
+      "type": "safe_buy",
+      "ticker": "AMD",
+      "name": "AMD",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.965Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 458.79,
+        "safeBuyPrice": 326.18,
+        "currentSafety": 33.6,
+        "discountPct": 28.9,
+        "safetyProbability": 77.5,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值回归支撑"
+        ],
+        "reasoning": "中等安全性（78%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值回归支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_AVGO",
+      "type": "safe_buy",
+      "ticker": "AVGO",
+      "name": "博通",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.966Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 428.43,
+        "safeBuyPrice": 378.95,
+        "currentSafety": 44.7,
+        "discountPct": 11.5,
+        "safetyProbability": 77.5,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值支撑"
+        ],
+        "reasoning": "中等安全性（77%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_MSFT",
+      "type": "safe_buy",
+      "ticker": "MSFT",
+      "name": "微软",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.966Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 412.66,
+        "safeBuyPrice": 335.82,
+        "currentSafety": 50.1,
+        "discountPct": 18.6,
+        "safetyProbability": 71.5,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值回归支撑"
+        ],
+        "reasoning": "中等安全性（71%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值回归支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_META",
+      "type": "safe_buy",
+      "ticker": "META",
+      "name": "Meta",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.967Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 598.86,
+        "safeBuyPrice": 513.32,
+        "currentSafety": 66.9,
+        "discountPct": 14.3,
+        "safetyProbability": 73.9,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值回归支撑"
+        ],
+        "reasoning": "中等安全性（74%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值回归支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_TSLA",
+      "type": "safe_buy",
+      "ticker": "TSLA",
+      "name": "特斯拉",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.968Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 445,
+        "safeBuyPrice": 297.95,
+        "currentSafety": 22.8,
+        "discountPct": 33,
+        "safetyProbability": 74.3,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值回归支撑"
+        ],
+        "reasoning": "中等安全性（74%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值回归支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_CEG",
+      "type": "safe_buy",
+      "ticker": "CEG",
+      "name": "Constellation Energy",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.968Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 299.69,
+        "safeBuyPrice": 224.4,
+        "currentSafety": 47.2,
+        "discountPct": 25.1,
+        "safetyProbability": 74,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值回归支撑"
+        ],
+        "reasoning": "中等安全性（74%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值回归支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_IONQ",
+      "type": "safe_buy",
+      "ticker": "IONQ",
+      "name": "IonQ",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.969Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 56.89,
+        "safeBuyPrice": 37.09,
+        "currentSafety": 23.5,
+        "discountPct": 34.8,
+        "safetyProbability": 76.1,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格"
+        ],
+        "reasoning": "中等安全性（76%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_LLY",
+      "type": "safe_buy",
+      "ticker": "LLY",
+      "name": "礼来",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.970Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 966.99,
+        "safeBuyPrice": 864.32,
+        "currentSafety": 48.6,
+        "discountPct": 10.6,
+        "safetyProbability": 81.5,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值回归支撑"
+        ],
+        "reasoning": "高安全性（81%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值回归支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_NIO",
+      "type": "safe_buy",
+      "ticker": "NIO",
+      "name": "蔚来",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.970Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 6.07,
+        "safeBuyPrice": 5.2,
+        "currentSafety": 61.1,
+        "discountPct": 14.3,
+        "safetyProbability": 76,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格"
+        ],
+        "reasoning": "中等安全性（76%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_XPEV",
+      "type": "safe_buy",
+      "ticker": "XPEV",
+      "name": "小鹏",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.971Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 16.15,
+        "safeBuyPrice": 13.74,
+        "currentSafety": 61.1,
+        "discountPct": 14.9,
+        "safetyProbability": 73.8,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格"
+        ],
+        "reasoning": "中等安全性（74%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_VST",
+      "type": "safe_buy",
+      "ticker": "VST",
+      "name": "Vistra",
+      "group": "portfolio",
+      "createdAt": "2026-05-12T06:13:57.971Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 152.05,
+        "safeBuyPrice": 137.18,
+        "currentSafety": 69.9,
+        "discountPct": 9.8,
+        "safetyProbability": 71.5,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格",
+          "估值支撑"
+        ],
+        "reasoning": "中等安全性（71%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值支撑，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_QQQ",
+      "type": "safe_buy",
+      "ticker": "QQQ",
+      "name": "纳指100 ETF",
+      "group": "etf",
+      "createdAt": "2026-05-12T06:13:57.972Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 713.29,
+        "safeBuyPrice": 640.12,
+        "currentSafety": 19.8,
+        "discountPct": 10.3,
+        "safetyProbability": 67.4,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格"
+        ],
+        "reasoning": "偏低安全性（67%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_KWEB",
+      "type": "safe_buy",
+      "ticker": "KWEB",
+      "name": "中概互联ETF",
+      "group": "etf",
+      "createdAt": "2026-05-12T06:13:57.973Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 29.59,
+        "safeBuyPrice": 26.12,
+        "currentSafety": 51.3,
+        "discountPct": 11.7,
+        "safetyProbability": 79.2,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格"
+        ],
+        "reasoning": "中等安全性（79%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_SMH",
+      "type": "safe_buy",
+      "ticker": "SMH",
+      "name": "半导体ETF",
+      "group": "etf",
+      "createdAt": "2026-05-12T06:13:57.973Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 576.31,
+        "safeBuyPrice": 477.48,
+        "currentSafety": 19.8,
+        "discountPct": 17.1,
+        "safetyProbability": 70.1,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格"
+        ],
+        "reasoning": "中等安全性（70%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "safebuy_20260512_ARKK",
+      "type": "safe_buy",
+      "ticker": "ARKK",
+      "name": "创新成长ETF",
+      "group": "etf",
+      "createdAt": "2026-05-12T06:13:57.974Z",
+      "targetDate": "2026-05-13",
+      "prediction": {
+        "direction": "down",
+        "currentPrice": 80.03,
+        "safeBuyPrice": 70.66,
+        "currentSafety": 34.7,
+        "discountPct": 11.7,
+        "safetyProbability": 74.2,
+        "methods": [
+          "布林带统计支撑",
+          "历史回撤支撑",
+          "RSI标准化价格"
+        ],
+        "reasoning": "中等安全性（74%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    }
+  ],
+  "corrections": []
+}

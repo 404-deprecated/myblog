@@ -8,6 +8,8 @@ import MacroScorePanel from '@/components/MacroScorePanel'
 import { GoldAnalysis } from '@/components/GoldAnalysis'
 import { InteractiveChart, type ChartEvent, type ChartPoint } from '@/components/InteractiveChart'
 import { PredictionReview } from '@/components/PredictionReview'
+import { SafeBuyAnalysis } from '@/components/SafeBuyAnalysis'
+import { ReviewDashboard } from '@/components/ReviewDashboard'
 
 // ─── 纳斯达克综合指数月度收盘（2016-01 ~ 2026-05）────────────────────────────
 const NASDAQ_DATA = [
@@ -388,7 +390,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
-type TabId = 'market' | 'stocks' | 'sectors' | 'fund' | 'gold' | 'review'
+type TabId = 'market' | 'stocks' | 'sectors' | 'fund' | 'gold' | 'review' | 'safebuy'
 const TABS: { id: TabId; label: string }[] = [
   { id: 'market',  label: '大盘分析' },
   { id: 'stocks',  label: '个股分析' },
@@ -396,6 +398,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'fund',    label: '基金工具' },
   { id: 'gold',    label: '黄金分析' },
   { id: 'review',  label: '预测复盘' },
+  { id: 'safebuy', label: '安全买入' },
 ]
 
 // ─── 主组件 ────────────────────────────────────────────────────────────────────
@@ -825,9 +828,26 @@ export default function MarketDashboard() {
 
       {/* ── Tab 6：预测复盘 ─────────────────────────────────────────────────── */}
       {activeTab === 'review' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <section>
+            <SectionLabel>复盘仪表盘 · 准确率统计 · 纠错建议 · 趋势追踪</SectionLabel>
+            <ReviewDashboard />
+          </section>
+
+          <div style={{ borderTop: '1px solid var(--border)' }} />
+
+          <section>
+            <SectionLabel>每日预测 · 生成 & 管理</SectionLabel>
+            <PredictionReview />
+          </section>
+        </div>
+      )}
+
+      {/* ── Tab 7：安全买入 ─────────────────────────────────────────────────── */}
+      {activeTab === 'safebuy' && (
         <section>
-          <SectionLabel>每日预测 · 自动复盘 · 准确率追踪</SectionLabel>
-          <PredictionReview />
+          <SectionLabel>安全买入价格分析 · 多方法交叉验证 · 回测准确率</SectionLabel>
+          <SafeBuyAnalysis />
         </section>
       )}
 
