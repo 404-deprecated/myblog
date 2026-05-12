@@ -5,6 +5,7 @@ import { readFile, writeFile, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { logPrediction } from '@/lib/review-store'
+import { loadTunedParams, detectRegime, applyRegimeAdjustments } from '@/lib/auto-tune'
 
 export const dynamic = 'force-dynamic'
 const execAsync = promisify(exec)
@@ -352,6 +353,16 @@ export async function POST() {
 
   const macroScore = await getMacroScore()
 
+  // Load self-tuned parameters
+  const params = await loadTunedParams()
+
+  // Detect market regime from VIX approximation and recent trend
+  const nasdaqPrices = await fetchPrices('^IXIC')
+  const nasdaqTech = nasdaqPrices.length >= 14 ? calcTechnicals(nasdaqPrices) : null
+  const trendStrength = nasdaqTech ? nasdaqTech.bullPct - 50 : 0
+  const regime = detectRegime(20, trendStrength) // VIX ≈ 20 default when FRED down
+  const regimeAdj = applyRegimeAdjustments(params, regime)
+
   // Fetch all prices in parallel to keep latency reasonable
   const priceResults = new Map<string, { d: string; p: number }[]>()
   await Promise.allSettled(
@@ -368,9 +379,17 @@ export async function POST() {
     const tech = calcTechnicals(prices)
     if (!tech) continue
 
-    const combined = Math.round(tech.bullPct * 0.6 + macroScore * 0.4)
-    const dir: PredDir = combined > 55 ? 'up' : combined < 45 ? 'down' : 'flat'
-    const confidence = Math.min(88, Math.round(Math.abs(combined - 50) * 2 + 52))
+    // Use tuned weights and thresholds
+    const techW = regimeAdj.techWeight
+    const macroW = 1 - techW
+    const combined = Math.round(tech.bullPct * techW + macroScore * macroW)
+
+    const dir: PredDir =
+      combined > params.bullThreshold ? 'up' :
+      combined < params.bearThreshold ? 'down' : 'flat'
+
+    const rawConfidence = Math.round(Math.abs(combined - 50) * params.confidenceScale + params.confidenceBase)
+    const confidence = Math.min(params.maxConfidence, rawConfidence) + (regimeAdj.confidenceAdjust)
 
     const bias = dir === 'up' ? 0.003 : dir === 'down' ? -0.003 : 0
     const center = tech.price * (1 + bias)

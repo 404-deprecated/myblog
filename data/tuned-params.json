@@ -1,0 +1,46 @@
+{
+  "tunedAt": "2026-05-12T17:07:04.692Z",
+  "basedOnSamples": 0,
+  "overallAccuracy": 0,
+  "techWeight": 0.6,
+  "macroWeight": 0.4,
+  "confidenceBase": 52,
+  "confidenceScale": 2,
+  "maxConfidence": 88,
+  "smaFast": 5,
+  "smaSlow": 20,
+  "rsiMin": 45,
+  "rsiMax": 72,
+  "bullThreshold": 55,
+  "bearThreshold": 45,
+  "momentumWeight": 0.15,
+  "rsiWeight": 0.2,
+  "regimeAdjustments": {
+    "bull": {
+      "techDelta": 0,
+      "confDelta": -5
+    },
+    "bear": {
+      "techDelta": 0,
+      "confDelta": -10
+    },
+    "volatile": {
+      "techDelta": -0.05,
+      "confDelta": -15
+    },
+    "sideways": {
+      "techDelta": 0,
+      "confDelta": 0
+    }
+  },
+  "safeBuyWeights": {
+    "bollinger": 0.35,
+    "drawdown": 0.3,
+    "rsi": 0.15,
+    "valuation": 0.2,
+    "goldMacro": 0.2
+  },
+  "previousAccuracy": 0,
+  "improvement": 0,
+  "adjustmentLog": []
+}

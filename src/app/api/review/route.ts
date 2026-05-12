@@ -5,6 +5,7 @@ import {
   readReviewStore, writeReviewStore, reviewPending, computeStats, generateCorrections,
   logPrediction, type ReviewRecord, type ReviewType, type ReviewGroup,
 } from '@/lib/review-store'
+import { autoTune } from '@/lib/auto-tune'
 
 export const dynamic = 'force-dynamic'
 const execAsync = promisify(exec)
@@ -81,8 +82,22 @@ export async function GET(req: Request) {
   const stats = computeStats(updatedStore.records)
   const corrections = generateCorrections(updatedStore)
 
+  // Auto-tune prediction parameters based on review data
+  let tunedParams = null
+  try {
+    tunedParams = await autoTune()
+  } catch { /* non-critical */ }
+
   return NextResponse.json(
-    { stats, corrections, correctionsHistory: updatedStore.corrections.slice(-10), lastReviewCount: reviewed },
+    {
+      stats, corrections,
+      correctionsHistory: updatedStore.corrections.slice(-10),
+      lastReviewCount: reviewed,
+      ...(tunedParams?.adjustmentLog?.length ? {
+        lastTune: tunedParams.tunedAt,
+        tuneAdjustments: tunedParams.adjustmentLog.slice(-3),
+      } : {}),
+    },
     { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } },
   )
 }

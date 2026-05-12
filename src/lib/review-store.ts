@@ -176,16 +176,31 @@ function evaluatePrediction(record: ReviewRecord): {
       const correct = predDir === actualDir
 
       if (correct) {
+        // Deterministic accuracy: how close was the predicted range to actual?
+        const predLow = (pred.targetLow as number) ?? 0
+        const predHigh = (pred.targetHigh as number) ?? 0
+        const actualPrice = actual.price ?? 0
+        let accuracy = 70 // base for direction-correct
+        if (predLow > 0 && predHigh > 0 && actualPrice > 0) {
+          const inRange = actualPrice >= predLow && actualPrice <= predHigh
+          if (inRange) {
+            accuracy = 90 // direction + in range = excellent
+          } else if (Math.abs(actualPrice - predHigh) / actualPrice < 0.02
+                  || Math.abs(actualPrice - predLow) / actualPrice < 0.02) {
+            accuracy = 80 // near range edge
+          }
+        }
         return {
-          result: 'correct', accuracy: 85 + Math.round(Math.random() * 15),
+          result: 'correct', accuracy,
           postMortem: '',
           correctionHint: '',
-          suggestedFix: '方向判断正确，维持当前模型参数。',
+          suggestedFix: '方向判断正确。',
         }
       }
 
-      // Wrong direction
+      // Wrong direction — deterministic accuracy based on magnitude
       const mag = Math.abs(actual.changePct)
+      const accuracy = Math.max(10, 55 - Math.round(mag * 4))
       const degree = mag > 3 ? '大幅' : mag > 1.5 ? '明显' : '小幅'
       let postMortem: string
       let correctionHint: string
@@ -207,8 +222,8 @@ function evaluatePrediction(record: ReviewRecord): {
         suggestedFix = '增加短期动量（3-5日）权重，捕捉趋势延续信号。'
       }
 
-      const accuracy = Math.max(10, 60 - Math.round(mag * 5))
-      return { result: 'incorrect', accuracy, postMortem, correctionHint, suggestedFix }
+      const wrongAccuracy = Math.max(10, 55 - Math.round(mag * 4))
+      return { result: 'incorrect', accuracy: wrongAccuracy, postMortem, correctionHint, suggestedFix }
     }
 
     case 'gold_zone': {
@@ -220,7 +235,7 @@ function evaluatePrediction(record: ReviewRecord): {
 
       if ((isBullZone && actualUp) || (isBearZone && !actualUp) || (!isBullZone && !isBearZone)) {
         return {
-          result: 'correct', accuracy: 80 + Math.round(Math.random() * 15),
+          result: 'correct', accuracy: 78,
           postMortem: '', correctionHint: '', suggestedFix: '黄金区域判断与价格走势一致。',
         }
       }
