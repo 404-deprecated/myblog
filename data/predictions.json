@@ -1,0 +1,143 @@
+{
+  "daily": [
+    {
+      "id": "20260512_IXIC",
+      "ticker": "^IXIC",
+      "name": "纳斯达克",
+      "type": "index",
+      "currency": "USD",
+      "createdAt": "2026-05-12T03:20:25.719Z",
+      "targetDate": "2026-05-13",
+      "currentPrice": 26274.13,
+      "predictedDirection": "up",
+      "bullPct": 76,
+      "confidence": 88,
+      "targetLow": 26176.04,
+      "targetHigh": 26529.86,
+      "reasoning": "看涨76%：SMA5在SMA20上方（多头排列）；RSI 82.9 超买警告；5日动量 +4.81%；宏观 69%（偏多）。技术×60% + 宏观×40% = 76%",
+      "keyRisks": [
+        "RSI 82.9 超买，回调压力存在",
+        "5日累涨跌幅 4.81%，均值回归压力",
+        "突发新闻/数据公布可能令预测失效"
+      ],
+      "technicalScore": 80,
+      "macroScore": 69,
+      "result": "pending"
+    },
+    {
+      "id": "20260512_000001SS",
+      "ticker": "000001.SS",
+      "name": "上证指数",
+      "type": "index",
+      "currency": "CNY",
+      "createdAt": "2026-05-12T03:20:26.763Z",
+      "targetDate": "2026-05-13",
+      "currentPrice": 4221.92,
+      "predictedDirection": "up",
+      "bullPct": 76,
+      "confidence": 88,
+      "targetLow": 4218.19,
+      "targetHigh": 4250.97,
+      "reasoning": "看涨76%：SMA5在SMA20上方（多头排列）；RSI 84.8 超买警告；5日动量 +2.67%；宏观 69%（偏多）。技术×60% + 宏观×40% = 76%",
+      "keyRisks": [
+        "RSI 84.8 超买，回调压力存在",
+        "突发新闻/数据公布可能令预测失效"
+      ],
+      "technicalScore": 80,
+      "macroScore": 69,
+      "result": "pending"
+    },
+    {
+      "id": "20260512_NVDA",
+      "ticker": "NVDA",
+      "name": "英伟达",
+      "type": "stock",
+      "currency": "USD",
+      "createdAt": "2026-05-12T03:20:27.709Z",
+      "targetDate": "2026-05-13",
+      "currentPrice": 219.44,
+      "predictedDirection": "up",
+      "bullPct": 88,
+      "confidence": 88,
+      "targetLow": 216.13,
+      "targetHigh": 224.07,
+      "reasoning": "看涨88%：SMA5在SMA20上方（多头排列）；RSI 64.9 中性；5日动量 +10.56%；宏观 69%（偏多）。技术×60% + 宏观×40% = 88%",
+      "keyRisks": [
+        "5日累涨跌幅 10.56%，均值回归压力",
+        "突发新闻/数据公布可能令预测失效"
+      ],
+      "technicalScore": 100,
+      "macroScore": 69,
+      "result": "pending"
+    },
+    {
+      "id": "20260512_0700HK",
+      "ticker": "0700.HK",
+      "name": "腾讯控股",
+      "type": "stock",
+      "currency": "HKD",
+      "createdAt": "2026-05-12T03:20:28.706Z",
+      "targetDate": "2026-05-13",
+      "currentPrice": 463.8,
+      "predictedDirection": "down",
+      "bullPct": 43,
+      "confidence": 66,
+      "targetLow": 456.41,
+      "targetHigh": 468.41,
+      "reasoning": "看跌43%：SMA5跌破SMA20（空头排列）；RSI 23.8 超卖反弹；5日动量 -1.78%；宏观 69%（偏多）。技术×60% + 宏观×40% = 43%",
+      "keyRisks": [
+        "RSI 23.8 超卖，可能继续探底",
+        "突发新闻/数据公布可能令预测失效"
+      ],
+      "technicalScore": 25,
+      "macroScore": 69,
+      "result": "pending"
+    },
+    {
+      "id": "20260512_ORCL",
+      "ticker": "ORCL",
+      "name": "甲骨文",
+      "type": "stock",
+      "currency": "USD",
+      "createdAt": "2026-05-12T03:20:29.629Z",
+      "targetDate": "2026-05-13",
+      "currentPrice": 193.84,
+      "predictedDirection": "up",
+      "bullPct": 88,
+      "confidence": 88,
+      "targetLow": 190.3,
+      "targetHigh": 198.55,
+      "reasoning": "看涨88%：SMA5在SMA20上方（多头排列）；RSI 59.2 中性；5日动量 +7.52%；宏观 69%（偏多）。技术×60% + 宏观×40% = 88%",
+      "keyRisks": [
+        "5日累涨跌幅 7.52%，均值回归压力",
+        "突发新闻/数据公布可能令预测失效"
+      ],
+      "technicalScore": 100,
+      "macroScore": 69,
+      "result": "pending"
+    },
+    {
+      "id": "20260512_PDD",
+      "ticker": "PDD",
+      "name": "拼多多",
+      "type": "stock",
+      "currency": "USD",
+      "createdAt": "2026-05-12T03:20:30.593Z",
+      "targetDate": "2026-05-13",
+      "currentPrice": 98.8,
+      "predictedDirection": "flat",
+      "bullPct": 49,
+      "confidence": 54,
+      "targetLow": 97.32,
+      "targetHigh": 100.28,
+      "reasoning": "震荡49%：SMA5跌破SMA20（空头排列）；RSI 49.5 中性；5日动量 +1.03%；宏观 69%（偏多）。技术×60% + 宏观×40% = 49%",
+      "keyRisks": [
+        "突发新闻/数据公布可能令预测失效"
+      ],
+      "technicalScore": 35,
+      "macroScore": 69,
+      "result": "pending"
+    }
+  ],
+  "earnings": []
+}

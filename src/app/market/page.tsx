@@ -7,6 +7,7 @@ import { PortfolioWatchlist } from '@/components/PortfolioWatchlist'
 import MacroScorePanel from '@/components/MacroScorePanel'
 import { GoldAnalysis } from '@/components/GoldAnalysis'
 import { InteractiveChart, type ChartEvent, type ChartPoint } from '@/components/InteractiveChart'
+import { PredictionReview } from '@/components/PredictionReview'
 
 // ─── 纳斯达克综合指数月度收盘（2016-01 ~ 2026-05）────────────────────────────
 const NASDAQ_DATA = [
@@ -327,13 +328,14 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
-type TabId = 'market' | 'stocks' | 'sectors' | 'fund' | 'gold'
+type TabId = 'market' | 'stocks' | 'sectors' | 'fund' | 'gold' | 'review'
 const TABS: { id: TabId; label: string }[] = [
   { id: 'market',  label: '大盘分析' },
   { id: 'stocks',  label: '个股分析' },
   { id: 'sectors', label: '赛道估值' },
   { id: 'fund',    label: '基金工具' },
   { id: 'gold',    label: '黄金分析' },
+  { id: 'review',  label: '预测复盘' },
 ]
 
 // ─── 主组件 ────────────────────────────────────────────────────────────────────
@@ -741,6 +743,14 @@ export default function MarketDashboard() {
         <section>
           <SectionLabel>黄金 · 价格 · 宏观驱动因子 · 配置建议</SectionLabel>
           <GoldAnalysis />
+        </section>
+      )}
+
+      {/* ── Tab 6：预测复盘 ─────────────────────────────────────────────────── */}
+      {activeTab === 'review' && (
+        <section>
+          <SectionLabel>每日预测 · 自动复盘 · 准确率追踪</SectionLabel>
+          <PredictionReview />
         </section>
       )}
 
