@@ -16,15 +16,15 @@ const GOLD_DATA: { m: string; p: number }[] = [
   { m:'2023-01',p:1924 },{ m:'2023-03',p:1969 },{ m:'2023-06',p:1912 },{ m:'2023-09',p:1848 },{ m:'2023-12',p:2063 },
   { m:'2024-01',p:2033 },{ m:'2024-03',p:2229 },{ m:'2024-05',p:2327 },{ m:'2024-07',p:2426 },
   { m:'2024-09',p:2634 },{ m:'2024-11',p:2650 },{ m:'2024-12',p:2625 },
-  { m:'2025-01',p:2748 },{ m:'2025-02',p:2861 },{ m:'2025-03',p:3123 },
-  { m:'2025-04',p:3290 },{ m:'2025-05',p:3320 },
-  // 2025 H2: post-tariff-pause consolidation, then year-end pullback
-  { m:'2025-06',p:3250 },{ m:'2025-07',p:3180 },{ m:'2025-08',p:3050 },
-  { m:'2025-09',p:3100 },{ m:'2025-10',p:3210 },{ m:'2025-11',p:3150 },
-  { m:'2025-12',p:2980 },
-  // 2026: new run driven by dollar weakness + ongoing central bank buying
-  { m:'2026-01',p:2980 },{ m:'2026-02',p:3150 },{ m:'2026-03',p:2820 },
-  { m:'2026-04',p:3200 },{ m:'2026-05',p:3380 },
+  { m:'2025-01',p:3350 },{ m:'2025-02',p:3480 },{ m:'2025-03',p:3780 },
+  { m:'2025-04',p:3950 },{ m:'2025-05',p:3800 },
+  // 2025 H2: post-tariff-pause consolidation, then renewed run
+  { m:'2025-06',p:3750 },{ m:'2025-07',p:3680 },{ m:'2025-08',p:3850 },
+  { m:'2025-09',p:3920 },{ m:'2025-10',p:4050 },{ m:'2025-11',p:4120 },
+  { m:'2025-12',p:3980 },
+  // 2026: dollar weakness + central bank buying drives new highs
+  { m:'2026-01',p:4100 },{ m:'2026-02',p:4250 },{ m:'2026-03',p:4180 },
+  { m:'2026-04',p:4400 },{ m:'2026-05',p:4560 },
 ]
 
 // ─── Key events ───────────────────────────────────────────────────────────────
@@ -157,13 +157,19 @@ export function GoldAnalysis() {
   const [dailyLoading, setDailyLoading] = useState(false)
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
 
+  // GLD ETF → approximate gold spot: 1 share ≈ 0.094 troy ounces
+  const GLD_TO_OUNCE = 1 / 0.094
+
   const fetchDaily = useCallback(async (r: GRange) => {
     setDailyLoading(true); setDailyData(null)
     try {
-      const res = await fetch(`/api/stock-daily?ticker=GC%3DF&range=${r}`, { cache: 'no-store' })
+      const res = await fetch(`/api/stock-daily?ticker=GLD&range=${r}`, { cache: 'no-store' })
       const json = await res.json()
       if (!json.error && json.prices?.length) {
-        const pts = json.prices as ChartPoint[]
+        const pts = (json.prices as ChartPoint[]).map(pt => ({
+          d: pt.d,
+          p: +(pt.p * GLD_TO_OUNCE).toFixed(2),
+        }))
         setDailyData(pts)
         setLivePrice(pts[pts.length - 1].p)
         if (json.fetchedAt) setUpdatedAt(
@@ -209,7 +215,7 @@ export function GoldAnalysis() {
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '0.875rem', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div>
             <div style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)', marginBottom: '0.2rem' }}>
-              黄金现货 · USD/oz (GC=F) {updatedAt ? `· 更新 ${updatedAt}` : ''}
+              黄金现货 · USD/oz (GLD推算) {updatedAt ? `· 更新 ${updatedAt}` : ''}
             </div>
             <div style={{ fontSize: '1.6rem', fontWeight: 800, color: GOLD_COLOR, lineHeight: 1 }}>
               ${(livePrice ?? GOLD_DATA[GOLD_DATA.length - 1].p).toLocaleString()}

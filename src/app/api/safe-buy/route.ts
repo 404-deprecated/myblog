@@ -51,7 +51,7 @@ interface TrackedAsset {
 
 const ASSETS: TrackedAsset[] = [
   // Gold
-  { ticker: 'GOLD', yfTicker: 'GC=F', name: '黄金现货', type: 'gold', currency: 'USD' },
+  { ticker: 'GOLD', yfTicker: 'GLD', name: '黄金现货', type: 'gold', currency: 'USD' },
   // Indices
   { ticker: '^IXIC', yfTicker: '^IXIC', name: '纳斯达克', type: 'index', currency: 'USD' },
   { ticker: '000001.SS', yfTicker: '000001.SS', name: '上证指数', type: 'index', currency: 'CNY' },
@@ -592,8 +592,17 @@ export async function GET() {
     })
   )
 
+  // GLD ETF → approximate gold spot (USD/oz): 1 GLD share ≈ 0.094 troy ounces
+  const GLD_TO_OUNCE = 1 / 0.094  // ≈ 10.64
+
   for (const asset of ASSETS) {
-    const prices = priceResults.get(asset.ticker) ?? []
+    let prices = priceResults.get(asset.ticker) ?? []
+
+    // Convert GLD prices to approximate USD/oz for display
+    if (asset.ticker === 'GOLD') {
+      prices = prices.map(pt => ({ d: pt.d, p: +(pt.p * GLD_TO_OUNCE).toFixed(2) }))
+    }
+
     if (prices.length < 14) {
       // Insufficient data — still include with partial analysis
       if (prices.length >= 2) {

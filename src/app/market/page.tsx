@@ -851,6 +851,43 @@ export default function MarketDashboard() {
         </section>
       )}
 
+      {/* ── 数据源说明 ── */}
+      <div style={{
+        marginTop: '3rem', padding: '1rem 1.25rem', borderRadius: '10px',
+        border: '1px solid var(--border)', backgroundColor: 'var(--bg-secondary)',
+        fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: 1.7,
+      }}>
+        <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: '0.5rem', fontSize: '0.75rem' }}>
+          数据源与准确性说明
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.5rem' }}>
+          <div>
+            <strong style={{ color: 'var(--text)' }}>实时行情</strong> — Yahoo Finance（美股/港股/A股/ETF/黄金GLD）<br/>
+            <span style={{ opacity: 0.6 }}>延迟约15分钟，仅交易时段更新。黄金价格由GLD ETF换算（1份≈0.094盎司）。</span>
+          </div>
+          <div>
+            <strong style={{ color: 'var(--text)' }}>宏观经济数据</strong> — FRED（美联储经济数据库）<br/>
+            <span style={{ opacity: 0.6 }}>部分指标可能有1-2周滞后。FRED不可用时自动降级为静态估算值。</span>
+          </div>
+          <div>
+            <strong style={{ color: 'var(--text)' }}>股票基本面</strong> — 手动维护<br/>
+            <span style={{ opacity: 0.6 }}>PE/PEG/增速/财报日期来自公开财报，不定期更新，可能有滞后。</span>
+          </div>
+          <div>
+            <strong style={{ color: 'var(--text)' }}>历史月度数据</strong> — 手动估算<br/>
+            <span style={{ opacity: 0.6 }}>用于长期趋势和SMA计算。近1年由Yahoo实时数据覆盖。</span>
+          </div>
+          <div>
+            <strong style={{ color: 'var(--text)' }}>AI分析</strong> — MiniMax API<br/>
+            <span style={{ opacity: 0.6 }}>基金分析和截图分析由AI生成，不保证准确性。</span>
+          </div>
+          <div>
+            <strong style={{ color: 'var(--text)' }}>预测模型</strong> — 统计模型 + 技术指标<br/>
+            <span style={{ opacity: 0.6 }}>基于SMA/RSI/布林带等指标，历史回测准确率供参考，不构成投资建议。</span>
+          </div>
+        </div>
+      </div>
+
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
       `}</style>
