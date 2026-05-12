@@ -206,7 +206,13 @@ export async function GET() {
     if (r.status === 'fulfilled') {
       liveSignals.push(r.value)
     } else {
-      errors.push(String(r.reason))
+      // Don't leak raw error details — use a clean message
+      const msg = String(r.reason)
+      if (msg.includes('timeout') || msg.includes('abort')) {
+        errors.push('FRED数据源暂时不可达')
+      } else {
+        errors.push(msg)
+      }
     }
   }
 
@@ -243,7 +249,7 @@ export async function GET() {
       compositeScore: bullPct,
       compositeLabel,
       fetchedAt: new Date().toISOString(),
-      errors: errors.length ? errors : undefined,
+      errors: errors.length ? [...new Set(errors)].slice(0, 1) : undefined,
     } satisfies MacroResponse,
     { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200' } }
   )

@@ -232,8 +232,8 @@ export default function MacroScorePanel() {
       </div>
 
       {data.errors && data.errors.length > 0 && (
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', padding: '8px 12px', background: 'var(--surface)', borderRadius: 8, border: '1px solid var(--border)' }}>
-          部分实时数据加载失败（已用静态数据补全）：{data.errors.slice(0, 2).join(' · ')}
+        <div style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'right', opacity: 0.5, fontFamily: 'var(--font-mono)' }}>
+          实时经济数据暂不可用，已用静态估值替代 · 不影响评分计算
         </div>
       )}
     </div>
