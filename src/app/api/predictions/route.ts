@@ -11,6 +11,7 @@ const execAsync = promisify(exec)
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type PredDir = 'up' | 'down' | 'flat'
 export type PredResult = 'correct' | 'incorrect' | 'pending'
+export type PredGroup = 'portfolio' | 'sector' | 'fund'
 
 export interface DailyPrediction {
   id: string
@@ -18,12 +19,14 @@ export interface DailyPrediction {
   name: string
   type: 'index' | 'stock'
   currency: string
+  group: PredGroup
+  sectorName?: string        // for sector group — which sector this represents
   createdAt: string
-  targetDate: string        // YYYY-MM-DD being predicted
+  targetDate: string
   currentPrice: number
   predictedDirection: PredDir
-  bullPct: number           // 0-100
-  confidence: number        // 0-100
+  bullPct: number
+  confidence: number
   targetLow: number
   targetHigh: number
   reasoning: string
@@ -83,7 +86,7 @@ async function writeStore(store: PredictionStore): Promise<void> {
   await writeFile(DATA_FILE, JSON.stringify(store, null, 2), 'utf-8')
 }
 
-// ─── Price fetch (same curl pattern as stock-daily) ───────────────────────────
+// ─── Price fetch ──────────────────────────────────────────────────────────────
 async function fetchPrices(ticker: string): Promise<{ d: string; p: number }[]> {
   const enc = encodeURIComponent(ticker)
   for (const host of ['query2', 'query1']) {
@@ -127,11 +130,9 @@ function calcTechnicals(prices: { d: string; p: number }[]) {
   const mom5  = v.length >= 6  ? +((v[v.length-1]/v[v.length-6]  - 1)*100).toFixed(2) : 0
   const mom20 = v.length >= 21 ? +((v[v.length-1]/v[v.length-21] - 1)*100).toFixed(2) : 0
 
-  // ATR-like: avg daily range last 10 sessions
   const r10 = v.slice(-10)
   const atrAbs = r10.reduce((s, x, i) => i === 0 ? 0 : s + Math.abs(x - r10[i-1]), 0) / 9
 
-  // Weighted bull score
   const signals = [
     { bull: s5 > (s20 ?? s5 - 1), w: 0.30 },
     ...(s20 ? [{ bull: s20 > (s60 ?? s20 - 1), w: 0.25 }] : []),
@@ -208,13 +209,43 @@ function buildPostMortem(pred: DailyPrediction, changeP: number): string {
 }
 
 // ─── Tracked assets ───────────────────────────────────────────────────────────
-const TRACKED = [
-  { ticker: '^IXIC',      name: '纳斯达克',  type: 'index' as const, currency: 'USD' },
-  { ticker: '000001.SS',  name: '上证指数',  type: 'index' as const, currency: 'CNY' },
-  { ticker: 'NVDA',       name: '英伟达',    type: 'stock' as const, currency: 'USD' },
-  { ticker: '0700.HK',    name: '腾讯控股',  type: 'stock' as const, currency: 'HKD' },
-  { ticker: 'ORCL',       name: '甲骨文',    type: 'stock' as const, currency: 'USD' },
-  { ticker: 'PDD',        name: '拼多多',    type: 'stock' as const, currency: 'USD' },
+interface TrackedAsset {
+  ticker: string
+  name: string
+  type: 'index' | 'stock'
+  currency: string
+  group: PredGroup
+  sectorName?: string
+}
+
+const TRACKED: TrackedAsset[] = [
+  // ── 持仓股 (portfolio) ──────────────────────────────────────────────────────
+  { ticker: '^IXIC',      name: '纳斯达克',  type: 'index',  currency: 'USD', group: 'portfolio' },
+  { ticker: '000001.SS',  name: '上证指数',  type: 'index',  currency: 'CNY', group: 'portfolio' },
+  { ticker: 'NVDA',       name: '英伟达',    type: 'stock',  currency: 'USD', group: 'portfolio' },
+  { ticker: '0700.HK',    name: '腾讯控股',  type: 'stock',  currency: 'HKD', group: 'portfolio' },
+  { ticker: 'ORCL',       name: '甲骨文',    type: 'stock',  currency: 'USD', group: 'portfolio' },
+  { ticker: 'PDD',        name: '拼多多',    type: 'stock',  currency: 'USD', group: 'portfolio' },
+
+  // ── 赛道代表股 (sector) ─────────────────────────────────────────────────────
+  { ticker: 'AMD',        name: 'AMD',       type: 'stock',  currency: 'USD', group: 'sector', sectorName: 'AI基础设施' },
+  { ticker: 'AVGO',       name: '博通',      type: 'stock',  currency: 'USD', group: 'sector', sectorName: 'AI基础设施' },
+  { ticker: 'MSFT',       name: '微软',      type: 'stock',  currency: 'USD', group: 'sector', sectorName: 'AI企业软件' },
+  { ticker: 'META',       name: 'Meta',      type: 'stock',  currency: 'USD', group: 'sector', sectorName: 'AI企业软件' },
+  { ticker: 'TSLA',       name: '特斯拉',    type: 'stock',  currency: 'USD', group: 'sector', sectorName: '具身智能' },
+  { ticker: 'CEG',        name: 'Constellation Energy', type: 'stock', currency: 'USD', group: 'sector', sectorName: 'AI能源/核能' },
+  { ticker: 'VST',        name: 'Vistra',    type: 'stock',  currency: 'USD', group: 'sector', sectorName: 'AI能源/核能' },
+  { ticker: 'IONQ',       name: 'IonQ',      type: 'stock',  currency: 'USD', group: 'sector', sectorName: '量子计算' },
+  { ticker: 'LLY',        name: '礼来',      type: 'stock',  currency: 'USD', group: 'sector', sectorName: 'AI生物医药' },
+  { ticker: 'NIO',        name: '蔚来',      type: 'stock',  currency: 'USD', group: 'sector', sectorName: '新能源汽车' },
+  { ticker: 'XPEV',       name: '小鹏',      type: 'stock',  currency: 'USD', group: 'sector', sectorName: '新能源汽车' },
+
+  // ── 基金代理ETF (fund) ──────────────────────────────────────────────────────
+  // 对应基金工具中的预设基金，通过可交易ETF代理涨跌趋势
+  { ticker: 'QQQ',        name: '纳指100 ETF',    type: 'stock', currency: 'USD', group: 'fund', sectorName: '美国成长/科技' },
+  { ticker: 'KWEB',       name: '中概互联网 ETF',  type: 'stock', currency: 'USD', group: 'fund', sectorName: '中概互联/港股' },
+  { ticker: 'SMH',        name: '半导体 ETF',      type: 'stock', currency: 'USD', group: 'fund', sectorName: 'AI基础设施' },
+  { ticker: 'ARKK',       name: '创新成长 ETF',    type: 'stock', currency: 'USD', group: 'fund', sectorName: '创新/颠覆性科技' },
 ]
 
 // ─── Auto-review past pending predictions ────────────────────────────────────
@@ -223,10 +254,16 @@ async function autoReview(store: PredictionStore): Promise<boolean> {
   const pending = store.daily.filter(p => p.result === 'pending' && p.targetDate < today)
   if (!pending.length) return false
 
+  // Fetch prices in parallel grouped by ticker
+  const tickers = [...new Set(pending.map(p => p.ticker))]
+  const priceMap = new Map<string, { d: string; p: number }[]>()
+  await Promise.allSettled(
+    tickers.map(async t => { priceMap.set(t, await fetchPrices(t)) })
+  )
+
   let changed = false
   for (const pred of pending) {
-    const prices = await fetchPrices(pred.ticker)
-    // Find the closing price on or after targetDate
+    const prices = priceMap.get(pred.ticker) ?? []
     const pt = prices.find(p => p.d === pred.targetDate)
       ?? prices.find(p => p.d > pred.targetDate)
     if (!pt) continue
@@ -249,17 +286,20 @@ async function autoReview(store: PredictionStore): Promise<boolean> {
 // ─── Auto-review past pending earnings predictions ────────────────────────────
 async function autoReviewEarnings(store: PredictionStore): Promise<boolean> {
   const today = todayStr()
-  const pending = store.earnings.filter(
-    e => !e.result && e.earningsDate < today
-  )
+  const pending = store.earnings.filter(e => !e.result && e.earningsDate < today)
   if (!pending.length) return false
+
+  const tickers = [...new Set(pending.map(e => e.ticker))]
+  const priceMap = new Map<string, { d: string; p: number }[]>()
+  await Promise.allSettled(
+    tickers.map(async t => { priceMap.set(t, await fetchPrices(t)) })
+  )
 
   let changed = false
   for (const ep of pending) {
-    const prices = await fetchPrices(ep.ticker)
+    const prices = priceMap.get(ep.ticker) ?? []
     if (!prices.length) continue
 
-    // Price on day of earnings and day after
     const onDay  = prices.find(p => p.d === ep.earningsDate)
     const nextPt = prices.find(p => p.d > ep.earningsDate)
     const refPt  = onDay ?? nextPt
@@ -270,7 +310,6 @@ async function autoReviewEarnings(store: PredictionStore): Promise<boolean> {
       changeP > 5 ? 'strong_up' : changeP > 1.5 ? 'up' :
       changeP < -5 ? 'strong_down' : changeP < -1.5 ? 'down' : 'flat'
 
-    // Broad match: strong_up/up both count as 'up' direction
     const predDir = ep.predictedReaction.includes('up') ? 'up' : ep.predictedReaction.includes('down') ? 'down' : 'flat'
     const actualDir = actual.includes('up') ? 'up' : actual.includes('down') ? 'down' : 'flat'
 
@@ -305,16 +344,24 @@ export async function POST() {
   const today = todayStr()
   const targetDate = nextTradingDay()
 
-  // Avoid duplicates for the same calendar day
   if (store.daily.some(p => p.createdAt.startsWith(today) && p.targetDate === targetDate)) {
     return NextResponse.json({ message: '今日预测已存在', store }, { status: 200 })
   }
 
   const macroScore = await getMacroScore()
+
+  // Fetch all prices in parallel to keep latency reasonable
+  const priceResults = new Map<string, { d: string; p: number }[]>()
+  await Promise.allSettled(
+    TRACKED.map(async asset => {
+      priceResults.set(asset.ticker, await fetchPrices(asset.ticker))
+    })
+  )
+
   const newPreds: DailyPrediction[] = []
 
   for (const asset of TRACKED) {
-    const prices = await fetchPrices(asset.ticker)
+    const prices = priceResults.get(asset.ticker) ?? []
     if (!prices.length) continue
     const tech = calcTechnicals(prices)
     if (!tech) continue
@@ -323,7 +370,6 @@ export async function POST() {
     const dir: PredDir = combined > 55 ? 'up' : combined < 45 ? 'down' : 'flat'
     const confidence = Math.min(88, Math.round(Math.abs(combined - 50) * 2 + 52))
 
-    // Target range based on typical daily ATR
     const bias = dir === 'up' ? 0.003 : dir === 'down' ? -0.003 : 0
     const center = tech.price * (1 + bias)
     const { reasoning, keyRisks } = buildReasoning(tech, macroScore)
@@ -332,6 +378,8 @@ export async function POST() {
       id: `${today.replace(/-/g, '')}_${asset.ticker.replace(/[^\w]/g, '')}`,
       ticker: asset.ticker, name: asset.name,
       type: asset.type, currency: asset.currency,
+      group: asset.group,
+      ...(asset.sectorName ? { sectorName: asset.sectorName } : {}),
       createdAt: new Date().toISOString(),
       targetDate,
       currentPrice: +tech.price.toFixed(2),
@@ -348,7 +396,7 @@ export async function POST() {
     })
   }
 
-  store.daily.unshift(...newPreds)  // newest first
+  store.daily.unshift(...newPreds)
   await writeStore(store)
   return NextResponse.json({ generated: newPreds.length, store })
 }

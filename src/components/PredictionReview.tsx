@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import type { DailyPrediction, EarningsPrediction, PredictionStore, PredDir } from '@/app/api/predictions/route'
+import type { DailyPrediction, EarningsPrediction, PredictionStore, PredDir, PredGroup } from '@/app/api/predictions/route'
 
 // ─── Upcoming earnings (manually maintained) ──────────────────────────────────
 const UPCOMING_EARNINGS: Omit<EarningsPrediction, 'id' | 'createdAt' | 'priceAtCreation'>[] = [
@@ -33,11 +33,54 @@ const UPCOMING_EARNINGS: Omit<EarningsPrediction, 'id' | 'createdAt' | 'priceAtC
     keyFactors: ['OCI收入增速', '积压订单RPO', 'AI合作生态进展'],
     expectedEPS: '约 $1.75–1.90',
   },
+  {
+    ticker: 'MSFT', name: '微软', earningsDate: '2026-04-30', season: 'Q3 FY2026',
+    predictedReaction: 'up', confidence: 70,
+    reasoning: 'Azure AI服务加速渗透，Copilot商业化付费转化率持续提升，Office 365 ARPU拉动营收质量上升。企业AI支出周期确定性强。',
+    keyFactors: ['Azure AI收入占比', 'Copilot付费用户增速', '企业软件续约率'],
+    expectedEPS: '约 $3.45–3.65',
+  },
+  {
+    ticker: 'META', name: 'Meta', earningsDate: '2026-04-30', season: 'Q1 2026',
+    predictedReaction: 'up', confidence: 65,
+    reasoning: 'Advantage+广告系统AI驱动CTR持续提升，Llama生态扩张降低AI成本。Reality Labs亏损可控；Threads月活持续增长带来潜在变现机会。',
+    keyFactors: ['广告ARPU同比增速', 'Llama推理成本优化', 'Reality Labs亏损趋势'],
+    expectedEPS: '约 $5.30–5.65',
+  },
+  {
+    ticker: 'AMD', name: 'AMD', earningsDate: '2026-04-29', season: 'Q1 2026',
+    predictedReaction: 'up', confidence: 60,
+    reasoning: 'MI300X出货量超预期，AMD AI加速卡与NVIDIA形成竞争格局，超算/云计算客户多供应商策略受益。数据中心分部为关键观察点。',
+    keyFactors: ['MI300系列出货量指引', '数据中心营收占比', 'PC/游戏业务复苏节奏'],
+    expectedEPS: '约 $0.94–1.08',
+  },
+  {
+    ticker: 'LLY', name: '礼来', earningsDate: '2026-04-30', season: 'Q1 2026',
+    predictedReaction: 'up', confidence: 66,
+    reasoning: 'Mounjaro/Zepbound GLP-1减肥药供应约束逐渐解除，处方量持续爆发式增长；donanemab阿尔茨海默症获批后市场渗透率是新看点。',
+    keyFactors: ['GLP-1产能爬坡进度', 'Mounjaro新适应症进展', 'donanemab处方数据'],
+    expectedEPS: '约 $3.35–3.70',
+  },
 ]
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-type SubTab = 'today' | 'history' | 'earnings' | 'stats'
+// ─── Group metadata ───────────────────────────────────────────────────────────
+const GROUP_LABEL: Record<PredGroup, string> = {
+  portfolio: '持仓股',
+  sector: '赛道股',
+  fund: '基金ETF',
+}
+const GROUP_COLOR: Record<PredGroup, string> = {
+  portfolio: '#2563eb',
+  sector: '#7c3aed',
+  fund: '#0891b2',
+}
+const GROUP_BG: Record<PredGroup, string> = {
+  portfolio: '#eff6ff',
+  sector: '#f5f3ff',
+  fund: '#ecfeff',
+}
 
+// ─── Direction helpers ────────────────────────────────────────────────────────
 const DIR_LABEL: Record<PredDir, string> = { up: '📈 看涨', down: '📉 看跌', flat: '➡️ 震荡' }
 const DIR_COLOR: Record<PredDir, string> = { up: '#16a34a', down: '#dc2626', flat: '#d97706' }
 const DIR_BG:    Record<PredDir, string> = { up: '#f0fdf4', down: '#fff1f2', flat: '#fffbeb' }
@@ -52,9 +95,7 @@ function fmtPrice(p: number, currency: string) {
   return `${sym}${p >= 1000 ? p.toLocaleString('en-US', { maximumFractionDigits: 0 }) : p.toFixed(2)}`
 }
 
-function fmtPct(p: number) {
-  return `${p >= 0 ? '+' : ''}${p.toFixed(2)}%`
-}
+function fmtPct(p: number) { return `${p >= 0 ? '+' : ''}${p.toFixed(2)}%` }
 
 function daysUntil(dateStr: string) {
   const diff = new Date(dateStr).getTime() - Date.now()
@@ -67,28 +108,39 @@ function PredCard({ pred }: { pred: DailyPrediction }) {
   const [open, setOpen] = useState(false)
   const dir = pred.predictedDirection
   const reviewed = pred.result !== 'pending'
+  const group = pred.group ?? 'portfolio'
 
   return (
     <div style={{
-      borderRadius: 10, border: `1px solid ${DIR_BD[dir]}`,
+      borderRadius: 10,
+      border: `1px solid ${DIR_BD[dir]}`,
       backgroundColor: reviewed ? (pred.result === 'correct' ? '#f0fdf4' : pred.result === 'incorrect' ? '#fff1f2' : DIR_BG[dir]) : DIR_BG[dir],
       overflow: 'hidden',
     }}>
       <div
         onClick={() => setOpen(o => !o)}
-        style={{ padding: '0.75rem 0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap' }}
+        style={{ padding: '0.75rem 0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}
       >
-        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', minWidth: 80 }}>
-          {pred.type === 'index' ? '指数' : '个股'} · {pred.currency}
+        {/* Group badge */}
+        <span style={{
+          fontSize: '0.6rem', fontWeight: 600, padding: '1px 6px', borderRadius: 10,
+          backgroundColor: GROUP_BG[group], color: GROUP_COLOR[group], border: `1px solid ${GROUP_COLOR[group]}44`,
+          flexShrink: 0,
+        }}>
+          {GROUP_LABEL[group]}
+          {pred.sectorName ? ` · ${pred.sectorName}` : ''}
         </span>
-        <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text)', flex: 1 }}>{pred.name}</span>
+        <span style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text)', flex: 1, minWidth: 60 }}>{pred.name}</span>
+        <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', flexShrink: 0 }}>
+          {pred.ticker}
+        </span>
         <span style={{ fontSize: '0.78rem', fontWeight: 700, padding: '2px 10px', borderRadius: 20,
-          backgroundColor: DIR_BG[dir], color: DIR_COLOR[dir], border: `1px solid ${DIR_BD[dir]}` }}>
+          backgroundColor: DIR_BG[dir], color: DIR_COLOR[dir], border: `1px solid ${DIR_BD[dir]}`, flexShrink: 0 }}>
           {DIR_LABEL[dir]} {pred.bullPct}%
         </span>
-        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>置信 {pred.confidence}%</span>
+        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', flexShrink: 0 }}>置信 {pred.confidence}%</span>
         {reviewed && (
-          <span style={{ fontSize: '0.7rem', fontWeight: 700,
+          <span style={{ fontSize: '0.7rem', fontWeight: 700, flexShrink: 0,
             color: pred.result === 'correct' ? '#15803d' : '#dc2626',
             backgroundColor: pred.result === 'correct' ? '#dcfce7' : '#fee2e2',
             padding: '2px 8px', borderRadius: 20 }}>
@@ -100,7 +152,6 @@ function PredCard({ pred }: { pred: DailyPrediction }) {
 
       {open && (
         <div style={{ padding: '0 0.875rem 0.875rem', borderTop: `1px solid ${DIR_BD[dir]}` }}>
-          {/* Price context */}
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', paddingTop: '0.625rem', marginBottom: '0.625rem' }}>
             <div>
               <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>预测日价格</div>
@@ -130,7 +181,6 @@ function PredCard({ pred }: { pred: DailyPrediction }) {
             )}
           </div>
 
-          {/* Score bars */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.375rem', marginBottom: '0.625rem' }}>
             {[
               { label: '技术得分', val: pred.technicalScore },
@@ -146,13 +196,11 @@ function PredCard({ pred }: { pred: DailyPrediction }) {
             ))}
           </div>
 
-          {/* Reasoning */}
           <div style={{ fontSize: '0.75rem', color: 'var(--text)', lineHeight: 1.6, marginBottom: '0.5rem',
             borderLeft: `3px solid ${DIR_COLOR[dir]}`, paddingLeft: '0.5rem' }}>
             {pred.reasoning}
           </div>
 
-          {/* Risks */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: pred.postMortem ? '0.625rem' : 0 }}>
             {pred.keyRisks.map(r => (
               <span key={r} style={{ fontSize: '0.62rem', padding: '2px 6px', borderRadius: 4,
@@ -162,7 +210,6 @@ function PredCard({ pred }: { pred: DailyPrediction }) {
             ))}
           </div>
 
-          {/* Post-mortem */}
           {pred.postMortem && (
             <div style={{ marginTop: '0.625rem', padding: '0.625rem 0.75rem', borderRadius: 8,
               backgroundColor: '#fff1f2', border: '1px solid #fca5a5' }}>
@@ -176,6 +223,31 @@ function PredCard({ pred }: { pred: DailyPrediction }) {
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+// ─── Group section ────────────────────────────────────────────────────────────
+function GroupSection({ group, preds }: { group: PredGroup; preds: DailyPrediction[] }) {
+  if (!preds.length) return null
+  return (
+    <div>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '0.5rem',
+        marginBottom: '0.5rem', paddingBottom: '0.375rem',
+        borderBottom: `1px solid ${GROUP_COLOR[group]}33`,
+      }}>
+        <span style={{
+          fontSize: '0.68rem', fontWeight: 700, padding: '2px 10px', borderRadius: 20,
+          backgroundColor: GROUP_BG[group], color: GROUP_COLOR[group],
+        }}>
+          {GROUP_LABEL[group]}
+        </span>
+        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{preds.length} 个标的</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+        {preds.map(p => <PredCard key={p.id} pred={p} />)}
+      </div>
     </div>
   )
 }
@@ -246,11 +318,21 @@ function AccuracyStats({ daily }: { daily: DailyPrediction[] }) {
   const correct  = reviewed.filter(p => p.result === 'correct')
   const overall  = reviewed.length > 0 ? Math.round(correct.length / reviewed.length * 100) : null
 
-  const byTicker = TICKER_NAMES.map(({ ticker, name }) => {
+  // By group
+  const groups: PredGroup[] = ['portfolio', 'sector', 'fund']
+  const byGroup = groups.map(g => {
+    const rows = reviewed.filter(p => (p.group ?? 'portfolio') === g)
+    const ok   = rows.filter(p => p.result === 'correct').length
+    return { group: g, total: rows.length, correct: ok, pct: rows.length > 0 ? Math.round(ok / rows.length * 100) : null }
+  })
+
+  // By ticker — deduplicate, take all unique tickers from reviewed list
+  const tickerSet = [...new Map(reviewed.map(p => [p.ticker, p.name])).entries()]
+  const byTicker = tickerSet.map(([ticker, name]) => {
     const rows = reviewed.filter(p => p.ticker === ticker)
     const ok   = rows.filter(p => p.result === 'correct').length
-    return { name, total: rows.length, correct: ok, pct: rows.length > 0 ? Math.round(ok / rows.length * 100) : null }
-  })
+    return { ticker, name, total: rows.length, correct: ok, pct: rows.length > 0 ? Math.round(ok / rows.length * 100) : null }
+  }).sort((a, b) => b.total - a.total)
 
   const byDir = (['up', 'down', 'flat'] as PredDir[]).map(dir => {
     const rows = reviewed.filter(p => p.predictedDirection === dir)
@@ -280,8 +362,27 @@ function AccuracyStats({ daily }: { daily: DailyPrediction[] }) {
             <div style={{ width: `${overall ?? 0}%`, height: '100%', background: barColor(overall), borderRadius: 5, transition: 'width 0.6s' }} />
           </div>
           <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-            {correct.length} 次正确 / {reviewed.length} 次总计
+            {correct.length} 次正确 / {reviewed.length} 次总计（持仓股 + 赛道股 + 基金ETF）
           </div>
+        </div>
+      </div>
+
+      {/* By group */}
+      <div>
+        <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.625rem', fontFamily: 'var(--font-mono)' }}>
+          各分类准确率
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+          {byGroup.filter(r => r.total > 0).map(r => (
+            <div key={r.group} style={{ padding: '0.75rem', borderRadius: 8,
+              border: `1px solid ${GROUP_COLOR[r.group]}44`, backgroundColor: GROUP_BG[r.group], textAlign: 'center' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: GROUP_COLOR[r.group], marginBottom: 4 }}>
+                {GROUP_LABEL[r.group]}
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: barColor(r.pct) }}>{r.pct ?? '--'}%</div>
+              <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>{r.correct}/{r.total}</div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -292,8 +393,9 @@ function AccuracyStats({ daily }: { daily: DailyPrediction[] }) {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
           {byTicker.filter(r => r.total > 0).map(r => (
-            <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.375rem 0.5rem', borderRadius: 6, backgroundColor: 'var(--bg-secondary)' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 600, minWidth: 72 }}>{r.name}</span>
+            <div key={r.ticker} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.375rem 0.5rem', borderRadius: 6, backgroundColor: 'var(--bg-secondary)' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, minWidth: 88 }}>{r.name}</span>
+              <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', minWidth: 64 }}>{r.ticker}</span>
               <div style={{ flex: 1, height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{ width: `${r.pct ?? 0}%`, height: '100%', background: barColor(r.pct), borderRadius: 3, transition: 'width 0.5s' }} />
               </div>
@@ -324,13 +426,13 @@ function AccuracyStats({ daily }: { daily: DailyPrediction[] }) {
       </div>
 
       {/* Recent wrong predictions */}
-      {reviewed.filter(p => p.result === 'incorrect').slice(0, 3).length > 0 && (
+      {reviewed.filter(p => p.result === 'incorrect').slice(0, 5).length > 0 && (
         <div>
           <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.625rem', fontFamily: 'var(--font-mono)' }}>
             最近错误预测摘要
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {reviewed.filter(p => p.result === 'incorrect').slice(0, 3).map(p => (
+            {reviewed.filter(p => p.result === 'incorrect').slice(0, 5).map(p => (
               <div key={p.id} style={{ padding: '0.625rem 0.75rem', borderRadius: 8, backgroundColor: '#fff1f2', border: '1px solid #fca5a5' }}>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
                   <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#991b1b' }}>{p.name}</span>
@@ -349,18 +451,13 @@ function AccuracyStats({ daily }: { daily: DailyPrediction[] }) {
   )
 }
 
-const TICKER_NAMES = [
-  { ticker: '^IXIC',     name: '纳斯达克' },
-  { ticker: '000001.SS', name: '上证指数' },
-  { ticker: 'NVDA',      name: '英伟达'   },
-  { ticker: '0700.HK',   name: '腾讯控股' },
-  { ticker: 'ORCL',      name: '甲骨文'   },
-  { ticker: 'PDD',       name: '拼多多'   },
-]
+type SubTab = 'today' | 'history' | 'earnings' | 'stats'
+type GroupFilter = 'all' | PredGroup
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function PredictionReview() {
   const [subTab, setSubTab] = useState<SubTab>('today')
+  const [groupFilter, setGroupFilter] = useState<GroupFilter>('all')
   const [store, setStore] = useState<PredictionStore | null>(null)
   const [loading, setLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
@@ -389,18 +486,32 @@ export function PredictionReview() {
     finally { setGenerating(false) }
   }, [])
 
-  // Today's predictions = generated today
   const todayStr = new Date().toISOString().slice(0, 10)
-  const todayPreds  = store?.daily.filter(p => p.createdAt.startsWith(todayStr)) ?? []
-  const historyPreds = store?.daily.filter(p => !p.createdAt.startsWith(todayStr)) ?? []
-  const pendingCount = store?.daily.filter(p => p.result === 'pending' && p.targetDate < todayStr).length ?? 0
-  const incorrectCount = store?.daily.filter(p => p.result === 'incorrect').length ?? 0
+  const allDaily = store?.daily ?? []
+  const todayPreds   = allDaily.filter(p => p.createdAt.startsWith(todayStr))
+  const historyPreds = allDaily.filter(p => !p.createdAt.startsWith(todayStr))
+  const pendingCount = allDaily.filter(p => p.result === 'pending' && p.targetDate < todayStr).length
+  const incorrectCount = allDaily.filter(p => p.result === 'incorrect').length
+
+  // Apply group filter
+  const filterByGroup = (preds: DailyPrediction[]) =>
+    groupFilter === 'all' ? preds : preds.filter(p => (p.group ?? 'portfolio') === groupFilter)
+
+  const filteredToday   = filterByGroup(todayPreds)
+  const filteredHistory = filterByGroup(historyPreds)
 
   const SUBTABS: { id: SubTab; label: string; badge?: number | string }[] = [
     { id: 'today',    label: '今日预测', badge: todayPreds.length || undefined },
     { id: 'history',  label: '历史复盘', badge: incorrectCount > 0 ? `${incorrectCount}错` : undefined },
     { id: 'earnings', label: '财报预测' },
     { id: 'stats',    label: '准确率统计' },
+  ]
+
+  const GROUP_FILTERS: { id: GroupFilter; label: string }[] = [
+    { id: 'all',       label: '全部' },
+    { id: 'portfolio', label: '持仓股' },
+    { id: 'sector',    label: '赛道股' },
+    { id: 'fund',      label: '基金ETF' },
   ]
 
   return (
@@ -431,6 +542,25 @@ export function PredictionReview() {
         </div>
       )}
 
+      {/* Group filter — shown on today/history tabs */}
+      {(subTab === 'today' || subTab === 'history') && (
+        <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
+          {GROUP_FILTERS.map(f => (
+            <button key={f.id} onClick={() => setGroupFilter(f.id)} style={{
+              padding: '0.25rem 0.75rem', fontSize: '0.75rem', borderRadius: 20,
+              border: `1px solid ${groupFilter === f.id ? 'var(--accent)' : 'var(--border)'}`,
+              backgroundColor: groupFilter === f.id ? 'var(--accent)' : 'var(--surface)',
+              color: groupFilter === f.id ? '#fff' : 'var(--text-muted)',
+              cursor: 'pointer', fontWeight: groupFilter === f.id ? 700 : 400,
+            }}>
+              {f.id !== 'all' && <span style={{ marginRight: 4, fontSize: '0.65rem',
+                color: groupFilter === f.id ? '#fff' : GROUP_COLOR[f.id as PredGroup] }}>●</span>}
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* ── 今日预测 ── */}
       {subTab === 'today' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -438,8 +568,8 @@ export function PredictionReview() {
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text)' }}>
                 {todayPreds.length > 0
-                  ? `已为 ${todayStr} 生成 ${todayPreds.length} 条预测，目标日期 ${todayPreds[0]?.targetDate}`
-                  : '点击按钮生成今日预测（基于技术信号×60% + 宏观评分×40%）'}
+                  ? `已为 ${todayStr} 生成 ${todayPreds.length} 条预测（持仓${todayPreds.filter(p=>p.group==='portfolio').length} · 赛道${todayPreds.filter(p=>p.group==='sector').length} · 基金ETF${todayPreds.filter(p=>p.group==='fund').length}），目标日期 ${todayPreds[0]?.targetDate}`
+                  : '点击按钮生成今日预测（技术信号×60% + 宏观评分×40%，覆盖持仓股/赛道股/基金ETF）'}
               </div>
               {pendingCount > 0 && (
                 <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 2 }}>
@@ -467,31 +597,49 @@ export function PredictionReview() {
             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>加载中…</div>
           )}
 
-          {todayPreds.length === 0 && !loading && (
+          {filteredToday.length === 0 && !loading && (
             <div style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)', fontSize: '0.85rem',
               border: '1px dashed var(--border)', borderRadius: 10 }}>
-              今日尚未生成预测<br/>
-              <span style={{ fontSize: '0.75rem' }}>每天开盘前点击「生成今日预测」，次日自动复盘结果</span>
+              {todayPreds.length > 0 ? `当前分类（${GROUP_FILTERS.find(f=>f.id===groupFilter)?.label}）暂无预测` : '今日尚未生成预测'}<br/>
+              <span style={{ fontSize: '0.75rem' }}>
+                {todayPreds.length > 0 ? '切换到「全部」查看所有标的' : '每天开盘前点击「生成今日预测」，次日自动复盘结果'}
+              </span>
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {todayPreds.map(p => <PredCard key={p.id} pred={p} />)}
-          </div>
+          {filteredToday.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {groupFilter === 'all' ? (
+                (['portfolio', 'sector', 'fund'] as PredGroup[]).map(g => (
+                  <GroupSection key={g} group={g} preds={filteredToday.filter(p => (p.group ?? 'portfolio') === g)} />
+                ))
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  {filteredToday.map(p => <PredCard key={p.id} pred={p} />)}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
       {/* ── 历史复盘 ── */}
       {subTab === 'history' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {historyPreds.length === 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {filteredHistory.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontSize: '0.85rem',
               border: '1px dashed var(--border)', borderRadius: 10 }}>
               暂无历史复盘记录<br/>
               <span style={{ fontSize: '0.75rem' }}>生成预测后，次日自动拉取实际价格并复盘</span>
             </div>
+          ) : groupFilter === 'all' ? (
+            (['portfolio', 'sector', 'fund'] as PredGroup[]).map(g => (
+              <GroupSection key={g} group={g} preds={filteredHistory.filter(p => (p.group ?? 'portfolio') === g)} />
+            ))
           ) : (
-            historyPreds.map(p => <PredCard key={p.id} pred={p} />)
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {filteredHistory.map(p => <PredCard key={p.id} pred={p} />)}
+            </div>
           )}
         </div>
       )}
@@ -501,8 +649,8 @@ export function PredictionReview() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.6,
             padding: '0.625rem 0.875rem', backgroundColor: 'var(--surface)', borderRadius: 8, border: '1px solid var(--border)' }}>
-            财报预测基于当前宏观环境+行业景气+历史超预期概率建立，财报发布后系统自动拉取价格变化并标记准确性。
-            点击每张卡片展开详细分析思路。
+            财报预测覆盖持仓股（NVDA/腾讯/ORCL/PDD）及赛道代表股（MSFT/META/AMD/礼来），
+            财报发布后系统自动拉取价格变化并标记准确性。点击每张卡片展开详细分析思路。
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {UPCOMING_EARNINGS
