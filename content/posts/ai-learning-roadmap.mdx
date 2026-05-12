@@ -1,0 +1,198 @@
+---
+title: "AI 大模型开发学习路线：从入门到算法工程师（附资源清单）"
+date: "2026-05-12"
+excerpt: "基于黑马AI课程大纲，梳理从初级开发到算法进阶的六阶段学习路径，每个模块匹配对应的免费/开源学习资源，适合自学跟进。"
+category: resources
+tags: [AI, 大模型, 学习路线, Python, LangChain, RAG, 智能体]
+---
+
+> 本文基于黑马程序员 AI 大模型开发课程大纲，梳理出一条可自学的六阶段进阶路线。每个模块附上对应的免费/开源资源，方便按图索骥。
+
+---
+
+## 学习路线全景图
+
+```
+阶段一          阶段二          阶段三          阶段四          阶段五          阶段六
+入门开发  →   应用开发   →   核心开发   →   智能体开发  →   定制开发   →   算法进阶
+(初级)        (数据分析)      (ML/DL)       (Agent/RAG)    (微调/推理)    (CV/多模态)
+10-12k        10-14k         15-18k        18-20k         20-35k         20-35k
+```
+
+共 **6 阶段、15 模块、约 81 天**，覆盖 10+ 实战项目。
+
+---
+
+## 阶段一：AI 大模型开发入门
+
+**目标：** 能用 Python 调用大模型 API，搭建简单的聊天机器人。
+
+| # | 学习内容 | 天数 | 推荐资源 |
+|---|---------|------|---------|
+| 1 | 大模型基础概念、Ollama 本地部署 | 1 | [Ollama 官方文档](https://ollama.com)、[ChatBox 下载](https://chatboxai.app) |
+| 2 | Python 基础语法（变量、控制流、容器） | 3 | [Python官方教程](https://docs.python.org/zh-cn/3/tutorial/)、[廖雪峰Python教程](https://www.liaoxuefeng.com/wiki/1016959663602400) |
+| 3 | Python 函数、文件操作、异常处理 | 2 | 同上 + [realpython.com](https://realpython.com) |
+| 4 | Streamlit + API 调用搭建聊天机器人 | 2 | [Streamlit 官方文档](https://docs.streamlit.io)、[通义千问API](https://help.aliyun.com/zh/model-studio/) |
+
+**阶段项目：** 用 Streamlit + 通义千问 API 搭建一个 Web 聊天页面。
+
+---
+
+## 阶段二：大模型应用开发
+
+**目标：** 掌握数据处理 + 低代码智能体开发。
+
+| # | 学习内容 | 天数 | 推荐资源 |
+|---|---------|------|---------|
+| 5 | Python 进阶（面向对象、装饰器、多线程） | 4 | [Python Cookbook](https://python3-cookbook.readthedocs.io/zh-cn/latest/) |
+| 6 | MySQL 数据库 | 2 | [SQLZoo](https://sqlzoo.net)、[MySQL 8.0 官方手册](https://dev.mysql.com/doc/refman/8.0/en/) |
+| 7 | NumPy / Pandas 数据分析 | 2 | [Pandas 官方教程](https://pandas.pydata.org/docs/getting_started/)、[Kaggle Learn](https://www.kaggle.com/learn) |
+| 8 | 提示词工程（Prompt Engineering） | 2 | [Prompt Engineering Guide](https://www.promptingguide.ai/zh)、[OpenAI Prompt Engineering](https://platform.openai.com/docs/guides/prompt-engineering) |
+| 9 | Coze 智能体开发 | 1 | [Coze 官方文档](https://www.coze.com/docs/) |
+| 10 | Dify 智能体开发 + RAG 知识库 | 2 | [Dify 官方文档](https://docs.dify.ai/zh-hans) |
+
+**阶段项目：** 用 Dify 搭建一个私有知识库问答机器人。
+
+---
+
+## 阶段三：大模型核心开发技术
+
+**目标：** 掌握机器学习和深度学习基础，理解 NLP 核心技术。
+
+| # | 学习内容 | 天数 | 推荐资源 |
+|---|---------|------|---------|
+| 11 | 机器学习基础（分类/回归/聚类） | 5 | [吴恩达 Machine Learning](https://www.coursera.org/learn/machine-learning)、[《机器学习》周志华](https://book.douban.com/subject/26708119/) |
+| 12 | PyTorch 深度学习框架 | 3 | [PyTorch 官方教程](https://pytorch.org/tutorials/)、[Dive into Deep Learning](https://d2l.ai) |
+| 13 | NLP 核心技术（词向量、Transformer） | 5 | [《Speech and Language Processing》Jurafsky](https://web.stanford.edu/~jurafsky/slp3/)、[The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) |
+| 14 | BERT 原理与使用 | 2 | [Hugging Face Course](https://huggingface.co/learn/nlp-course) |
+
+**核心资源：**
+
+| 类型 | 资源 | 说明 |
+|------|------|------|
+| 🎓 课程 | [李宏毅 ML 2023](https://www.youtube.com/@HungyiLeeNTU) | 中文最受欢迎的 ML 课程 |
+| 🎓 课程 | [Stanford CS224N](https://web.stanford.edu/class/cs224n/) | NLP 经典课程 |
+| 📖 书籍 | [《动手学深度学习》](https://d2l.ai) | 李沐，PyTorch 版，免费 |
+| 🛠 平台 | [Kaggle](https://www.kaggle.com) | 竞赛 + 免费 GPU + 数据集 |
+
+---
+
+## 阶段四：大模型智能体开发
+
+**目标：** 掌握 LangChain、RAG、Agent 开发。
+
+| # | 学习内容 | 天数 | 推荐资源 |
+|---|---------|------|---------|
+| 15 | LangChain 框架（6大组件） | 3 | [LangChain 官方文档](https://python.langchain.com/docs/)、[LangChain 中文教程](https://langchain.com.cn) |
+| 16 | LangGraph 状态图编排 | 2 | [LangGraph 官方文档](https://langchain-ai.github.io/langgraph/) |
+| 17 | RAG 系统搭建（向量库 + 检索 + 生成） | 5 | [LlamaIndex 文档](https://docs.llamaindex.ai)、[Milvus 向量数据库](https://milvus.io/docs) |
+| 18 | Agent 开发（ReAct 模式） | 3 | [LangChain Agent 文档](https://python.langchain.com/docs/modules/agents/) |
+| 19 | 多智能体协作（CrewAI） | 3 | [CrewAI 官方文档](https://docs.crewai.com)、[AutoGen](https://microsoft.github.io/autogen/) |
+
+**核心资源：**
+
+| 类型 | 资源 | 说明 |
+|------|------|------|
+| 📖 教程 | [DeepLearning.AI LangChain 短课](https://www.deeplearning.ai/short-courses/) | Andrew Ng 出品，免费 |
+| 🛠 工具 | [Ollama](https://ollama.com) | 本地运行开源模型 |
+| 🛠 工具 | [Chroma](https://www.trychroma.com) | 轻量级向量数据库 |
+| 🛠 工具 | [Milvus](https://milvus.io) | 生产级向量数据库 |
+| 📦 框架 | [LlamaIndex](https://www.llamaindex.ai) | RAG 开发框架 |
+| 📦 框架 | [CrewAI](https://crewai.com) | 多智能体协作 |
+| 📦 框架 | [Dify](https://dify.ai) | 低代码 Agent 平台 |
+
+---
+
+## 阶段五：大模型定制开发
+
+**目标：** 掌握模型微调、量化、推理优化。
+
+| # | 学习内容 | 天数 | 推荐资源 |
+|---|---------|------|---------|
+| 20 | Transformer 架构深入 | 3 | [The Annotated Transformer](https://nlp.seas.harvard.edu/annotated-transformer/)、[Attention Is All You Need](https://arxiv.org/abs/1706.03762) |
+| 21 | LoRA / QLoRA 微调 | 3 | [Hugging Face PEFT](https://huggingface.co/docs/peft)、[LoRA 论文](https://arxiv.org/abs/2106.09685) |
+| 22 | 模型量化（GPTQ, AWQ） | 2 | [bitsandbytes](https://github.com/TimDettmers/bitsandbytes)、[AutoGPTQ](https://github.com/AutoGPTQ/AutoGPTQ) |
+| 23 | DeepSpeed 分布式训练 | 2 | [DeepSpeed 官方文档](https://www.deepspeed.ai) |
+| 24 | vLLM 推理加速 | 1 | [vLLM 官方文档](https://docs.vllm.ai) |
+
+**核心资源：**
+
+| 类型 | 资源 | 说明 |
+|------|------|------|
+| 🤗 平台 | [Hugging Face](https://huggingface.co) | 模型仓库 + Transformers 库 |
+| 🛠 工具 | [Unsloth](https://unsloth.ai) | 免费 Colab 微调工具 |
+| 🛠 工具 | [Axolotl](https://github.com/OpenAccess-AI-Collective/axolotl) | 微调框架 |
+| 📖 教程 | [Hugging Face NLP Course](https://huggingface.co/learn/nlp-course) | 免费 |
+| 🎓 课程 | [CS25: Transformers United](https://web.stanford.edu/class/cs25/) | Stanford Transformer 专题 |
+
+---
+
+## 阶段六：大模型算法进阶
+
+**目标：** 掌握 CV 和多模态大模型。
+
+| # | 学习内容 | 天数 | 推荐资源 |
+|---|---------|------|---------|
+| 25 | CNN / ResNet / YOLO 目标检测 | 4 | [CS231n](https://cs231n.github.io)、[YOLO 官方文档](https://docs.ultralytics.com) |
+| 26 | Stable Diffusion 图像生成 | 4 | [Stable Diffusion 论文](https://arxiv.org/abs/2112.10752)、[Diffusers 库](https://huggingface.co/docs/diffusers) |
+| 27 | 多模态大模型（CLIP, GPT-4V） | 3 | [CLIP 论文](https://arxiv.org/abs/2103.00020)、[LLaVA](https://llava-vl.github.io) |
+| 28 | LoRA / DreamBooth 图像微调 | 2 | [DreamBooth 论文](https://arxiv.org/abs/2208.12242)、[Kohya's GUI](https://github.com/bmaltais/kohya_ss) |
+
+**核心资源：**
+
+| 类型 | 资源 | 说明 |
+|------|------|------|
+| 🎓 课程 | [Stanford CS231n](https://cs231n.github.io) | CV 经典课程 |
+| 🤗 库 | [Diffusers](https://huggingface.co/docs/diffusers) | HuggingFace 出品的扩散模型库 |
+| 🛠 工具 | [ComfyUI](https://github.com/comfyanonymous/ComfyUI) | 可视化 SD 工作流 |
+| 📖 教程 | [fast.ai Practical Deep Learning](https://course.fast.ai) | 免费、实战导向 |
+
+---
+
+## 大厂面试准备
+
+| 主题 | 推荐资源 |
+|------|---------|
+| 数据结构与算法 | [LeetCode Hot 100](https://leetcode.cn/problem-list/2cktkvj/)、[代码随想录](https://programmercarl.com) |
+| 机器学习八股 | [《百面机器学习》](https://book.douban.com/subject/30252514/)、[ML Interview](https://github.com/khangich/machine-learning-interview) |
+| 深度学习八股 | [《深度学习面试》](https://github.com/BoltzmannEntropy/interviews.ai) |
+| 大模型专题 | [LLM Interview](https://github.com/wgwang/LLMs-In-China)、[大模型面试题库](https://github.com/aceliuchanghong/LLM-Interview) |
+| NLP/CV 专题 | [NLP Interview](https://github.com/NLP-LOVE/ML-NLP) |
+
+---
+
+## 自学建议
+
+```
+┌────────────────────────────────────────────────────────────┐
+│  阶段一 → 阶段二：打基础，不要跳                              │
+│  ─────────────────────────────────────                      │
+│  必须掌握：Python + SQL + Pandas + 提示词                     │
+│  检验标准：能独立用 Streamlit + API 搭一个聊天应用             │
+├────────────────────────────────────────────────────────────┤
+│  阶段三：最关键的转折点                                       │
+│  ─────────────────────────                                  │
+│  必须掌握：ML 基础 + PyTorch + Transformer 原理               │
+│  检验标准：能看懂 BERT 论文并跑通 HuggingFace 微调             │
+├────────────────────────────────────────────────────────────┤
+│  阶段四 → 阶段五：深水区                                      │
+│  ─────────────────────────                                  │
+│  必须掌握：LangChain + RAG + 微调 + 推理优化                  │
+│  检验标准：能从零搭建 RAG 系统并完成模型微调部署               │
+├────────────────────────────────────────────────────────────┤
+│  阶段六：选学                                                 │
+│  ────────────                                                │
+│  CV/多模态是加分项，不是必选项                                │
+│  根据目标岗位决定是否深入                                     │
+└────────────────────────────────────────────────────────────┘
+```
+
+**关键原则：**
+1. **先跑通再理解** — 不要死磕理论，先 clone 项目跑起来
+2. **每个阶段做一个完整的项目** — 项目是检验学习的唯一标准
+3. **善用免费 GPU** — Google Colab、Kaggle、AutoDL 都有免费额度
+4. **加入社区** — [Hugging Face Discord](https://discord.gg/hugging-face)、[飞浆 AI Studio](https://aistudio.baidu.com)
+
+---
+
+> 本文路线参考黑马程序员 AI 课程大纲，补充了对应的免费/开源学习资源。课程本身为付费线下班（约 81 天），本文整理的自学路线可以免费跟进，但需要更强的自律性。
