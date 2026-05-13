@@ -16,7 +16,17 @@ export async function GET() {
     results.predictions = `Failed: ${String(e)}`
   }
 
-  // Step 2: Review past predictions (auto-fetch actual prices + evaluate)
+  // Step 2: Auto-review past predictions (GET triggers autoReview in predictions store)
+  try {
+    const predGetRes = await fetch(`${base}/api/predictions`)
+    const predGet = await predGetRes.json()
+    const dailyReviewed = (predGet.daily || []).filter((p: Record<string, unknown>) => p.result !== 'pending').length
+    results.predictionsReview = `${dailyReviewed}/${(predGet.daily || []).length} predictions reviewed`
+  } catch (e) {
+    results.predictionsReview = `Failed: ${String(e)}`
+  }
+
+  // Step 3: Review review-log records (safe-buy, etc.)
   try {
     const reviewRes = await fetch(`${base}/api/review`, {
       method: 'POST',

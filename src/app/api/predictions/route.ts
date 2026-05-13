@@ -192,22 +192,72 @@ function buildReasoning(
   return { reasoning, keyRisks: risks.slice(0, 3) }
 }
 
-// ─── Post-mortem: why the prediction was wrong ────────────────────────────────
+// ─── Post-mortem: why the prediction was wrong (with deep attribution) ──────────
 function buildPostMortem(pred: DailyPrediction, changeP: number): string {
   const actual: PredDir = changeP > 0.3 ? 'up' : changeP < -0.3 ? 'down' : 'flat'
   if (actual === pred.predictedDirection) return ''
   const mag = Math.abs(changeP)
   const degree = mag > 3 ? '大幅' : mag > 1.5 ? '明显' : '小幅'
 
+  // Extract technical context from reasoning
+  const reasoning = pred.reasoning || ''
+  const hasRsi = reasoning.match(/RSI\s+([\d.]+)/)
+  const rsiVal = hasRsi ? parseFloat(hasRsi[1]) : null
+  const hasMom = reasoning.match(/([+-]?[\d.]+)%/)
+  const momVal = hasMom ? parseFloat(hasMom[1]) : null
+  const isOverbought = rsiVal !== null && rsiVal > 72
+  const isOversold = rsiVal !== null && rsiVal < 30
+  const isMomentumStrong = momVal !== null && Math.abs(momVal) > 5
+  const isCombinedHigh = pred.bullPct >= 80
+  const isCombinedLow = pred.bullPct <= 20
+
   if (pred.predictedDirection === 'up' && actual === 'down') {
-    return mag > 2
-      ? `❌ 预测偏多：市场${degree}下跌 ${changeP.toFixed(1)}%，超出多头预期。常见原因：①宏观突发利空（Fed意外表态/地缘风险）②板块资金集中出逃 ③前期涨幅过大触发止盈。修正建议：RSI>70时降低看涨置信度10-15%；关注隔日宏观日历（CPI/FOMC）。`
-      : `❌ 预测偏多：市场${degree}收跌 ${Math.abs(changeP).toFixed(1)}%。技术多头信号被当日情绪性卖压抵消，无明显正向催化剂。修正建议：多头信号需配合成交量放大确认，无量涨=信号质量低。`
+    let rootCause = ''
+    let fix = ''
+    if (isOverbought && isMomentumStrong) {
+      rootCause = `RSI${rsiVal}超买+5日涨${momVal}%，前期过度上涨后的均值回归。`
+      fix = 'RSI>72且5日涨幅>5%时，强制降为震荡（flat），不生成看涨信号。'
+    } else if (isCombinedHigh) {
+      rootCause = `技术评分${pred.technicalScore}+宏观评分${pred.macroScore}推高综合得分至${pred.bullPct}%，模型过度自信。`
+      fix = '技术评分>90时引入"过度乐观"惩罚因子，降低综合得分5-10%。'
+    } else {
+      rootCause = `技术多头信号(${pred.technicalScore}分)被${mag > 1.5 ? '较强' : ''}空头力量压制。可能原因：板块轮动、宏观数据不及预期、或隔夜外盘拖累。`
+      fix = '增加VIX变动过滤：VIX单日涨>10%时所有看涨信号降级。'
+    }
+    return `❌ 预测偏多→实际${degree}下跌${mag.toFixed(1)}%。归因：${rootCause}修正：${fix}`
   }
+
   if (pred.predictedDirection === 'down' && actual === 'up') {
-    return `❌ 预测偏空：市场${degree}上涨 ${changeP.toFixed(1)}%。空头技术信号被正向催化剂压制（可能：政策利好/财报超预期/外盘强势带动）。修正建议：做空信号出现时先检查是否有即将到来的利好事件（政策发布窗口期慎空）。`
+    let rootCause = ''
+    let fix = ''
+    if (isOversold) {
+      rootCause = `RSI${rsiVal}深度超卖触发技术性反弹，空头信号被超跌反弹覆盖。`
+      fix = 'RSI<32时看跌信号需叠加成交量萎缩确认，否则降为震荡。'
+    } else if (pred.macroScore > 60) {
+      rootCause = `宏观偏多(${pred.macroScore}分)但技术看跌，两者冲突时市场选择跟随宏观趋势。`
+      fix = '宏观>60时，技术看跌信号的触发阈值从45降至35（更严苛）。'
+    } else {
+      rootCause = `正向催化剂（政策/财报/外盘）压制了技术空头信号。技术评分${pred.technicalScore}的看跌逻辑被外部利好打破。`
+      fix = '生成看跌预测时检查当日是否有财报/政策事件，有则自动降置信度。'
+    }
+    return `❌ 预测偏空→实际${degree}上涨${mag.toFixed(1)}%。归因：${rootCause}修正：${fix}`
   }
-  return `❌ 预测震荡，实际${actual === 'up' ? '上涨' : '下跌'} ${Math.abs(changeP).toFixed(1)}%。趋势动能强于模型预期，信号出现后行情加速。修正建议：增加超短周期（1-3日）动量权重以捕捉趋势延续。`
+
+  // Predicted flat/震荡, actual moved
+  const actualLabel = actual === 'up' ? '涨' : '跌'
+  let rootCause = ''
+  let fix = ''
+  if (isMomentumStrong) {
+    rootCause = `5日动量${momVal}%表明趋势已经形成，震荡判断低估了趋势强度。`
+    fix = '5日动量>3%时，即使综合得分在45-55之间，也偏向趋势方向。'
+  } else if (isCombinedHigh || isCombinedLow) {
+    rootCause = `综合得分${pred.bullPct}已接近临界值，信号被错误归为震荡。`
+    fix = '将震荡区间从45-55收窄至47-53，减少边界误判。'
+  } else {
+    rootCause = '市场出现模型未捕捉到的驱动力，导致实际波动超过预期。'
+    fix = '引入波动率预期：若ATR显著高于均值，扩大方向判定阈值。'
+  }
+  return `❌ 预测震荡→实际${actualLabel}${mag.toFixed(1)}%。归因：${rootCause}修正：${fix}`
 }
 
 // ─── Tracked assets ───────────────────────────────────────────────────────────
@@ -267,11 +317,22 @@ async function autoReview(store: PredictionStore): Promise<boolean> {
   let changed = false
   for (const pred of pending) {
     const prices = priceMap.get(pred.ticker) ?? []
-    const pt = prices.find(p => p.d === pred.targetDate)
-      ?? prices.find(p => p.d > pred.targetDate)
+    if (prices.length < 2) continue
+
+    // Use the most recent price available (target date may not have data yet)
+    // Prefer exact date match, then closest after, then most recent
+    const exact = prices.find(p => p.d === pred.targetDate)
+    const after = prices.filter(p => p.d > pred.targetDate).sort((a, b) => a.d.localeCompare(b.d))[0]
+    const last = prices[prices.length - 1]
+    const pt = exact || after || last
     if (!pt) continue
 
+    // Skip if the closest data is more than 5 days away from target
+    const distDays = Math.abs(new Date(pt.d).getTime() - new Date(pred.targetDate).getTime()) / 86400000
+    if (distDays > 5) continue
+
     const changeP = +((pt.p - pred.currentPrice) / pred.currentPrice * 100).toFixed(2)
+
     const dir: PredDir = changeP > 0.3 ? 'up' : changeP < -0.3 ? 'down' : 'flat'
     const correct = dir === pred.predictedDirection
 

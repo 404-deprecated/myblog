@@ -71,7 +71,18 @@
         ],
         "reasoning": "中等安全性（74%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
       },
-      "result": "pending"
+      "result": "correct",
+      "actual": {
+        "price": 4217.5,
+        "changePct": 0.07,
+        "direction": "flat",
+        "didHitSafeBuy": false
+      },
+      "reviewedAt": "2026-05-13T02:51:27.396Z",
+      "accuracy": 90,
+      "postMortem": "",
+      "correctionHint": "",
+      "suggestedFix": "安全买入价判断合理，价格未触及安全买价即上涨。"
     },
     {
       "id": "safebuy_20260512_HSI",
@@ -95,7 +106,18 @@
         ],
         "reasoning": "中等安全性（71%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
       },
-      "result": "pending"
+      "result": "incorrect",
+      "actual": {
+        "price": 26270.07,
+        "changePct": -0.3,
+        "direction": "flat",
+        "didHitSafeBuy": false
+      },
+      "reviewedAt": "2026-05-13T02:51:30.583Z",
+      "accuracy": 60,
+      "postMortem": "价格下跌0.3%，安全买价可能不够低。",
+      "correctionHint": "安全边际计算偏激进",
+      "suggestedFix": "当前方法组合有效，维持安全买价计算方式。"
     },
     {
       "id": "safebuy_20260512_NVDA",
@@ -145,7 +167,18 @@
         ],
         "reasoning": "中等安全性（77%概率买入安全）。综合4种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格 + 估值回归支撑，加权计算得安全买入价。"
       },
-      "result": "pending"
+      "result": "incorrect",
+      "actual": {
+        "price": 458.8,
+        "changePct": 0.35,
+        "direction": "up",
+        "didHitSafeBuy": false
+      },
+      "reviewedAt": "2026-05-13T02:51:32.973Z",
+      "accuracy": 60,
+      "postMortem": "价格上涨0.3%。",
+      "correctionHint": "安全边际计算偏激进",
+      "suggestedFix": "当前方法组合有效，维持安全买价计算方式。"
     },
     {
       "id": "safebuy_20260512_ORCL",
@@ -562,6 +595,468 @@
           "RSI标准化价格"
         ],
         "reasoning": "中等安全性（74%概率买入安全）。综合3种方法：布林带统计支撑 + 历史回撤支撑 + RSI标准化价格，加权计算得安全买入价。"
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_IXIC",
+      "type": "daily_price",
+      "ticker": "^IXIC",
+      "name": "纳斯达克",
+      "group": "portfolio",
+      "createdAt": "2026-05-13T02:45:09.392Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 74,
+        "confidence": 83,
+        "targetLow": 25971.91,
+        "targetHigh": 26361.03,
+        "currentPrice": 26088.2,
+        "reasoning": "看涨74%：SMA5在SMA20上方（多头排列）；RSI 75.1 超买警告；5日动量 +3.01%；宏观 66%（偏多）。技术×60% + 宏观×40% = 74%",
+        "technicalScore": 80,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_000001SS",
+      "type": "daily_price",
+      "ticker": "000001.SS",
+      "name": "上证指数",
+      "group": "portfolio",
+      "createdAt": "2026-05-13T02:45:09.392Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 74,
+        "confidence": 83,
+        "targetLow": 4211.76,
+        "targetHigh": 4244.98,
+        "currentPrice": 4215.72,
+        "reasoning": "看涨74%：SMA5在SMA20上方（多头排列）；RSI 79.9 超买警告；5日动量 +1.34%；宏观 66%（偏多）。技术×60% + 宏观×40% = 74%",
+        "technicalScore": 80,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_HSI",
+      "type": "daily_price",
+      "ticker": "^HSI",
+      "name": "恒生指数",
+      "group": "portfolio",
+      "createdAt": "2026-05-13T02:45:09.392Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 86,
+        "confidence": 83,
+        "targetLow": 26136.27,
+        "targetHigh": 26531.66,
+        "currentPrice": 26255.2,
+        "reasoning": "看涨86%：SMA5在SMA20上方（多头排列）；RSI 51.5 中性；5日动量 +0.16%；宏观 66%（偏多）。技术×60% + 宏观×40% = 86%",
+        "technicalScore": 100,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_NVDA",
+      "type": "daily_price",
+      "ticker": "NVDA",
+      "name": "英伟达",
+      "group": "portfolio",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 86,
+        "confidence": 83,
+        "targetLow": 217.73,
+        "targetHigh": 225.15,
+        "currentPrice": 220.78,
+        "reasoning": "看涨86%：SMA5在SMA20上方（多头排列）；RSI 64.2 中性；5日动量 +12.36%；宏观 66%（偏多）。技术×60% + 宏观×40% = 86%",
+        "technicalScore": 100,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_0700HK",
+      "type": "daily_price",
+      "ticker": "0700.HK",
+      "name": "腾讯控股",
+      "group": "portfolio",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "down",
+        "bullPct": 41,
+        "confidence": 65,
+        "targetLow": 450.61,
+        "targetHigh": 463.05,
+        "currentPrice": 458.2,
+        "reasoning": "看跌41%：SMA5跌破SMA20（空头排列）；RSI 26.6 超卖反弹；5日动量 -1.04%；宏观 66%（偏多）。技术×60% + 宏观×40% = 41%",
+        "technicalScore": 25,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_ORCL",
+      "type": "daily_price",
+      "ticker": "ORCL",
+      "name": "甲骨文",
+      "group": "portfolio",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 86,
+        "confidence": 83,
+        "targetLow": 182.78,
+        "targetHigh": 192,
+        "currentPrice": 186.83,
+        "reasoning": "看涨86%：SMA5在SMA20上方（多头排列）；RSI 49.5 中性；5日动量 +0.8%；宏观 66%（偏多）。技术×60% + 宏观×40% = 86%",
+        "technicalScore": 100,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_PDD",
+      "type": "daily_price",
+      "ticker": "PDD",
+      "name": "拼多多",
+      "group": "portfolio",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "down",
+        "bullPct": 26,
+        "confidence": 83,
+        "targetLow": 93.69,
+        "targetHigh": 97.19,
+        "currentPrice": 95.73,
+        "reasoning": "看跌26%：SMA5跌破SMA20（空头排列）；RSI 40.2 中性；5日动量 -1.05%；宏观 66%（偏多）。技术×60% + 宏观×40% = 26%",
+        "technicalScore": 0,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_AMD",
+      "type": "daily_price",
+      "ticker": "AMD",
+      "name": "AMD",
+      "group": "sector",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 74,
+        "confidence": 83,
+        "targetLow": 430.03,
+        "targetHigh": 469.24,
+        "currentPrice": 448.29,
+        "reasoning": "看涨74%：SMA5在SMA20上方（多头排列）；RSI 76 超买警告；5日动量 +26.19%；宏观 66%（偏多）。技术×60% + 宏观×40% = 74%",
+        "technicalScore": 80,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_AVGO",
+      "type": "daily_price",
+      "ticker": "AVGO",
+      "name": "博通",
+      "group": "sector",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 77,
+        "confidence": 83,
+        "targetLow": 413.12,
+        "targetHigh": 428,
+        "currentPrice": 419.3,
+        "reasoning": "看涨77%：SMA5在SMA20上方（多头排列）；RSI 48.5 中性；5日动量 -1.89%；宏观 66%（偏多）。技术×60% + 宏观×40% = 77%",
+        "technicalScore": 85,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_MSFT",
+      "type": "daily_price",
+      "ticker": "MSFT",
+      "name": "微软",
+      "group": "sector",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "flat",
+        "bullPct": 47,
+        "confidence": 53,
+        "targetLow": 402.89,
+        "targetHigh": 412.65,
+        "currentPrice": 407.77,
+        "reasoning": "震荡47%：SMA5跌破SMA20（空头排列）；RSI 35.1 中性；5日动量 -0.88%；宏观 66%（偏多）。技术×60% + 宏观×40% = 47%",
+        "technicalScore": 35,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_META",
+      "type": "daily_price",
+      "ticker": "META",
+      "name": "Meta",
+      "group": "sector",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "down",
+        "bullPct": 41,
+        "confidence": 65,
+        "targetLow": 591.05,
+        "targetHigh": 611.33,
+        "currentPrice": 603,
+        "reasoning": "看跌41%：SMA5跌破SMA20（空头排列）；RSI 25.4 超卖反弹；5日动量 -0.32%；宏观 66%（偏多）。技术×60% + 宏观×40% = 41%",
+        "technicalScore": 25,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_TSLA",
+      "type": "daily_price",
+      "ticker": "TSLA",
+      "name": "特斯拉",
+      "group": "sector",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 86,
+        "confidence": 83,
+        "targetLow": 425.75,
+        "targetHigh": 443.75,
+        "currentPrice": 433.45,
+        "reasoning": "看涨86%：SMA5在SMA20上方（多头排列）；RSI 70 中性；5日动量 +11.32%；宏观 66%（偏多）。技术×60% + 宏观×40% = 86%",
+        "technicalScore": 100,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_CEG",
+      "type": "daily_price",
+      "ticker": "CEG",
+      "name": "Constellation Energy",
+      "group": "sector",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 71,
+        "confidence": 83,
+        "targetLow": 287.82,
+        "targetHigh": 301.14,
+        "currentPrice": 293.6,
+        "reasoning": "看涨71%：SMA5在SMA20上方（多头排列）；RSI 52.9 中性；5日动量 -8.37%；宏观 66%（偏多）。技术×60% + 宏观×40% = 71%",
+        "technicalScore": 75,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_VST",
+      "type": "daily_price",
+      "ticker": "VST",
+      "name": "Vistra",
+      "group": "sector",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "down",
+        "bullPct": 26,
+        "confidence": 83,
+        "targetLow": 142.95,
+        "targetHigh": 149.91,
+        "currentPrice": 146.87,
+        "reasoning": "看跌26%：SMA5跌破SMA20（空头排列）；RSI 42.4 中性；5日动量 -8.42%；宏观 66%（偏多）。技术×60% + 宏观×40% = 26%",
+        "technicalScore": 0,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_IONQ",
+      "type": "daily_price",
+      "ticker": "IONQ",
+      "name": "IonQ",
+      "group": "sector",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 86,
+        "confidence": 83,
+        "targetLow": 53.39,
+        "targetHigh": 58.69,
+        "currentPrice": 55.87,
+        "reasoning": "看涨86%：SMA5在SMA20上方（多头排列）；RSI 62.5 中性；5日动量 +16.4%；宏观 66%（偏多）。技术×60% + 宏观×40% = 86%",
+        "technicalScore": 100,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_LLY",
+      "type": "daily_price",
+      "ticker": "LLY",
+      "name": "礼来",
+      "group": "sector",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 71,
+        "confidence": 83,
+        "targetLow": 970.89,
+        "targetHigh": 1014.79,
+        "currentPrice": 989.87,
+        "reasoning": "看涨71%：SMA5在SMA20上方（多头排列）；RSI 61.4 中性；5日动量 +0.1%；宏观 66%（偏多）。技术×60% + 宏观×40% = 71%",
+        "technicalScore": 75,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_NIO",
+      "type": "daily_price",
+      "ticker": "NIO",
+      "name": "蔚来",
+      "group": "sector",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "flat",
+        "bullPct": 50,
+        "confidence": 47,
+        "targetLow": 5.97,
+        "targetHigh": 6.19,
+        "currentPrice": 6.08,
+        "reasoning": "震荡50%：SMA5跌破SMA20（空头排列）；RSI 37 中性；5日动量 +3.05%；宏观 66%（偏多）。技术×60% + 宏观×40% = 50%",
+        "technicalScore": 40,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_XPEV",
+      "type": "daily_price",
+      "ticker": "XPEV",
+      "name": "小鹏",
+      "group": "sector",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "down",
+        "bullPct": 35,
+        "confidence": 77,
+        "targetLow": 15.88,
+        "targetHigh": 16.34,
+        "currentPrice": 16.16,
+        "reasoning": "看跌35%：SMA5跌破SMA20（空头排列）；RSI 41.8 中性；5日动量 +2.15%；宏观 66%（偏多）。技术×60% + 宏观×40% = 35%",
+        "technicalScore": 15,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_QQQ",
+      "type": "daily_price",
+      "ticker": "QQQ",
+      "name": "纳指100 ETF",
+      "group": "fund",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 74,
+        "confidence": 83,
+        "targetLow": 703.16,
+        "targetHigh": 715.56,
+        "currentPrice": 707.24,
+        "reasoning": "看涨74%：SMA5在SMA20上方（多头排列）；RSI 79.2 超买警告；5日动量 +3.76%；宏观 66%（偏多）。技术×60% + 宏观×40% = 74%",
+        "technicalScore": 80,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_KWEB",
+      "type": "daily_price",
+      "ticker": "KWEB",
+      "name": "中概互联网 ETF",
+      "group": "fund",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 65,
+        "confidence": 77,
+        "targetLow": 28.94,
+        "targetHigh": 29.54,
+        "currentPrice": 29.15,
+        "reasoning": "看涨65%：SMA5在SMA20上方（多头排列）；RSI 49.2 中性；5日动量 +2.17%；宏观 66%（偏多）。技术×60% + 宏观×40% = 65%",
+        "technicalScore": 65,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_SMH",
+      "type": "daily_price",
+      "ticker": "SMH",
+      "name": "半导体 ETF",
+      "group": "fund",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 74,
+        "confidence": 83,
+        "targetLow": 551.22,
+        "targetHigh": 574.65,
+        "currentPrice": 561.25,
+        "reasoning": "看涨74%：SMA5在SMA20上方（多头排列）；RSI 74.8 超买警告；5日动量 +7.38%；宏观 66%（偏多）。技术×60% + 宏观×40% = 74%",
+        "technicalScore": 80,
+        "macroScore": 66
+      },
+      "result": "pending"
+    },
+    {
+      "id": "auto_20260513_ARKK",
+      "type": "daily_price",
+      "ticker": "ARKK",
+      "name": "创新成长 ETF",
+      "group": "fund",
+      "createdAt": "2026-05-13T02:45:09.393Z",
+      "targetDate": "2026-05-14",
+      "prediction": {
+        "direction": "up",
+        "bullPct": 86,
+        "confidence": 83,
+        "targetLow": 76.95,
+        "targetHigh": 79.94,
+        "currentPrice": 78.21,
+        "reasoning": "看涨86%：SMA5在SMA20上方（多头排列）；RSI 47.4 中性；5日动量 +2.13%；宏观 66%（偏多）。技术×60% + 宏观×40% = 86%",
+        "technicalScore": 100,
+        "macroScore": 66
       },
       "result": "pending"
     }

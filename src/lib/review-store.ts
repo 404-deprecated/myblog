@@ -207,19 +207,41 @@ function evaluatePrediction(record: ReviewRecord): {
       let suggestedFix: string
 
       if (predDir === 'up' && actualDir === 'down') {
-        postMortem = `预测偏多，实际${degree}下跌${mag.toFixed(1)}%。常见原因：宏观利空/财报不及预期/板块轮动/前期涨幅过大回调。`
-        correctionHint = '多头信号未考虑超买风险'
-        suggestedFix = mag > 2
-          ? 'RSI>70时自动降低看涨置信度15%；增加VIX变动作为前置过滤。'
-          : '增加成交量确认要求，无量上涨的信号质量降低。'
+        const techScore = (pred.technicalScore as number) ?? 50
+        const macroScore = (pred.macroScore as number) ?? 50
+        let rootCause = ''
+        let fix = ''
+        if (techScore > 85) {
+          rootCause = `技术评分${techScore}过高导致过度看涨`
+          fix = '技术评分>85时引入惩罚因子，降低综合得分8%'
+        } else if (macroScore > 60) {
+          rootCause = `宏观偏多(${macroScore})但被技术面反转覆盖`
+          fix = '宏观>60时，技术看涨信号需要RSI<65确认'
+        } else {
+          rootCause = '多头信号未考虑超买风险和潜在利空'
+          fix = '增加VIX变动作为前置过滤：VIX单日涨>10%时看涨信号自动降级'
+        }
+        postMortem = `❌ 预测偏多→实际${degree}下跌${mag.toFixed(1)}%。归因：${rootCause}。修正：${fix}`
+        correctionHint = rootCause
+        suggestedFix = fix
       } else if (predDir === 'down' && actualDir === 'up') {
-        postMortem = `预测偏空，实际${degree}上涨${mag.toFixed(1)}%。常见原因：超预期的利好催化剂（政策/财报/外盘带动）压制了空头信号。`
-        correctionHint = '空头信号被正向催化剂压制'
-        suggestedFix = '做空前检查财报日历+政策窗口期，有重大利好事件时将看跌置信度降低20%。'
+        const techScore = (pred.technicalScore as number) ?? 50
+        let rootCause = ''
+        let fix = ''
+        if (techScore < 20) {
+          rootCause = `技术评分${techScore}极低导致过度看跌，RSI可能已超卖反弹`
+          fix = '技术评分<20时检查RSI是否<30，若是则强制降为震荡'
+        } else {
+          rootCause = '空头信号被超预期利好催化剂（政策/财报/外盘）覆盖'
+          fix = '做空预测前检查当日是否有重大政策/财报事件，有则自动降置信度20%'
+        }
+        postMortem = `❌ 预测偏空→实际${degree}上涨${mag.toFixed(1)}%。归因：${rootCause}。修正：${fix}`
+        correctionHint = rootCause
+        suggestedFix = fix
       } else {
-        postMortem = `预测${predDir === 'flat' ? '震荡' : predDir}，实际${actualDir === 'up' ? '上涨' : actualDir === 'down' ? '下跌' : '震荡'}${mag.toFixed(1)}%。`
+        postMortem = `❌ 预测震荡→实际${actualDir === 'up' ? '涨' : '跌'}${mag.toFixed(1)}%。归因：趋势动能被低估，震荡判断过于保守。修正：收窄震荡判定区间(47-53)，减少边界误判。`
         correctionHint = '趋势强度被低估'
-        suggestedFix = '增加短期动量（3-5日）权重，捕捉趋势延续信号。'
+        suggestedFix = '5日动量>3%时偏向趋势方向，震荡区间收窄至47-53'
       }
 
       const wrongAccuracy = Math.max(10, 55 - Math.round(mag * 4))
