@@ -658,7 +658,10 @@ export default function MarketDashboard() {
 
           {/* 大事件时间线 */}
           <section>
-            <SectionLabel>影响市场的重大事件</SectionLabel>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <SectionLabel>影响市场的重大事件</SectionLabel>
+              <MarketEventsFreshness />
+            </div>
             <div style={{ borderRadius: '10px', border: '1px solid var(--border)', backgroundColor: 'var(--surface)', padding: '1rem 1.25rem' }}>
               {TIMELINE_EVENTS.map((ev, i) => (
                 <div key={`${ev.d}-${ev.label}`} style={{ display: 'flex', gap: '1rem', paddingTop: i === 0 ? 0 : '0.875rem', paddingBottom: i === TIMELINE_EVENTS.length - 1 ? 0 : '0.875rem', borderBottom: i < TIMELINE_EVENTS.length - 1 ? '1px solid var(--border)' : 'none' }}>
@@ -863,7 +866,7 @@ export default function MarketDashboard() {
         </section>
       )}
 
-      {/* ── 数据源说明 ── */}
+{/* ── 数据源说明 ── */}
       <div style={{
         marginTop: '3rem', padding: '1rem 1.25rem', borderRadius: '10px',
         border: '1px solid var(--border)', backgroundColor: 'var(--bg-secondary)',
@@ -903,6 +906,55 @@ export default function MarketDashboard() {
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
       `}</style>
+    </div>
+  )
+}
+
+function MarketEventsFreshness() {
+  const [status, setStatus] = useState<{ updatedAt: string; autoCheckedAt: string | null; hasPending: boolean; pendingCount: number } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/market-events', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => setStatus({
+        updatedAt: d.updatedAt,
+        autoCheckedAt: d.autoCheckedAt,
+        hasPending: d.hasPending,
+        pendingCount: d.pendingFlags?.length ?? 0,
+      }))
+      .catch(() => {})
+  }, [])
+
+  if (!status) return null
+
+  const daysSinceUpdate = Math.floor((Date.now() - new Date(status.updatedAt).getTime()) / 86400000)
+  const isStale = daysSinceUpdate > 30
+  const hasGaps = status.hasPending
+
+  return (
+    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.62rem', fontFamily: 'var(--font-mono)' }}>
+      <span style={{
+        padding: '2px 8px', borderRadius: '10px',
+        backgroundColor: isStale ? '#fff1f2' : '#f0fdf4',
+        color: isStale ? '#991b1b' : '#166534',
+        border: '1px solid ' + (isStale ? '#fca5a5' : '#86efac'),
+      }}>
+        {isStale ? '⚠ 已' + daysSinceUpdate + '天未更新' : '✓ ' + daysSinceUpdate + '天前更新'}
+      </span>
+      {hasGaps && (
+        <span style={{
+          padding: '2px 8px', borderRadius: '10px',
+          backgroundColor: '#fffbeb', color: '#92400e',
+          border: '1px solid #fcd34d',
+        }}>
+          ⚡ {status.pendingCount}次异动待标注
+        </span>
+      )}
+      {status.autoCheckedAt && (
+        <span style={{ color: 'var(--text-muted)', opacity: 0.5 }}>
+          自动检测 {new Date(status.autoCheckedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+        </span>
+      )}
     </div>
   )
 }
