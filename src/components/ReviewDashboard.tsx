@@ -171,28 +171,51 @@ export function ReviewDashboard() {
   }, [])
 
   const triggerReview = useCallback(async () => {
+    setLoading(true)
     try {
-      const res = await fetch('/api/review', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'review' }),
-      })
+      const res = await fetch('/api/daily-run', { cache: 'no-store' })
       if (res.ok) {
-        const json = await res.json()
-        if (json.reviewed > 0) {
-          await fetchData()
-          await fetchRecords()
-        }
+        await fetchData()
+        await fetchRecords()
       }
     } catch {
       /* optional */
+    } finally {
+      setLoading(false)
     }
   }, [fetchData, fetchRecords])
 
   useEffect(() => {
-    fetchData()
-    fetchRecords()
-  }, [fetchData, fetchRecords])
+    const today = new Date().toISOString().slice(0, 10)
+    const lastRun = localStorage.getItem('lastDailyRun')
+
+    const init = async () => {
+      // Auto-trigger daily run once per day
+      if (lastRun !== today) {
+        setLoading(true)
+        try {
+          await fetch('/api/daily-run', { cache: 'no-store' })
+          localStorage.setItem('lastDailyRun', today)
+        } catch { /* ok */ }
+      }
+      // Load data
+      setLoading(true)
+      try {
+        const res = await fetch('/api/review', { cache: 'no-store' })
+        if (res.ok) setData(await res.json())
+      } catch (e) { setError(String(e)) }
+      finally { setLoading(false) }
+
+      try {
+        const res = await fetch('/api/review?action=records&limit=50', { cache: 'no-store' })
+        if (res.ok) {
+          const json = await res.json()
+          setRecords(json.records ?? [])
+        }
+      } catch { /* optional */ }
+    }
+    init()
+  }, [])
 
   if (loading) {
     return (
@@ -299,7 +322,7 @@ export function ReviewDashboard() {
             marginBottom: '0.25rem',
           }}
         >
-          🔄 触发复盘
+          🤖 每日自动运行
         </button>
       </div>
 

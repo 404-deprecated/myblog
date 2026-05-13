@@ -254,7 +254,7 @@ const TRACKED: TrackedAsset[] = [
 // ─── Auto-review past pending predictions ────────────────────────────────────
 async function autoReview(store: PredictionStore): Promise<boolean> {
   const today = todayStr()
-  const pending = store.daily.filter(p => p.result === 'pending' && p.targetDate < today)
+  const pending = store.daily.filter(p => p.result === 'pending' && p.targetDate <= today)
   if (!pending.length) return false
 
   // Fetch prices in parallel grouped by ticker
@@ -289,7 +289,7 @@ async function autoReview(store: PredictionStore): Promise<boolean> {
 // ─── Auto-review past pending earnings predictions ────────────────────────────
 async function autoReviewEarnings(store: PredictionStore): Promise<boolean> {
   const today = todayStr()
-  const pending = store.earnings.filter(e => !e.result && e.earningsDate < today)
+  const pending = store.earnings.filter(e => !e.result && e.earningsDate <= today)
   if (!pending.length) return false
 
   const tickers = [...new Set(pending.map(e => e.ticker))]

@@ -123,7 +123,7 @@ export async function reviewPending(
 ): Promise<{ reviewed: number; corrected: number }> {
   const store = await readReviewStore()
   const today = new Date().toISOString().slice(0, 10)
-  const pending = store.records.filter(r => r.result === 'pending' && r.targetDate < today)
+  const pending = store.records.filter(r => r.result === 'pending' && r.targetDate <= today)
   if (!pending.length) return { reviewed: 0, corrected: 0 }
 
   let reviewed = 0
