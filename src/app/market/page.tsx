@@ -912,8 +912,9 @@ export default function MarketDashboard() {
 
 function MarketEventsFreshness() {
   const [status, setStatus] = useState<{ updatedAt: string; autoCheckedAt: string | null; hasPending: boolean; pendingCount: number } | null>(null)
+  const [annotating, setAnnotating] = useState(false)
 
-  useEffect(() => {
+  const fetchStatus = () => {
     fetch('/api/market-events', { cache: 'no-store' })
       .then(r => r.json())
       .then(d => setStatus({
@@ -923,7 +924,21 @@ function MarketEventsFreshness() {
         pendingCount: d.pendingFlags?.length ?? 0,
       }))
       .catch(() => {})
-  }, [])
+  }
+
+  useEffect(() => { fetchStatus() }, [])
+
+  const autoAnnotate = async () => {
+    setAnnotating(true)
+    try {
+      const res = await fetch('/api/market-events?action=auto-annotate', { cache: 'no-store' })
+      const d = await res.json()
+      if (d.newEvents > 0) {
+        // Refresh the page to show new events
+        window.location.reload()
+      }
+    } catch {} finally { setAnnotating(false); fetchStatus() }
+  }
 
   if (!status) return null
 
@@ -942,17 +957,31 @@ function MarketEventsFreshness() {
         {isStale ? '⚠ 已' + daysSinceUpdate + '天未更新' : '✓ ' + daysSinceUpdate + '天前更新'}
       </span>
       {hasGaps && (
-        <span style={{
-          padding: '2px 8px', borderRadius: '10px',
-          backgroundColor: '#fffbeb', color: '#92400e',
-          border: '1px solid #fcd34d',
-        }}>
-          ⚡ {status.pendingCount}次异动待标注
-        </span>
+        <>
+          <span style={{
+            padding: '2px 8px', borderRadius: '10px',
+            backgroundColor: '#fffbeb', color: '#92400e',
+            border: '1px solid #fcd34d',
+          }}>
+            ⚡ {status.pendingCount}次异动
+          </span>
+          <button
+            onClick={autoAnnotate}
+            disabled={annotating}
+            style={{
+              padding: '2px 8px', borderRadius: '10px', border: '1px solid var(--accent)',
+              backgroundColor: 'transparent', color: 'var(--accent)',
+              cursor: annotating ? 'not-allowed' : 'pointer', fontSize: '0.6rem',
+              fontFamily: 'var(--font-mono)', opacity: annotating ? 0.5 : 1,
+            }}
+          >
+            {annotating ? '归因中…' : '自动归因'}
+          </button>
+        </>
       )}
       {status.autoCheckedAt && (
         <span style={{ color: 'var(--text-muted)', opacity: 0.5 }}>
-          自动检测 {new Date(status.autoCheckedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+          检测 {new Date(status.autoCheckedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
         </span>
       )}
     </div>
