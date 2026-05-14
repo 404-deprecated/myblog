@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server'
-import { exec } from 'child_process'
-import { promisify } from 'util'
 import { readFile, writeFile, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { logPrediction } from '@/lib/review-store'
 import { loadTunedParams, detectRegime, applyRegimeAdjustments } from '@/lib/auto-tune'
+import { fetchPrices } from '@/lib/yahoo-finance'
 
 export const dynamic = 'force-dynamic'
-const execAsync = promisify(exec)
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type PredDir = 'up' | 'down' | 'flat'
@@ -88,28 +86,9 @@ async function writeStore(store: PredictionStore): Promise<void> {
   await writeFile(DATA_FILE, JSON.stringify(store, null, 2), 'utf-8')
 }
 
-// ─── Price fetch ──────────────────────────────────────────────────────────────
-async function fetchPrices(ticker: string): Promise<{ d: string; p: number }[]> {
-  const enc = encodeURIComponent(ticker)
-  for (const host of ['query2', 'query1']) {
-    const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${enc}?range=3mo&interval=1d&includePrePost=false`
-    try {
-      const { stdout } = await execAsync(
-        `curl -s --max-time 10 -H "User-Agent: Mozilla/5.0" "${url}"`
-      )
-      const result = JSON.parse(stdout).chart?.result?.[0]
-      if (!result) continue
-      const ts: number[] = result.timestamp || []
-      const closes: number[] =
-        result.indicators?.adjclose?.[0]?.adjclose ||
-        result.indicators?.quote?.[0]?.close || []
-      const pts = ts
-        .map((t, i) => ({ d: new Date(t * 1000).toISOString().slice(0, 10), p: closes[i] }))
-        .filter(x => x.p != null && !isNaN(x.p) && x.p > 0)
-      if (pts.length) return pts
-    } catch { /* try next host */ }
-  }
-  return []
+// ─── Price fetch (native fetch, zero subprocess overhead) ───────────────────
+async function fetchPredictionPrices(ticker: string): Promise<{ d: string; p: number }[]> {
+  return fetchPrices(ticker, '3mo')
 }
 
 // ─── Technical signals ────────────────────────────────────────────────────────
@@ -211,6 +190,7 @@ function buildPostMortem(pred: DailyPrediction, changeP: number): string {
   const isCombinedHigh = pred.bullPct >= 80
   const isCombinedLow = pred.bullPct <= 20
 
+  // ── Case 1: predicted up, actual down (reversal) ─────────────────────────
   if (pred.predictedDirection === 'up' && actual === 'down') {
     let rootCause = ''
     let fix = ''
@@ -227,6 +207,24 @@ function buildPostMortem(pred: DailyPrediction, changeP: number): string {
     return `❌ 预测偏多→实际${degree}下跌${mag.toFixed(1)}%。归因：${rootCause}修正：${fix}`
   }
 
+  // ── Case 2: predicted up, actual flat (stalled) ──────────────────────────
+  if (pred.predictedDirection === 'up' && actual === 'flat') {
+    let rootCause = ''
+    let fix = ''
+    if (isOverbought) {
+      rootCause = `RSI${rsiVal}超买，上涨动能衰竭进入横盘，多头力量不足以推动继续上涨。`
+      fix = 'RSI>70时即使均线多头排列，也需下调置信度15-20%。'
+    } else if (isMomentumStrong) {
+      rootCause = `5日累涨${momVal}%，前期涨幅过大后市场进入消化期，短期获利了结与买盘力量均衡。`
+      fix = '5日涨幅>4%时，次日预测应自动降为震荡，给市场消化时间。'
+    } else {
+      rootCause = `技术面偏多(${pred.technicalScore}分)但市场缺乏新催化剂，上涨动力不足，多空力量暂时均衡。`
+      fix = '综合得分在55-65时降低看涨判定标准，避免在边缘区域生成过度乐观信号。'
+    }
+    return `❌ 预测偏多→实际${degree}横盘（${mag > 0 ? '+' : ''}${changeP.toFixed(1)}%）。归因：${rootCause}修正：${fix}`
+  }
+
+  // ── Case 3: predicted down, actual up (reversal) ─────────────────────────
   if (pred.predictedDirection === 'down' && actual === 'up') {
     let rootCause = ''
     let fix = ''
@@ -243,7 +241,21 @@ function buildPostMortem(pred: DailyPrediction, changeP: number): string {
     return `❌ 预测偏空→实际${degree}上涨${mag.toFixed(1)}%。归因：${rootCause}修正：${fix}`
   }
 
-  // Predicted flat/震荡, actual moved
+  // ── Case 4: predicted down, actual flat (stalled) ────────────────────────
+  if (pred.predictedDirection === 'down' && actual === 'flat') {
+    let rootCause = ''
+    let fix = ''
+    if (isOversold) {
+      rootCause = `RSI${rsiVal}深度超卖，但抄底资金介入形成支撑，多空力量在低位均衡，未继续下跌。`
+      fix = 'RSI<30时看跌预测自动降为震荡，超卖区间的下跌空间有限。'
+    } else {
+      rootCause = `技术面偏空(${pred.technicalScore}分)但市场抛压不重，${pred.macroScore > 50 ? '宏观偏多提供支撑' : '缺乏新的利空催化剂'}，价格在当前位置获得支撑。`
+      fix = '技术面偏空但宏观不弱时，将看跌置信度削减25%，避免过度悲观。'
+    }
+    return `❌ 预测偏空→实际${degree}横盘（${changeP >= 0 ? '+' : ''}${changeP.toFixed(1)}%）。归因：${rootCause}修正：${fix}`
+  }
+
+  // ── Case 5 & 6: predicted flat, actual up or down ────────────────────────
   const actualLabel = actual === 'up' ? '涨' : '跌'
   let rootCause = ''
   let fix = ''
@@ -279,6 +291,8 @@ const TRACKED: TrackedAsset[] = [
   { ticker: '0700.HK',    name: '腾讯控股',  type: 'stock',  currency: 'HKD', group: 'portfolio' },
   { ticker: 'ORCL',       name: '甲骨文',    type: 'stock',  currency: 'USD', group: 'portfolio' },
   { ticker: 'PDD',        name: '拼多多',    type: 'stock',  currency: 'USD', group: 'portfolio' },
+  { ticker: '600036.SS',  name: '招商银行',  type: 'stock',  currency: 'CNY', group: 'portfolio' },
+  { ticker: '002142.SZ',  name: '宁波银行',  type: 'stock',  currency: 'CNY', group: 'portfolio' },
 
   // ── 赛道代表股 (sector) ─────────────────────────────────────────────────────
   { ticker: 'AMD',        name: 'AMD',       type: 'stock',  currency: 'USD', group: 'sector', sectorName: 'AI基础设施' },
@@ -311,25 +325,35 @@ async function autoReview(store: PredictionStore): Promise<boolean> {
   const tickers = [...new Set(pending.map(p => p.ticker))]
   const priceMap = new Map<string, { d: string; p: number }[]>()
   await Promise.allSettled(
-    tickers.map(async t => { priceMap.set(t, await fetchPrices(t)) })
+    tickers.map(async t => { priceMap.set(t, await fetchPredictionPrices(t)) })
   )
 
   let changed = false
   for (const pred of pending) {
     const prices = priceMap.get(pred.ticker) ?? []
-    if (prices.length < 2) continue
+    if (prices.length < 2) {
+      // Try fetching with a longer range for stubborn tickers
+      const retry = await fetchPredictionPrices(pred.ticker).catch(() => [] as { d: string; p: number }[])
+      if (retry.length < 2) continue
+    }
 
-    // Use the most recent price available (target date may not have data yet)
+    // Use actual prices from the map or retry
+    const pts = (priceMap.get(pred.ticker)?.length ?? 0) >= 2
+      ? (priceMap.get(pred.ticker) ?? [])
+      : (await fetchPredictionPrices(pred.ticker).catch(() => [] as { d: string; p: number }[]))
+
+    if (pts.length < 2) continue
+
     // Prefer exact date match, then closest after, then most recent
-    const exact = prices.find(p => p.d === pred.targetDate)
-    const after = prices.filter(p => p.d > pred.targetDate).sort((a, b) => a.d.localeCompare(b.d))[0]
-    const last = prices[prices.length - 1]
+    const exact = pts.find(p => p.d === pred.targetDate)
+    const after = pts.filter(p => p.d > pred.targetDate).sort((a, b) => a.d.localeCompare(b.d))[0]
+    const last = pts[pts.length - 1]
     const pt = exact || after || last
     if (!pt) continue
 
-    // Skip if the closest data is more than 5 days away from target
+    // Relaxed: allow up to 10 days distance for review (was 5)
     const distDays = Math.abs(new Date(pt.d).getTime() - new Date(pred.targetDate).getTime()) / 86400000
-    if (distDays > 5) continue
+    if (distDays > 10) continue
 
     const changeP = +((pt.p - pred.currentPrice) / pred.currentPrice * 100).toFixed(2)
 
@@ -356,7 +380,7 @@ async function autoReviewEarnings(store: PredictionStore): Promise<boolean> {
   const tickers = [...new Set(pending.map(e => e.ticker))]
   const priceMap = new Map<string, { d: string; p: number }[]>()
   await Promise.allSettled(
-    tickers.map(async t => { priceMap.set(t, await fetchPrices(t)) })
+    tickers.map(async t => { priceMap.set(t, await fetchPredictionPrices(t)) })
   )
 
   let changed = false
@@ -418,7 +442,7 @@ export async function POST() {
   const params = await loadTunedParams()
 
   // Detect market regime from VIX approximation and recent trend
-  const nasdaqPrices = await fetchPrices('^IXIC')
+  const nasdaqPrices = await fetchPredictionPrices('^IXIC')
   const nasdaqTech = nasdaqPrices.length >= 14 ? calcTechnicals(nasdaqPrices) : null
   const trendStrength = nasdaqTech ? nasdaqTech.bullPct - 50 : 0
   const regime = detectRegime(20, trendStrength) // VIX ≈ 20 default when FRED down
@@ -428,7 +452,7 @@ export async function POST() {
   const priceResults = new Map<string, { d: string; p: number }[]>()
   await Promise.allSettled(
     TRACKED.map(async asset => {
-      priceResults.set(asset.ticker, await fetchPrices(asset.ticker))
+      priceResults.set(asset.ticker, await fetchPredictionPrices(asset.ticker))
     })
   )
 
@@ -440,10 +464,38 @@ export async function POST() {
     const tech = calcTechnicals(prices)
     if (!tech) continue
 
-    // Use tuned weights and thresholds
+    // ── Review-driven safety adjustments (based on 18-error pattern analysis) ──
+    let adjustedBullPct = tech.bullPct
+
+    // Guard 1: RSI overbought (>72) → strong mean-reversion tendency next day
+    // 7 of 18 errors were RSI>75 "up" predictions that went down
+    if (tech.rsi > 72) {
+      const rsiPenalty = Math.round((tech.rsi - 70) * 0.8)
+      adjustedBullPct = Math.max(40, adjustedBullPct - rsiPenalty)
+    }
+
+    // Guard 2: Extreme 5-day momentum (>5%) + elevated RSI → almost certain pullback
+    // TSLA +11%, AMD +26%, SMH +7%, NVDA +12% all pulled back next day
+    if (tech.mom5 > 5 && tech.rsi > 60) {
+      adjustedBullPct = Math.max(38, adjustedBullPct - 12)
+    }
+
+    // Guard 3: Technical overconfidence — techScore 100 but market reversed
+    // 6 of 18 errors had techScore ≥ 90
+    if (tech.bullPct >= 85 && tech.rsi > 65) {
+      adjustedBullPct = Math.min(tech.bullPct, Math.max(42, adjustedBullPct - 10))
+    }
+
+    // Guard 4: Fighting the macro trend — predicting down while macro > 55
+    // META/NIO predicted down but macro was bullish, price went sideways/up
+    if (adjustedBullPct < 45 && macroScore >= 55) {
+      adjustedBullPct = Math.min(50, adjustedBullPct + 8)
+    }
+
+    // Use adjusted scores
     const techW = regimeAdj.techWeight
     const macroW = 1 - techW
-    const combined = Math.round(tech.bullPct * techW + macroScore * macroW)
+    const combined = Math.round(adjustedBullPct * techW + macroScore * macroW)
 
     const dir: PredDir =
       combined > params.bullThreshold ? 'up' :
@@ -452,6 +504,8 @@ export async function POST() {
     const rawConfidence = Math.round(Math.abs(combined - 50) * params.confidenceScale + params.confidenceBase)
     const confidence = Math.min(params.maxConfidence, rawConfidence) + (regimeAdj.confidenceAdjust)
 
+    // Adjust target range wider when RSI is extreme (higher uncertainty)
+    const volatilityMultiplier = tech.rsi > 70 || tech.rsi < 30 ? 1.4 : tech.rsi > 60 || tech.rsi < 40 ? 1.15 : 1.0
     const bias = dir === 'up' ? 0.003 : dir === 'down' ? -0.003 : 0
     const center = tech.price * (1 + bias)
     const { reasoning, keyRisks } = buildReasoning(tech, macroScore)
@@ -468,8 +522,8 @@ export async function POST() {
       predictedDirection: dir,
       bullPct: combined,
       confidence,
-      targetLow:  +(center - tech.atrAbs * 0.9).toFixed(2),
-      targetHigh: +(center + tech.atrAbs * 0.9).toFixed(2),
+      targetLow:  +(center - tech.atrAbs * 0.9 * volatilityMultiplier).toFixed(2),
+      targetHigh: +(center + tech.atrAbs * 0.9 * volatilityMultiplier).toFixed(2),
       reasoning,
       keyRisks,
       technicalScore: tech.bullPct,

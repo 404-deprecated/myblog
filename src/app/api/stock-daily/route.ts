@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { exec } from 'child_process'
-import { promisify } from 'util'
+import { fetchYahooChart } from '@/lib/yahoo-finance'
 
 export const dynamic = 'force-dynamic'
-
-const execAsync = promisify(exec)
 
 // Only allow safe ticker characters to prevent injection
 function safeTicker(s: string): string | null {
@@ -30,36 +27,23 @@ export async function GET(req: NextRequest) {
 
   const cfg = YF_CONFIG[range] ?? YF_CONFIG['1M']
 
-  for (const host of ['query2', 'query1']) {
-    const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${ticker}?range=${cfg.range}&interval=${cfg.interval}&includePrePost=false`
-    try {
-      const { stdout } = await execAsync(
-        `curl -s --max-time 10 -H "User-Agent: Mozilla/5.0" -H "Accept: application/json" "${url}"`,
-      )
-      const raw = JSON.parse(stdout)
-      const result = raw.chart?.result?.[0]
-      if (!result) continue
+  const { ts, closes } = await fetchYahooChart(ticker, cfg.range, cfg.interval)
 
-      const timestamps: number[] = result.timestamp || []
-      const adjClose: number[] =
-        result.indicators?.adjclose?.[0]?.adjclose ||
-        result.indicators?.quote?.[0]?.close || []
+  if (ts.length > 0 && closes.length > 0) {
+    const prices = ts
+      .map((t, i) => {
+        const close = closes[i]
+        if (close == null || isNaN(close) || close <= 0) return null
+        return { d: new Date(t * 1000).toISOString().slice(0, 10), p: +close.toFixed(2) }
+      })
+      .filter((pt): pt is { d: string; p: number } => pt !== null)
 
-      const prices = timestamps
-        .map((ts, i) => {
-          const close = adjClose[i]
-          if (close == null || isNaN(close) || close <= 0) return null
-          return { d: new Date(ts * 1000).toISOString().slice(0, 10), p: +close.toFixed(2) }
-        })
-        .filter((pt): pt is { d: string; p: number } => pt !== null)
-
-      if (!prices.length) continue
-
+    if (prices.length) {
       return NextResponse.json(
         { prices, fetchedAt: new Date().toISOString() },
         { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200' } }
       )
-    } catch { /* try next host */ }
+    }
   }
 
   return NextResponse.json({ error: 'Daily data unavailable — Yahoo Finance 暂时不可用' }, { status: 502 })

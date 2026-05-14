@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
-import { exec } from 'child_process'
-import { promisify } from 'util'
+import { fetchPrices } from '@/lib/yahoo-finance'
 
 export const revalidate = 3600 // 1 hour
-const execAsync = promisify(exec)
 
 export interface MacroSignal {
   key: string
@@ -39,20 +37,8 @@ const YF_MACRO = [
 ]
 
 async function fetchYahooMacro(ticker: string): Promise<{ values: number[]; latestDate: string }> {
-  const enc = ticker.replace('^', '%5E')
-  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${enc}?range=3mo&interval=1wk&includePrePost=false`
-  const { stdout } = await execAsync(
-    `curl -s --max-time 10 -H "User-Agent: Mozilla/5.0" "${url}"`
-  )
-  const result = JSON.parse(stdout).chart?.result?.[0]
-  if (!result) throw new Error(`Yahoo ${ticker}: no data`)
-  const ts: number[] = result.timestamp || []
-  const closes: number[] = result.indicators?.adjclose?.[0]?.adjclose
-    || result.indicators?.quote?.[0]?.close || []
-  const pts = ts
-    .map((t, i) => ({ d: new Date(t * 1000).toISOString().slice(0, 10), p: closes[i] }))
-    .filter(x => x.p != null && !isNaN(x.p) && x.p > 0)
-  if (!pts.length) throw new Error(`Yahoo ${ticker}: no valid prices`)
+  const pts = await fetchPrices(ticker, '3mo', '1wk')
+  if (!pts.length) throw new Error(`Yahoo ${ticker}: no data`)
   const recent = pts.slice(-6)
   return {
     values: recent.map(r => r.p),

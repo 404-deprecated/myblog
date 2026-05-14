@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
-import { exec } from 'child_process'
-import { promisify } from 'util'
 import { readFile, writeFile } from 'fs/promises'
 import { join } from 'path'
+import { fetchYahooChart } from '@/lib/yahoo-finance'
 
 export const dynamic = 'force-dynamic'
-const execAsync = promisify(exec)
 
 interface MarketEvent {
   d: string
@@ -33,19 +31,9 @@ async function writeEvents(store: EventsStore): Promise<void> {
   await writeFile(EVENTS_FILE, JSON.stringify(store, null, 2), 'utf-8')
 }
 
-// ─── Fetch price data for a ticker ──────────────────────────────────────────
-async function fetchPrices(ticker: string, range = '6mo'): Promise<{ ts: number[]; closes: number[] }> {
-  const enc = encodeURIComponent(ticker)
-  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${enc}?range=${range}&interval=1d&includePrePost=false`
-  try {
-    const { stdout } = await execAsync(
-      `curl -s --max-time 10 -H "User-Agent: Mozilla/5.0" "${url}"`
-    )
-    const r = JSON.parse(stdout).chart?.result?.[0]
-    if (!r) return { ts: [], closes: [] }
-    const closes = r.indicators?.adjclose?.[0]?.adjclose || r.indicators?.quote?.[0]?.close || []
-    return { ts: r.timestamp || [], closes }
-  } catch { return { ts: [], closes: [] } }
+// ─── Fetch price data for a ticker (native fetch, no subprocess) ────────────
+async function fetchMarketPrices(ticker: string, range = '6mo'): Promise<{ ts: number[]; closes: number[] }> {
+  return fetchYahooChart(ticker, range, '1d')
 }
 
 // ─── Pre-fetch all macro data once (fast, parallel) ──────────────────────────
@@ -60,7 +48,7 @@ async function prefetchMacroContexts(): Promise<Map<string, string>> {
 
   const results = await Promise.allSettled(
     indicators.map(async ({ ticker, key }) => {
-      const data = await fetchPrices(ticker, '6mo')
+      const data = await fetchMarketPrices(ticker, '6mo')
       return { key, ...data }
     })
   )
@@ -160,7 +148,7 @@ async function detectAndAttribute(
   ticker: string, market: string, lastEventDate: string, isIndex: boolean,
   macroMap: Map<string, string>,
 ): Promise<{ events: MarketEvent[]; pending: { d: string; changePct: number; market: string; idx: string }[] }> {
-  const { ts, closes } = await fetchPrices(ticker)
+  const { ts, closes } = await fetchMarketPrices(ticker)
   if (!ts.length) return { events: [], pending: [] }
 
   const autoEvents: MarketEvent[] = []
@@ -266,7 +254,7 @@ export async function GET(req: Request) {
   for (const m of markets) {
     const existing = store.markets[m.key]
     const lastDate = existing.length > 0 ? existing[existing.length - 1].d : '2020-01-01'
-    const { ts, closes } = await fetchPrices(m.ticker)
+    const { ts, closes } = await fetchMarketPrices(m.ticker)
     if (!ts.length) continue
 
     for (let i = ts.length - 30; i < ts.length; i++) {

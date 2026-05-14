@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
-import { exec } from 'child_process'
-import { promisify } from 'util'
 import { logPrediction } from '@/lib/review-store'
 import { getStockFundamentals } from '@/lib/fundamentals'
+import { fetchPrices } from '@/lib/yahoo-finance'
 
 export const dynamic = 'force-dynamic'
-const execAsync = promisify(exec)
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PricePoint { d: string; p: number }
@@ -62,6 +60,8 @@ const ASSETS: TrackedAsset[] = [
   { ticker: '0700.HK', yfTicker: '0700.HK', name: '腾讯控股', type: 'stock', currency: 'HKD', forwardPE: 18, revenueGrowthPct: 10 },
   { ticker: 'ORCL', yfTicker: 'ORCL', name: '甲骨文', type: 'stock', currency: 'USD', forwardPE: 27, revenueGrowthPct: 12 },
   { ticker: 'PDD', yfTicker: 'PDD', name: '拼多多', type: 'stock', currency: 'USD', forwardPE: 10, revenueGrowthPct: 20 },
+  { ticker: '600036.SS', yfTicker: '600036.SS', name: '招商银行', type: 'stock', currency: 'CNY', forwardPE: 7, revenueGrowthPct: 6 },
+  { ticker: '002142.SZ', yfTicker: '002142.SZ', name: '宁波银行', type: 'stock', currency: 'CNY', forwardPE: 6, revenueGrowthPct: 5 },
   // Sector key stocks
   { ticker: 'AMD', yfTicker: 'AMD', name: 'AMD', type: 'stock', currency: 'USD', forwardPE: 22, revenueGrowthPct: 24 },
   { ticker: 'AVGO', yfTicker: 'AVGO', name: '博通', type: 'stock', currency: 'USD', forwardPE: 24, revenueGrowthPct: 44 },
@@ -80,30 +80,6 @@ const ASSETS: TrackedAsset[] = [
   { ticker: 'SMH', yfTicker: 'SMH', name: '半导体ETF', type: 'etf', currency: 'USD' },
   { ticker: 'ARKK', yfTicker: 'ARKK', name: '创新成长ETF', type: 'etf', currency: 'USD' },
 ]
-
-// ─── Yahoo Finance price fetch ─────────────────────────────────────────────────
-async function fetchPrices(ticker: string, range: string): Promise<PricePoint[]> {
-  const enc = encodeURIComponent(ticker)
-  for (const host of ['query2', 'query1']) {
-    const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${enc}?range=${range}&interval=1d&includePrePost=false`
-    try {
-      const { stdout } = await execAsync(
-        `curl -s --max-time 12 -H "User-Agent: Mozilla/5.0" "${url}"`
-      )
-      const result = JSON.parse(stdout).chart?.result?.[0]
-      if (!result) continue
-      const ts: number[] = result.timestamp || []
-      const closes: number[] =
-        result.indicators?.adjclose?.[0]?.adjclose ||
-        result.indicators?.quote?.[0]?.close || []
-      const pts = ts
-        .map((t, i) => ({ d: new Date(t * 1000).toISOString().slice(0, 10), p: closes[i] }))
-        .filter(x => x.p != null && !isNaN(x.p) && x.p > 0)
-      if (pts.length > 20) return pts
-    } catch { /* try next host */ }
-  }
-  return []
-}
 
 // ─── Statistical helpers ───────────────────────────────────────────────────────
 function mean(arr: number[]): number { return arr.reduce((a, b) => a + b, 0) / arr.length }
@@ -515,7 +491,7 @@ function backtest(prices: PricePoint[], methods: MethodResult[], assetType: Safe
 
   let correct3m = 0, correct6m = 0, correct12m = 0, samples = 0
 
-  for (let i = minWindow; i < vals.length - horizon12m; i += 5) {
+  for (let i = minWindow; i < vals.length - horizon12m; i += 10) {
     // Simulate the state at time i
     const pastPrices = prices.slice(0, i + 1).map((pt, idx) => ({ d: pt.d, p: vals[idx] }))
 
@@ -553,6 +529,8 @@ function backtest(prices: PricePoint[], methods: MethodResult[], assetType: Safe
       }
     }
     if (entryIdx === -1) continue // safe buy was never triggered, skip this sample
+
+    if (samples >= 40) break // cap samples to avoid excessive CPU on large datasets
 
     const entryPrice = Math.min(futureVals[entryIdx], safeBuy) // actual entry at or below safe buy
     const remainingVals = futureVals.slice(entryIdx + 1)

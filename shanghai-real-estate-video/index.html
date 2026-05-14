@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="gsap.min.js"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&display=swap');
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #0a0a0f; font-family: 'Noto Sans SC', sans-serif; }
+
+      .clip { position: absolute; width: 1080px; height: 1920px; }
+      .flex-col { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+      .bg-dark  { background: #0a0a0f; }
+      .bg-red   { background: linear-gradient(180deg, #1a0808 0%, #0a0505 50%, #0d0606 100%); }
+      .bg-green { background: linear-gradient(180deg, #081a0a 0%, #050a05 50%, #060d06 100%); }
+
+      .divider { width: 100px; height: 5px; border-radius: 3px; background: #d4a853; }
+
+      .title-xl { font-size: 88px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.15;
+        background: linear-gradient(180deg, #f5f5f5 0%, #b0b0b0 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+      .title-lg { font-size: 64px; font-weight: 700; color: #f0f0f0; line-height: 1.25; }
+      .title-md { font-size: 48px; font-weight: 700; color: #e8e8e8; line-height: 1.3; }
+      .body-text { font-size: 38px; font-weight: 400; color: #aaa; line-height: 1.5; }
+
+      .number-jumbo { font-size: 160px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; }
+      .number-xl { font-size: 120px; font-weight: 900; letter-spacing: -0.02em; line-height: 1; }
+      .number-lg { font-size: 80px; font-weight: 900; letter-spacing: -0.02em; line-height: 1; }
+
+      .text-red    { color: #ef4444; }
+      .text-green  { color: #22c55e; }
+      .text-amber  { color: #f59e0b; }
+      .text-gold   { color: #d4a853; }
+      .text-white  { color: #f0f0f0; }
+      .text-gray   { color: #808080; }
+      .text-muted  { color: #606060; }
+
+      .tag {
+        display: inline-block; padding: 10px 32px; border-radius: 8px;
+        font-size: 30px; font-weight: 600; letter-spacing: 0.06em;
+      }
+      .tag-buyer { background: rgba(239,68,68,0.12); color: #ef4444; border: 2px solid rgba(239,68,68,0.25); }
+      .tag-supply { background: rgba(34,197,94,0.12); color: #22c55e; border: 2px solid rgba(34,197,94,0.25); }
+
+      .card {
+        background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.06);
+        border-radius: 20px; padding: 32px 40px; width: 900px;
+      }
+
+      .stat-row { display: flex; align-items: center; justify-content: space-between; width: 900px; padding: 20px 40px; }
+      .stat-label { font-size: 34px; color: #888; }
+      .stat-value { font-size: 48px; font-weight: 700; }
+
+      /* Bar chart */
+      .bar-container { display: flex; align-items: flex-end; gap: 20px; width: 900px; height: 200px; }
+      .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
+      .bar-label { font-size: 22px; color: #999; margin-top: 12px; white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="76"
+      data-width="1080"
+      data-height="1920"
+    >
+
+      <!-- ====== S1: Title (0-4s) ====== -->
+      <div id="s1" class="clip bg-dark flex-col" data-start="0" data-duration="5" data-track-index="10"
+           style="gap:20px">
+        <div class="divider"></div>
+        <div class="title-xl" style="text-align:center; max-width:880px">上海楼市<br/>价格合理性分析</div>
+        <div style="display:flex; gap:20px; margin-top:8px">
+          <span class="tag tag-buyer">买房测</span>
+          <span class="tag tag-supply">供给侧</span>
+        </div>
+        <audio id="a1" data-start="0.2" data-duration="4.3" data-track-index="0" data-volume="1" src="assets/s1.aiff" preload="auto"></audio>
+      </div>
+
+      <!-- ====== S2: 购买力 (4-12s) ====== -->
+      <div id="s2" class="clip bg-red flex-col" data-start="5" data-duration="10" data-track-index="11"
+           style="gap:36px; padding:80px 60px">
+        <div class="tag tag-buyer">买房测 · 购买力</div>
+        <div class="number-jumbo text-red" style="font-size:200px">26<span style="font-size:48px; font-weight:400"> 万人</span></div>
+        <div class="title-md" style="text-align:center">月薪 <span class="text-red">5万+</span> 群体</div>
+        <div class="card" style="text-align:center">
+          <div class="body-text">核心区 150㎡ 总价 <span class="text-amber" style="font-size:52px;font-weight:700">1,500万</span></div>
+          <div class="body-text" style="margin-top:8px">能支撑群体 <span class="text-red" style="font-size:52px;font-weight:700">不足 3%</span></div>
+        </div>
+        <audio id="a2" data-start="5.15" data-duration="9.1" data-track-index="0" data-volume="1" src="assets/s2.aiff" preload="auto"></audio>
+      </div>
+
+      <!-- ====== S3: 杠杆退潮 (12-22s) ====== -->
+      <div id="s3" class="clip bg-red flex-col" data-start="15" data-duration="11" data-track-index="12"
+           style="gap:32px; padding:60px 60px">
+        <div class="tag tag-buyer">买房测 · 杠杆</div>
+        <div class="body-text" style="text-align:center; margin-bottom:-8px">年新增房贷</div>
+        <div class="number-jumbo text-green" style="font-size:140px">3,000亿</div>
+        <div style="display:flex; align-items:center; gap:24px">
+          <div class="divider" style="width:60px; background:#444"></div>
+          <span class="number-xl text-red">-87%</span>
+          <div class="divider" style="width:60px; background:#444"></div>
+        </div>
+        <div class="number-jumbo text-red" style="font-size:140px">400亿</div>
+        <div class="body-text" style="text-align:center; margin-top:-4px">2016 → 2025</div>
+        <div class="card" style="text-align:center; margin-top:8px">
+          <div class="body-text" style="font-size:36px">从 <span class="text-green">"能贷多少贷多少"</span></div>
+          <div class="body-text" style="font-size:36px">到 <span class="text-red">"能不贷就不贷"</span></div>
+        </div>
+        <audio id="a3" data-start="15.15" data-duration="10.3" data-track-index="0" data-volume="1" src="assets/s3.aiff" preload="auto"></audio>
+      </div>
+
+      <!-- ====== S4: 成交结构 (22-31s) ====== -->
+      <div id="s4" class="clip bg-red flex-col" data-start="26" data-duration="11" data-track-index="13"
+           style="gap:28px; padding:60px 60px">
+        <div class="tag tag-buyer">买房测 · 成交结构</div>
+        <div class="title-md" style="text-align:center">
+          <span class="text-red number-lg" style="font-size:100px">72%</span> 成交在
+        </div>
+        <div class="number-jumbo text-red">300万<span style="font-size:48px;font-weight:400">以下</span></div>
+        <div class="body-text" style="text-align:center; margin-top:-10px">500万以上仅占 <span class="text-amber" style="font-size:48px;font-weight:700">10%</span></div>
+        <div class="bar-container" style="margin-top:8px">
+          <div class="bar-col"><div class="bar" style="width:100%;height:160px;background:linear-gradient(0deg,#22c55e,#4ade80);border-radius:12px 12px 0 0"></div><div class="bar-label">≤200万 50%</div></div>
+          <div class="bar-col"><div class="bar" style="width:100%;height:100px;background:linear-gradient(0deg,#22c55e,#4ade80);border-radius:12px 12px 0 0"></div><div class="bar-label">200-300 22%</div></div>
+          <div class="bar-col"><div class="bar" style="width:100%;height:70px;background:linear-gradient(0deg,#f59e0b,#fbbf24);border-radius:12px 12px 0 0"></div><div class="bar-label">300-500 18%</div></div>
+          <div class="bar-col"><div class="bar" style="width:100%;height:35px;background:linear-gradient(0deg,#ef4444,#f87171);border-radius:12px 12px 0 0"></div><div class="bar-label">500-800 7%</div></div>
+          <div class="bar-col"><div class="bar" style="width:100%;height:12px;background:linear-gradient(0deg,#ef4444,#f87171);border-radius:12px 12px 0 0"></div><div class="bar-label">800+ 3%</div></div>
+        </div>
+        <audio id="a4" data-start="26.15" data-duration="10.3" data-track-index="0" data-volume="1" src="assets/s4.aiff" preload="auto"></audio>
+      </div>
+
+      <!-- ====== S5: 新房豪宅化 (31-41s) ====== -->
+      <div id="s5" class="clip bg-green flex-col" data-start="37" data-duration="11" data-track-index="14"
+           style="gap:32px; padding:60px 60px">
+        <div class="tag tag-supply">供给侧 · 新房供应</div>
+        <div class="body-text" style="text-align:center">千万级房源占比</div>
+        <div style="display:flex; align-items:center; gap:32px">
+          <div style="text-align:center">
+            <div class="number-jumbo text-green" style="font-size:120px">15%</div>
+            <div class="body-text">2020</div>
+          </div>
+          <div class="title-xl" style="font-size:64px; -webkit-text-fill-color:#d4a853">→</div>
+          <div style="text-align:center">
+            <div class="number-jumbo text-green" style="font-size:120px">48%</div>
+            <div class="body-text">2026</div>
+          </div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div class="body-text">每年近 <span class="text-green" style="font-size:48px;font-weight:700">5万套</span> 千万级新房入市</div>
+          <div class="body-text" style="margin-top:12px">真实买家仅 <span class="text-red" style="font-size:48px;font-weight:700">~4千户</span> · 供需比 <span class="text-red" style="font-size:52px;font-weight:900">10:1</span></div>
+        </div>
+        <audio id="a5" data-start="37.15" data-duration="10.5" data-track-index="0" data-volume="1" src="assets/s5.aiff" preload="auto"></audio>
+      </div>
+
+      <!-- ====== S6: 产品力差距 (41-49s) ====== -->
+      <div id="s6" class="clip bg-green flex-col" data-start="48" data-duration="10" data-track-index="15"
+           style="gap:24px; padding:60px 50px">
+        <div class="tag tag-supply">供给侧 · 产品力</div>
+        <div class="number-jumbo text-green" style="font-size:140px">2,000万</div>
+        <div class="body-text" style="font-size:36px; margin-top:-12px">在上海 vs 杭州 vs 成都</div>
+        <div style="display:flex; gap:24px; width:940px">
+          <div class="card" style="flex:1; text-align:center; padding:28px 20px">
+            <div class="body-text" style="font-size:28px;color:#888">上海</div>
+            <div class="title-md" style="font-size:36px;margin-top:8px">130-160㎡</div>
+            <div class="body-text" style="font-size:26px;color:#ef4444;margin-top:4px">得房率 75-78%</div>
+          </div>
+          <div class="card" style="flex:1; text-align:center; padding:28px 20px">
+            <div class="body-text" style="font-size:28px;color:#888">杭州</div>
+            <div class="title-md" style="font-size:36px;margin-top:8px">250-330㎡</div>
+            <div class="body-text" style="font-size:26px;color:#f59e0b;margin-top:4px">得房率 82-88%</div>
+          </div>
+          <div class="card" style="flex:1; text-align:center; padding:28px 20px">
+            <div class="body-text" style="font-size:28px;color:#888">成都</div>
+            <div class="title-md" style="font-size:36px;margin-top:8px">400-600㎡</div>
+            <div class="body-text" style="font-size:26px;color:#22c55e;margin-top:4px">得房率 85-92%</div>
+          </div>
+        </div>
+        <div class="body-text" style="text-align:center;font-size:32px;color:#888;margin-top:8px">资金会流动，买家会用脚投票</div>
+        <audio id="a6" data-start="48.15" data-duration="9.2" data-track-index="0" data-volume="1" src="assets/s6.aiff" preload="auto"></audio>
+      </div>
+
+      <!-- ====== S7: 空置螺旋 (49-56s) ====== -->
+      <div id="s7" class="clip bg-green flex-col" data-start="58" data-duration="8" data-track-index="16"
+           style="gap:20px; padding:60px 50px">
+        <div class="tag tag-supply">供给侧 · 空置螺旋</div>
+        <div class="title-md" style="text-align:center; margin-bottom:8px">老豪宅空出来的 <span class="text-green">越来越多</span></div>
+        <div class="stat-row"><span class="stat-label">第 1 年</span><span class="stat-value text-amber">挂牌量 ↑20%</span></div>
+        <div class="stat-row"><span class="stat-label">第 2 年</span><span class="stat-value text-amber">价格 -10%</span></div>
+        <div class="stat-row"><span class="stat-label">第 3 年</span><span class="stat-value text-red">有价无市</span></div>
+        <div class="stat-row"><span class="stat-label">第 4 年</span><span class="stat-value text-red" style="font-size:56px">恐慌抛售</span></div>
+        <div class="body-text" style="margin-top:8px">不是预测，是数学</div>
+        <audio id="a7" data-start="58.15" data-duration="7.7" data-track-index="0" data-volume="1" src="assets/s7.aiff" preload="auto"></audio>
+      </div>
+
+      <!-- ====== S8: AI冲击 + 结论 (56-65s) ====== -->
+      <div id="s8" class="clip bg-dark flex-col" data-start="66" data-duration="10" data-track-index="17"
+           style="gap:32px; padding:80px 60px">
+        <div class="number-jumbo text-amber" style="font-size:180px">225<span style="font-size:48px;font-weight:400">万</span></div>
+        <div class="title-md" style="text-align:center">白领岗位面临 AI 替代</div>
+        <div class="card" style="text-align:center">
+          <div class="body-text">AI 造富 <span class="text-green">数百人</span> · AI 降薪族 <span class="text-red">几十万人</span></div>
+          <div class="body-text" style="margin-top:8px">购买力整体下移</div>
+        </div>
+        <div class="divider" style="margin-top:8px"></div>
+        <div class="title-lg" style="text-align:center;font-size:56px;margin-top:4px">
+          <span class="text-gold">价格体系</span><br/>向真实购买力回归
+        </div>
+        <div class="body-text" style="font-size:28px;color:#555">数据截至 2026年5月 · 仅供参考</div>
+        <audio id="a8" data-start="66.15" data-duration="10.0" data-track-index="0" data-volume="1" src="assets/s8.aiff" preload="auto"></audio>
+      </div>
+
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      // S1: Title
+      tl.from("#s1 .divider", { scaleX: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+      tl.from("#s1 .title-xl", { opacity: 0, y: 50, duration: 0.7, ease: "power3.out" }, 0.4);
+      tl.from("#s1 .tag-buyer", { opacity: 0, x: -40, duration: 0.35, ease: "power3.out" }, 1.0);
+      tl.from("#s1 .tag-supply", { opacity: 0, x: 40, duration: 0.35, ease: "power3.out" }, 1.2);
+
+      // S2: Purchasing power
+      tl.from("#s2 .tag", { opacity: 0, scale: 0.8, duration: 0.3, ease: "back.out(1.4)" }, 5.15);
+      tl.from("#s2 .number-jumbo", { opacity: 0, scale: 0.7, duration: 0.6, ease: "back.out(1.3)" }, 5.4);
+      tl.from("#s2 .title-md", { opacity: 0, y: 30, duration: 0.5, ease: "power3.out" }, 6.0);
+      tl.from("#s2 .card", { opacity: 0, y: 40, duration: 0.5, ease: "power3.out" }, 6.5);
+
+      // S3: Leverage
+      tl.from("#s3 .tag", { opacity: 0, scale: 0.8, duration: 0.3, ease: "back.out(1.4)" }, 15.15);
+      tl.from("#s3 .number-jumbo", { opacity: 0, y: 30, duration: 0.5, ease: "power3.out", stagger: 0.2 }, 15.4);
+      tl.from("#s3 .card", { opacity: 0, y: 40, duration: 0.5, ease: "power3.out" }, 16.5);
+
+      // S4: Transactions
+      tl.from("#s4 .tag", { opacity: 0, duration: 0.3 }, 26.15);
+      tl.from("#s4 .title-md", { opacity: 0, y: 30, duration: 0.5, ease: "power3.out" }, 26.4);
+      tl.from("#s4 .number-jumbo", { opacity: 0, scale: 0.7, duration: 0.5, ease: "back.out(1.3)" }, 26.8);
+      document.querySelectorAll("#s4 .bar-col").forEach(function(col, i) {
+        var bar = col.querySelector(".bar");
+        var h = bar.style.height;
+        bar.style.height = "0px";
+        tl.to(bar, { height: h, duration: 0.5, ease: "power3.out" }, 27.5 + i * 0.08);
+      });
+
+      // S5: New housing supply
+      tl.from("#s5 .tag", { opacity: 0, scale: 0.8, duration: 0.3, ease: "back.out(1.4)" }, 37.15);
+      tl.from("#s5 .card", { opacity: 0, y: 50, duration: 0.5, ease: "power3.out" }, 38.0);
+
+      // S6: Product quality
+      tl.from("#s6 .tag", { opacity: 0, duration: 0.3 }, 48.15);
+      tl.from("#s6 .number-jumbo", { opacity: 0, y: 30, duration: 0.5, ease: "power3.out" }, 48.4);
+      tl.from("#s6 .card", { opacity: 0, y: 40, duration: 0.4, stagger: 0.1, ease: "power3.out" }, 49.0);
+
+      // S7: Vacancy spiral
+      tl.from("#s7 .tag", { opacity: 0, duration: 0.3 }, 58.15);
+      tl.from("#s7 .title-md", { opacity: 0, y: 25, duration: 0.4, ease: "power3.out" }, 58.35);
+      tl.from("#s7 .stat-row", { opacity: 0, x: -30, duration: 0.35, stagger: 0.08, ease: "power3.out" }, 58.8);
+
+      // S8: Conclusion
+      tl.from("#s8 .number-jumbo", { opacity: 0, scale: 0.6, duration: 0.6, ease: "back.out(1.3)" }, 66.15);
+      tl.from("#s8 .title-md", { opacity: 0, y: 30, duration: 0.5, ease: "power3.out" }, 66.6);
+      tl.from("#s8 .card", { opacity: 0, y: 30, duration: 0.4, ease: "power3.out" }, 67.1);
+      tl.from("#s8 .divider", { scaleX: 0, duration: 0.4, ease: "power3.out" }, 67.6);
+      tl.from("#s8 .title-lg", { opacity: 0, y: 30, duration: 0.5, ease: "power3.out" }, 67.9);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

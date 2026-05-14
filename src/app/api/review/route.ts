@@ -1,53 +1,31 @@
 import { NextResponse } from 'next/server'
-import { exec } from 'child_process'
-import { promisify } from 'util'
 import {
   readReviewStore, writeReviewStore, reviewPending, computeStats, generateCorrections,
   logPrediction, type ReviewRecord, type ReviewType, type ReviewGroup,
 } from '@/lib/review-store'
 import { autoTune } from '@/lib/auto-tune'
+import { fetchPrices } from '@/lib/yahoo-finance'
 
 export const dynamic = 'force-dynamic'
-const execAsync = promisify(exec)
 
-// ─── Price fetcher for review ──────────────────────────────────────────────────
+// ─── Price fetcher for review (native fetch, no subprocess) ────────────────────
 async function fetchPriceForDate(
   ticker: string,
   targetDate: string,
 ): Promise<{ price: number; changePct: number } | null> {
-  const enc = encodeURIComponent(ticker)
-  // Fetch 1 month of data around the target date
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${enc}?range=3mo&interval=1d&includePrePost=false`
-  try {
-    const { stdout } = await execAsync(
-      `curl -s --max-time 10 -H "User-Agent: Mozilla/5.0" "${url}"`
-    )
-    const result = JSON.parse(stdout).chart?.result?.[0]
-    if (!result) return null
-    const ts: number[] = result.timestamp || []
-    const closes: number[] =
-      result.indicators?.adjclose?.[0]?.adjclose ||
-      result.indicators?.quote?.[0]?.close || []
+  const prices = await fetchPrices(ticker, '3mo')
+  if (prices.length < 2) return null
 
-    const prices = ts
-      .map((t, i) => ({ d: new Date(t * 1000).toISOString().slice(0, 10), p: closes[i] }))
-      .filter(x => x.p != null && !isNaN(x.p) && x.p > 0)
+  // Find the price at or closest after targetDate
+  const targetPt = prices.find(p => p.d >= targetDate)
+  if (!targetPt) return null
 
-    if (prices.length < 2) return null
+  // Find the price just before targetDate for change calculation
+  const prevIdx = prices.findIndex(p => p.d >= targetDate) - 1
+  const prevPrice = prevIdx >= 0 ? prices[prevIdx].p : targetPt.p
+  const changePct = prevPrice > 0 ? +((targetPt.p - prevPrice) / prevPrice * 100).toFixed(2) : 0
 
-    // Find the price at or closest after targetDate
-    const targetPt = prices.find(p => p.d >= targetDate)
-    if (!targetPt) return null
-
-    // Find the price just before targetDate for change calculation
-    const prevIdx = prices.findIndex(p => p.d >= targetDate) - 1
-    const prevPrice = prevIdx >= 0 ? prices[prevIdx].p : targetPt.p
-    const changePct = prevPrice > 0 ? +((targetPt.p - prevPrice) / prevPrice * 100).toFixed(2) : 0
-
-    return { price: +targetPt.p.toFixed(2), changePct }
-  } catch {
-    return null
-  }
+  return { price: +targetPt.p.toFixed(2), changePct }
 }
 
 // ─── GET: Stats + corrections ─────────────────────────────────────────────────
