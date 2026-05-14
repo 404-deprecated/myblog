@@ -1,8 +1,102 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { NVDA_HISTORY, TENCENT_HISTORY, ORCL_HISTORY, PDD_HISTORY, FACTOR_SENSITIVITY, STOCK_EVENTS, type MonthlyClose } from './portfolio-data'
+import { NVDA_HISTORY, TENCENT_HISTORY, ORCL_HISTORY, PDD_HISTORY, CMB_HISTORY, NBB_HISTORY, MU_HISTORY, SAMSUNG_HISTORY, SKHYNIX_HISTORY, FACTOR_SENSITIVITY, STOCK_EVENTS, type MonthlyClose } from './portfolio-data'
 import { InteractiveChart, type ChartEvent } from './InteractiveChart'
+
+interface StockDetailData {
+  ticker: string
+  name: string | null
+  currency: string | null
+  price: number | null
+  previousClose: number | null
+  open: number | null
+  dayHigh: number | null
+  dayLow: number | null
+  volume: number | null
+  high52w: number | null
+  low52w: number | null
+  changePct: number | null
+  marketCap: number | null
+  marketCapFmt: string | null
+  totalRevenue: number | null
+  totalRevenueFmt: string  | null
+  netIncome: number | null
+  netIncomeFmt: string | null
+  trailingEps: number | null
+  forwardEps: number | null
+  trailingPE: number | null
+  forwardPE: number | null
+  sharesOutstanding: number | null
+  sharesOutstandingFmt: string | null
+  dividendRate: number | null
+  dividendYield: number | null
+  exDividendDate: string | null
+  beta: number | null
+  analystRating: string | null
+  numberOfAnalysts: number | null
+  targetMeanPrice: number | null
+  targetHighPrice: number | null
+  targetLowPrice: number | null
+  earningsDateStart: string | null
+  earningsDateEnd: string | null
+  earningsDateIsPast: boolean
+  profitMargin: number | null
+  revenueGrowth: number | null
+  pegRatio: number | null
+  news: { title: string; link: string; description: string; pubDate: string; source: string }[]
+  fetchedAt: string
+  errors?: string[]
+}
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+function relativeTime(dateStr: string): string {
+  const now = Date.now()
+  const pub = new Date(dateStr).getTime()
+  if (isNaN(pub)) return dateStr
+  const diffMs = now - pub
+  const hours = Math.floor(diffMs / 3600000)
+  if (hours < 1) return `${Math.floor(diffMs / 60000)}分钟前`
+  if (hours < 24) return `${hours}小时前`
+  if (hours < 48) return '昨天'
+  return new Date(dateStr).toISOString().split('T')[0]
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim()
+}
+
+function fmtNum(n: number | null, fallback = '—'): string {
+  if (n == null) return fallback
+  return n.toFixed(2)
+}
+
+function fmtPct(v: number | null, decimals = 2): string {
+  if (v == null) return '—'
+  return (v * 100).toFixed(decimals) + '%'
+}
+
+function fmtRange(lo: number | null, hi: number | null): string {
+  if (lo == null || hi == null) return '—'
+  return `${lo.toFixed(2)} - ${hi.toFixed(2)}`
+}
+
+function currencySymbol(currency: string | null): string {
+  switch (currency) {
+    case 'KRW': return '₩'
+    case 'HKD': return 'HK$'
+    case 'CNY': return '¥'
+    case 'JPY': return '¥'
+    default: return '$'
+  }
+}
+
+function fmtPrice(n: number | null, curr: string | null): string {
+  if (n == null) return '—'
+  const sym = currencySymbol(curr)
+  if (curr === 'KRW') return `${sym}${n.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}`
+  return `${sym}${n.toFixed(2)}`
+}
 
 interface LivePrice { price: number; changePct: number; error?: boolean }
 
@@ -66,6 +160,76 @@ const WATCHLIST = [
     earningsOutlook: 'positive' as 'positive' | 'neutral' | 'negative',
     preAction: '财报前5日可轻仓试探，仓位≤15%，设止损-8%。若前3日已涨>10%先减仓锁利，再等实际财报出来评估。',
     postAction: '超预期且指引乐观：次日前30分钟不追涨，等开盘回踩5日线后加仓1/3。不及预期：次日开盘减仓50%，跌破关键支撑则清仓等更好买点。',
+  },
+  {
+    ticker: '600036.SS',
+    yfTicker: '600036.SS',
+    cnName: '招商银行',
+    currency: 'CNY',
+    color: '#dc2626',
+    flag: '🇨🇳',
+    history: CMB_HISTORY,
+    nextEarnings: '2026-04-29',
+    earningsNote: '中国零售银行标杆，财富管理AUM行业领先，不良贷款率行业最低(0.95%)。Q1净息差受LPR下调影响收窄至1.85%，但零售贷款增速回升+信用卡复苏。预计净利润增速5-8%，重点看净息差拐点和财富管理中收增速。',
+    earningsOutlook: 'neutral' as 'positive' | 'neutral' | 'negative',
+    preAction: '银行股波动较小但趋势性强，财报前3日可建仓仓位≤10%。关注LPR变化和央行MLF操作，利率拐点是银行股最大催化剂。',
+    postAction: '超预期：净息差企稳+零售好转可小幅加仓。不及预期：若不良率上升或净息差跌破1.8%则减仓50%，等利率周期反转再重建仓。',
+  },
+  {
+    ticker: '002142.SZ',
+    yfTicker: '002142.SZ',
+    cnName: '宁波银行',
+    currency: 'CNY',
+    color: '#0891b2',
+    flag: '🇨🇳',
+    history: NBB_HISTORY,
+    nextEarnings: '2026-04-30',
+    earningsNote: '长三角优质城商行，零售转型和小微金融差异化优势显著，拨备覆盖率>450%行业最高。Q1净息差压力大于大型银行，但区域经济活跃度支撑信贷需求。预计净利润增速3-6%，关键看小微贷款质量和零售AUM增速。',
+    earningsOutlook: 'neutral' as 'positive' | 'neutral' | 'negative',
+    preAction: '中小银行流动性风险需关注，仓位限制在8%以内。财报前重点跟踪长三角PMI和企业信贷需求数据。',
+    postAction: '超预期+拨备释放：可持有并在回调5%时加仓。不及预期或区域经济放缓：减仓60%，等下一个政策刺激周期再入场。',
+  },
+  {
+    ticker: 'MU',
+    yfTicker: 'MU',
+    cnName: '美光科技',
+    currency: 'USD',
+    color: '#7c3aed',
+    flag: '🇺🇸',
+    history: MU_HISTORY,
+    nextEarnings: '2026-06-24',
+    earningsNote: '全球DRAM/NAND寡头之一，HBM3E已通过NVIDIA认证进入AI供应链。存储芯片价格周期触底回升，HBM产能2025全年售罄。关键关注HBM4路线图进度、DRAM/NAND现货价格走势、以及中美芯片管制对HBM出口的影响。HBM占比提升显著改善毛利率结构。',
+    earningsOutlook: 'positive' as 'positive' | 'neutral' | 'negative',
+    preAction: '存储芯片波动大，财报前仓位≤12%。密切跟踪DRAM/NAND现货价格和合约价格趋势，若价格上涨加速可加仓至15%。设止损-10%。',
+    postAction: '超预期+HBM占比提升：持有并可在5-8%回调加仓。不及预期或存储价格转跌：次日减仓50%，等下一轮存储周期底部再重建仓。HBM出口管制若升级则无条件减仓。',
+  },
+  {
+    ticker: '005930.KS',
+    yfTicker: '005930.KS',
+    cnName: '三星电子',
+    currency: 'KRW',
+    color: '#2563eb',
+    flag: '🇰🇷',
+    history: SAMSUNG_HISTORY,
+    nextEarnings: '2026-07-07',
+    earningsNote: '全球#1存储芯片+智能手机+显示面板综合巨头。HBM3E 8层已通过NVIDIA认证，12层验证中。代工业务持续亏损但存储利润可对冲。关键催化剂：HBM12层认证通过、DRAM价格拐点、智能手机复苏。核心风险：HBM认证延期、代工亏损扩大、韩元汇率波动。',
+    earningsOutlook: 'neutral' as 'positive' | 'neutral' | 'negative',
+    preAction: '韩国股票交易时间与A股接近，需关注韩元汇率和外资流向。财报前仓位≤10%，设止损-8%。跟踪韩国KOSPI指数和外资买卖动向。',
+    postAction: '超预期+HBM认证进展：可在回调5%加仓。指引不及预期或HBM认证再推迟：减仓50%，等下一个周期催化剂。半导体部门利润若转亏则清仓等待。',
+  },
+  {
+    ticker: '000660.KS',
+    yfTicker: '000660.KS',
+    cnName: 'SK海力士',
+    currency: 'KRW',
+    color: '#dc2626',
+    flag: '🇰🇷',
+    history: SKHYNIX_HISTORY,
+    nextEarnings: '2026-07-24',
+    earningsNote: '全球#1 HBM供应商，独占NVIDIA HBM3E 60%+市场份额。HBM单价是普通DRAM 5倍+，利润率远超传统存储。HBM4研发领先，2026年量产在即。关键关注：HBM3E 12层出货量、HBM4量产时间表、NVIDIA Blackwell/下一代GPU订单、中美芯片管制对HBM出口的影响。',
+    earningsOutlook: 'positive' as 'positive' | 'neutral' | 'negative',
+    preAction: 'HBM垄断地位提供估值溢价但存储周期风险仍在。财报前仓位≤15%，若HBM订单消息积极可加仓至20%。设止损-12%因波动较大。注意韩元汇率对KRW计价价格的影响。',
+    postAction: '超预期+HBM利润率继续提升：持有核心仓位，回调10%可加仓。HBM订单不及预期或竞争加剧（三星/美光追赶）：减仓1/3。HBM出口管制若全面禁止对华出口则减仓50%，但长期AI需求可对冲。',
   },
 ]
 
@@ -281,6 +445,11 @@ function StockCard({ item }: { item: typeof WATCHLIST[0] }) {
   const [dailyFetchedAt, setDailyFetchedAt] = useState<string | null>(null)
   const livePriceFetched = useRef(false)
   const dailyTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [detailData, setDetailData] = useState<StockDetailData | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [detailError, setDetailError] = useState<string | null>(null)
+  const detailFetchedAt = useRef<string | null>(null)
+  const detailTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const fetchLivePrice = useCallback(async () => {
     if (livePriceFetched.current) return; livePriceFetched.current = true
@@ -308,6 +477,31 @@ function StockCard({ item }: { item: typeof WATCHLIST[0] }) {
     }
   }, [item.yfTicker])
 
+  const CACHE_TTL_MS = 15 * 60 * 1000
+
+  const fetchDetailData = useCallback(async () => {
+    if (detailFetchedAt.current) {
+      const elapsed = Date.now() - new Date(detailFetchedAt.current).getTime()
+      if (elapsed < CACHE_TTL_MS) return
+    }
+    setDetailLoading(true)
+    setDetailError(null)
+    try {
+      const res = await fetch(`/api/stock-detail?ticker=${item.yfTicker}`, { cache: 'no-store' })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      if (json.errors?.length > 0) {
+        console.warn('Stock detail partial data:', item.ticker, json.errors)
+      }
+      setDetailData(json)
+      detailFetchedAt.current = json.fetchedAt
+    } catch (e) {
+      setDetailError(String(e))
+    } finally {
+      setDetailLoading(false)
+    }
+  }, [item.yfTicker])
+
   const isLive = LIVE_RANGES.includes(wrange)
 
   useEffect(() => {
@@ -318,10 +512,15 @@ function StockCard({ item }: { item: typeof WATCHLIST[0] }) {
     } else {
       if (dailyTimer.current) { clearInterval(dailyTimer.current); dailyTimer.current = null }
     }
-    return () => { if (dailyTimer.current) { clearInterval(dailyTimer.current); dailyTimer.current = null } }
-  }, [open, wrange, isLive, fetchDailyData])
+    fetchDetailData()
+    detailTimer.current = setInterval(() => fetchDetailData(), CACHE_TTL_MS)
+    return () => {
+      if (dailyTimer.current) { clearInterval(dailyTimer.current); dailyTimer.current = null }
+      if (detailTimer.current) { clearInterval(detailTimer.current); detailTimer.current = null }
+    }
+  }, [open, wrange, isLive, fetchDailyData, fetchDetailData])
 
-  const toggle = () => { if (!open) fetchLivePrice(); setOpen(o => !o) }
+  const toggle = () => { if (!open) { fetchLivePrice(); fetchDetailData() }; setOpen(o => !o) }
 
   const analysis = computeAnalysis(item.history)
   const lastPrice = item.history[item.history.length - 1].p
@@ -359,7 +558,7 @@ function StockCard({ item }: { item: typeof WATCHLIST[0] }) {
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)' }}>
-            {item.currency === 'HKD' ? 'HK$' : '$'}{displayPrice.toFixed(item.currency === 'HKD' ? 0 : 2)}
+            {item.currency === 'HKD' ? 'HK$' : item.currency === 'KRW' ? '₩' : '$'}{displayPrice.toFixed(item.currency === 'HKD' || item.currency === 'KRW' ? 0 : 2)}
           </div>
           {live && (
             <div style={{ fontSize: '0.7rem', color: chgColor }}>
@@ -376,7 +575,7 @@ function StockCard({ item }: { item: typeof WATCHLIST[0] }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.375rem' }}>
             {[
               ['上市时间', item.history[0].d.slice(0, 7)],
-              ['IPO价', `${item.currency === 'HKD' ? 'HK$' : '$'}${item.history[0].p.toFixed(item.currency === 'HKD' ? 0 : 2)}`],
+              ['IPO价', `${item.currency === 'HKD' ? 'HK$' : item.currency === 'KRW' ? '₩' : '$'}${item.history[0].p.toFixed(item.currency === 'HKD' || item.currency === 'KRW' ? 0 : 2)}`],
               ['上市以来', `${analysis.ytdChg >= 0 ? '+' : ''}${analysis.ytdChg.toFixed(0)}%`],
             ].map(([k, v]) => (
               <div key={k} style={{ padding: '0.375rem 0.5rem', borderRadius: '6px', backgroundColor: 'var(--bg-secondary)' }}>
@@ -433,7 +632,7 @@ function StockCard({ item }: { item: typeof WATCHLIST[0] }) {
                   events={isLive ? [] : stockEvents}
                   smaLines={isLive ? [] : SMA_LINES}
                   isDaily={isLive}
-                  currencySymbol={item.currency === 'HKD' ? 'HK$' : '$'}
+                  currencySymbol={item.currency === 'HKD' ? 'HK$' : item.currency === 'KRW' ? '₩' : '$'}
                   allowFullscreen={true}
                   title={`${item.cnName} (${item.ticker})`}
                 />
@@ -482,6 +681,120 @@ function StockCard({ item }: { item: typeof WATCHLIST[0] }) {
             </div>
             <EarningsBlock item={item} />
           </div>
+
+          {/* Financial Overview */}
+          {detailLoading && !detailData && (
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.875rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+              加载基本面数据与新闻中…
+            </div>
+          )}
+          {detailError && !detailData && (
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.875rem' }}>
+              <div style={{ padding: '0.75rem', borderRadius: 8, background: '#fff1f2', border: '1px solid #fca5a5', fontSize: '0.75rem', color: '#991b1b' }}>
+                数据源暂时不可用: {detailError}
+              </div>
+            </div>
+          )}
+          {detailData && (
+            <>
+              {detailData.errors && detailData.errors.length > 0 && (
+                <div style={{ borderTop: '1px solid var(--border)', marginTop: '0.875rem', paddingTop: '0.625rem' }}>
+                  <div style={{ padding: '0.375rem 0.625rem', borderRadius: 6, background: '#fffbeb', border: '1px solid #fcd34d', fontSize: '0.65rem', color: '#92400e' }}>
+                    ⚠ 部分数据未加载: {detailData.errors.join('; ')}
+                  </div>
+                </div>
+              )}
+
+              {/* Financial overview grid */}
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.875rem', marginTop: detailData.errors?.length ? '0.5rem' : '0.875rem' }}>
+                <div style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)', marginBottom: '0.5rem' }}>
+                  基本面数据 · {detailData.name ?? detailData.ticker}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.3rem' }}>
+                  {[
+                    ['市值', detailData.marketCapFmt ?? fmtNum(detailData.marketCap)],
+                    ['营收(TTM)', detailData.totalRevenueFmt ?? fmtNum(detailData.totalRevenue)],
+                    ['净利润', detailData.netIncomeFmt ?? fmtNum(detailData.netIncome)],
+                    ['每股收益EPS', detailData.trailingEps != null ? `${currencySymbol(detailData.currency)}${detailData.trailingEps.toFixed(2)}` : '—'],
+                    ['发行股本', detailData.sharesOutstandingFmt ?? fmtNum(detailData.sharesOutstanding)],
+                    ['市盈率PE', detailData.trailingPE != null ? detailData.trailingPE.toFixed(2) : '—'],
+                    ['前瞻PE', detailData.forwardPE != null ? detailData.forwardPE.toFixed(2) : '—'],
+                    ['股息/收益率', detailData.dividendRate != null ? `${currencySymbol(detailData.currency)}${detailData.dividendRate.toFixed(2)} / ${fmtPct(detailData.dividendYield)}` : '—'],
+                    ['除息日', detailData.exDividendDate ?? '—'],
+                    ['Beta系数', detailData.beta != null ? detailData.beta.toFixed(2) : '—'],
+                    ['分析师评级', detailData.analystRating ?? '—'],
+                    ['目标价', fmtPrice(detailData.targetMeanPrice, detailData.currency)],
+                    ['成交量', detailData.volume != null ? (detailData.volume >= 1e6 ? `${(detailData.volume / 1e6).toFixed(2)}M` : detailData.volume.toLocaleString()) : '—'],
+                    ['开盘价', fmtPrice(detailData.open, detailData.currency)],
+                    ['前收盘', fmtPrice(detailData.previousClose, detailData.currency)],
+                    ['当日范围', fmtRange(detailData.dayLow, detailData.dayHigh)],
+                    ['52周范围', fmtRange(detailData.low52w, detailData.high52w)],
+                    ['利润率', fmtPct(detailData.profitMargin, 1)],
+                  ].map(([k, v]) => (
+                    <div key={k} style={{ padding: '0.35rem 0.5rem', borderRadius: '6px', backgroundColor: 'var(--bg-secondary)' }}>
+                      <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>{k}</div>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Earnings date from Yahoo */}
+              {detailData.earningsDateStart && (
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.75rem', marginTop: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>
+                      {detailData.earningsDateIsPast ? '📅 上次财报' : '📅 财报日 (Yahoo)'}
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: detailData.earningsDateIsPast ? '#d97706' : 'var(--text)', fontFamily: 'var(--font-mono)' }}>
+                      {detailData.earningsDateStart}{detailData.earningsDateEnd ? ` - ${detailData.earningsDateEnd}` : ''}
+                      {detailData.earningsDateIsPast && ' · 下一次尚未公布'}
+                    </span>
+                    <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>
+                      分析师目标 {fmtPrice(detailData.targetLowPrice, detailData.currency)} - {fmtPrice(detailData.targetHighPrice, detailData.currency)} · {detailData.numberOfAnalysts ?? '—'}位分析师
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Recent News */}
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.875rem', marginTop: '0.875rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <div style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
+                    近期新闻 · Yahoo Finance
+                  </div>
+                  <span style={{ fontSize: '0.58rem', color: 'var(--text-muted)' }}>
+                    更新于 {new Date(detailData.fetchedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+                {detailData.news.length === 0 ? (
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center', padding: '0.5rem' }}>暂无新闻</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                    {detailData.news.slice(0, 6).map((n, i) => (
+                      <a key={i} href={n.link} target="_blank" rel="noopener noreferrer"
+                        style={{ display: 'block', padding: '0.5rem 0.625rem', borderRadius: '6px', textDecoration: 'none', backgroundColor: 'var(--bg-secondary)', transition: 'background 0.15s' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '0.15rem', flexWrap: 'wrap' }}>
+                          {n.source && (
+                            <span style={{ fontSize: '0.58rem', padding: '1px 6px', borderRadius: '4px', backgroundColor: item.color + '20', color: item.color, fontWeight: 600 }}>
+                              {n.source}
+                            </span>
+                          )}
+                          <span style={{ fontSize: '0.6rem', color: '#9ca3af', fontFamily: 'var(--font-mono)' }}>{relativeTime(n.pubDate)}</span>
+                        </div>
+                        <div style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--text)', lineHeight: 1.4 }}>{n.title}</div>
+                        {n.description && (
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: 1.4, marginTop: '0.15rem' }}>
+                            {stripHtml(n.description).slice(0, 120)}{stripHtml(n.description).length > 120 ? '…' : ''}
+                          </div>
+                        )}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
