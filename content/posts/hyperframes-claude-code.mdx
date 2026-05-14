@@ -1,0 +1,279 @@
+---
+title: "HyperFrames：用 Claude Code + HTML 自动生成视频的 AI 原生渲染框架"
+date: "2026-05-14"
+excerpt: "HeyGen 开源的 HyperFrames 让 AI 编程助手通过写 HTML 就能生成专业视频。本文详解其架构、技能系统、与 Claude Code 的深度集成，以及如何用它把视频制作效率提升 10 倍。"
+category: tech
+tags: [AI, Claude Code, 视频生成, 前端, 工具链]
+---
+
+## 一句话说清楚
+
+HyperFrames 是 HeyGen 开源的**视频渲染框架**。它的核心思路是：**你写 HTML，它出 MP4**。没有 React，没有 DSL，没有构建步骤——一个 `index.html` 文件在浏览器里能播，用命令行就能渲染成视频。
+
+更重要的是，它**专门为 AI 编程助手（Claude Code、Cursor、Gemini CLI）设计了技能系统**，让 AI 能像人类视频剪辑师一样理解你的需求、写出正确的视频代码。
+
+---
+
+## 为什么需要它？Remotion 的替代品
+
+如果你用过 Remotion（React 写视频），你应该知道它的痛点：
+
+| 痛点 | Remotion | HyperFrames |
+|------|----------|-------------|
+| 写一个视频 | React 组件 + 构建工具链 | 一个 HTML 文件 |
+| 改一个文字 | 改 JSX → 重新构建 → 等编译 | 改 HTML → 刷新浏览器 |
+| 授权 | 公司规模收费（非 OSI 开源） | **Apache 2.0**，完全开源 |
+| AI 写视频代码 | AI 对 React 视频组件容易出错 | AI 天生会写 HTML + CSS |
+| 渲染确定性 | 依赖 wall-clock 时间 | **帧精确、可 seek**，同输入=同输出 |
+
+HyperFrames 把视频制作的门槛降到了"会写网页就会做视频"的程度。对于 AI 来说，这比写 React 组件要准确得多——因为 AI 模型见过的 HTML/CSS 训练数据数量级远超 Remotion 组件。
+
+---
+
+## 架构：三个核心模块
+
+```
+你写的 HTML（data-* 属性标记场景和动画）
+        ↓
+   Puppeteer（无头 Chrome 逐帧截图）
+        ↓
+    FFmpeg（编码 + 音轨混合）
+        ↓
+      MP4 视频文件
+```
+
+**关键设计：**
+
+1. **HTML 原生创作**：视频片段用 `data-start`、`data-duration`、`data-track-index` 属性标记
+2. **帧适配器模式**：支持 GSAP、Anime.js、Lottie、Three.js、CSS Animations、WAAPI 六种动画引擎
+3. **确定性渲染**：禁止 `Math.random()`、`Date.now()`、`setInterval` 等非确定性 API，确保每次渲染结果完全一致
+4. **无构建步骤**：HTML 在浏览器里直接预览，`npx hyperframes preview` 开热重载
+
+---
+
+## 安装与使用
+
+### 前置条件
+- Node.js ≥ 22
+- FFmpeg 已安装
+
+### 最简流程
+
+```bash
+# 1. 创建项目
+npx hyperframes init my-video
+
+# 2. 浏览器预览（热重载）
+npx hyperframes preview
+
+# 3. 渲染输出 MP4
+npx hyperframes render
+```
+
+### 安装组件库
+
+HyperFrames 有一个 **50+ 现成组件**的 Catalog 系统：
+
+```bash
+npx hyperframes add flash-through-white   # 着色器转场
+npx hyperframes add instagram-follow      # 社交媒体叠加层
+npx hyperframes add data-chart            # 动画图表
+```
+
+---
+
+## 和 Claude Code 结合：这才是重点
+
+HyperFrames 最特别的地方是**为 AI 编程助手设计了 15 个技能（Skills）**，并且自带 Claude Code 插件。
+
+### 1. 安装技能
+
+```bash
+npx skills add heygen-com/hyperframes
+```
+
+安装后，Claude Code 会自动加载这些斜杠命令：
+
+| 命令 | 用途 |
+|------|------|
+| `/hyperframes` | 创建视频组合（composition） |
+| `/hyperframes-cli` | 开发命令（init, lint, preview, render） |
+| `/hyperframes-media` | 素材预处理（TTS 语音合成、Whisper 转写、背景去除） |
+| `/tailwind` | Tailwind CSS v4 样式支持 |
+| `/gsap` | GSAP 动画时间线 |
+| `/animejs` | Anime.js 动画 |
+| `/css-animations` | CSS 关键帧动画 |
+| `/lottie` | Lottie 动画 |
+| `/three` | Three.js 3D 场景 |
+| `/waapi` | Web Animations API |
+
+### 2. Claude Design + Claude Code 双阶段工作流
+
+HyperFrames 把视频制作拆成两个阶段：
+
+**第一阶段：Claude Design（品牌 + 布局 + 初版动画）**
+
+下载设计指南文件，在 Claude Design 对话中附加，让 AI 产出一个结构正确的初稿：
+
+> "为我的 SaaS 产品做一个 15 秒的产品介绍视频，深色主题，科技感风格"
+
+Claude Design 会输出：
+- 品牌配色、字体选择（注意它禁止使用 Inter/Roboto/Poppins 等"AI 默认字体"）
+- 6-8 个场景的布局和文案
+- 关键位置的 shader 转场选择（不是每个场景都加转场！每 6-8 个场景用 2 个转场最合适）
+- 符合数据属性规范的 HTML 结构
+
+**第二阶段：Claude Code（细化时间、缓动、节奏、QA）**
+
+```bash
+# 在 Claude Code 中继续迭代
+"把标题字号放大 2 倍，切换到暗色模式，结尾加一个淡出"
+"在 0:03 加一个字幕条，显示我的名字和职位"
+"把第 3 个场景的入场动画改成从左侧滑入"
+```
+
+### 3. 实战：用自然语言描述就能生成视频
+
+**冷启动——直接描述视频需求：**
+
+```
+/claude 创建一个 10 秒的产品介绍视频：
+- 背景是一个科技感的粒子动画
+- 标题"Introducing HyperFrames"在 1 秒时淡入
+- 在 3 秒时出现"Write HTML. Render Video."副标题
+- 在 7 秒时出现 CTA 按钮"Get Started"
+- 全程有背景轻音乐
+- 输出 1920x1080 的 MP4
+```
+
+**温启动——把现有素材变成视频：**
+
+```
+/claude 把这个 CSV 文件做成一个动画柱状图竞赛视频
+/claude 总结这个 PDF 报告，生成 45 秒的电梯演讲视频
+/claude 抓取这个网页，做成带旁白的介绍视频
+```
+
+**迭代——把 AI 当视频剪辑师用：**
+
+```
+"这个场景太快了，延长到 4 秒"
+"把字体从 Inter 换成 DM Sans"
+"在 Logo 上加一个呼吸浮动效果"
+```
+
+### 4. 自动化流水线
+
+因为 HyperFrames 的渲染是**完全确定性**的（同输入=同输出），它非常适合 CI/CD 场景：
+
+```yaml
+# GitHub Actions 示例思路
+- name: 生成产品演示视频
+  run: |
+    npx hyperframes render --input ./compositions/demo.html --output ./output/demo.mp4
+```
+
+你可以在每次发布新版本时自动生成最新的产品演示视频，或者根据数据源自动生成每日数据简报视频。
+
+---
+
+## 内置的 AI 媒体处理（无需 API Key）
+
+HyperFrames 的 `/hyperframes-media` 技能提供三个本地 AI 模型，完全离线运行，不消耗任何 API 额度：
+
+| 功能 | 底层模型 | 用途 |
+|------|---------|------|
+| TTS 文字转语音 | Kokoro（本地） | 生成旁白配音 |
+| 语音转文字 | Whisper（本地） | 自动字幕/转写 |
+| 背景去除 | u2net（本地） | 人像抠图 |
+
+这一步**零成本 + 数据不出本机**，特别适合需要频繁生成视频的团队。
+
+---
+
+## 它到底能做什么？十个使用场景
+
+### 1. 产品介绍视频
+"做一个 10 秒 SaaS 产品宣传片，深蓝渐变背景 + 白色文字淡入 + CTA 按钮"
+
+### 2. 数据可视化视频
+"把这个 CSV 数据做成动态柱状图竞赛，每列跑 2 秒"
+
+### 3. 社交媒体短视频
+"做一个 9:16 的 TikTok 风格视频，弹跳字幕 + TTS 配音"
+
+### 4. GitHub Repo 解读
+"总结这个 GitHub 项目的架构和用途，生成 60 秒解说视频"
+
+### 5. PDF/文档转视频
+"把这个市场分析报告总结成 45 秒的要点视频"
+
+### 6. 网页抓取转视频
+"把 landing page 的内容做成产品介绍视频"
+
+### 7. 自动生成每日数据简报
+"每天自动从数据库拉数据，生成当日关键指标的动画简报视频"
+
+### 8. 课程/教学内容
+"把这个技术教程做成带代码高亮动画的教学视频"
+
+### 9. 技术 Demo 录制
+"录制网页操作流程，加上文字说明和箭头标注"
+
+### 10. CI/CD 自动生成
+"每次 Release 自动生成 Changelog 动画视频"
+
+---
+
+## 和 Remotion 的对比：该选哪个？
+
+| 维度 | HyperFrames | Remotion |
+|------|-------------|----------|
+| **创作格式** | HTML + CSS + 动画库 | React 组件（TSX） |
+| **构建步骤** | 无，HTML 直接播 | 需要打包 |
+| **AI 友好度** | ⭐⭐⭐⭐⭐ AI 天然擅长 HTML | ⭐⭐⭐ React 组件易出错 |
+| **动画模型** | 帧精确、可 seek | Wall-clock 驱动 |
+| **已有 HTML/CSS** | 直接粘贴用 | 必须重写成 JSX |
+| **分布式渲染** | 单机 | 支持 Lambda |
+| **授权** | Apache 2.0（真开源） | 源码可见，商业收费 |
+| **社区生态** | 新兴，50+ 组件 | 成熟，大量模板 |
+
+**选 HyperFrames 如果你：** 想要真开源、AI 辅助创作、简单到 HTML 就能搞定、CI/CD 自动化视频。
+
+**选 Remotion 如果你：** 已有 React 团队、需要分布式渲染、社区模板够用不介意授权费。
+
+---
+
+## 快速上手清单
+
+```bash
+# 1. 确认环境
+node -v  # ≥ 22
+ffmpeg -version
+
+# 2. 安装技能（可选但强烈推荐）
+npx skills add heygen-com/hyperframes
+
+# 3. 创建第一个视频
+npx hyperframes init hello-world
+cd hello-world
+
+# 4. 在 Claude Code 中打开项目
+# 然后用自然语言描述你要的视频
+
+# 5. 预览
+npx hyperframes preview
+
+# 6. 渲染
+npx hyperframes render
+```
+
+---
+
+## 总结
+
+HyperFrames 把视频制作的抽象层级从"React 组件"降到了"HTML 文件"，这个降维恰好命中了 AI 编程的甜点区——AI 写 HTML/CSS 的准确率远高于 React 视频组件。配合 15 个 Claude Code 技能、本地 AI 媒体处理、确定性渲染引擎，它让"用自然语言生成视频"从 demo 变成了生产力工具。
+
+对于已经在用 Claude Code 做开发的团队来说，安装一个 `npx skills add` 就能让同一个 AI 助手同时写代码和做视频——这个效率提升是立竿见影的。
+
+> 本文基于 HyperFrames 截至 2026 年 5 月的开源版本。项目仓库：[github.com/heygen-com/hyperframes](https://github.com/heygen-com/hyperframes)
