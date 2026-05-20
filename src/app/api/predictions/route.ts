@@ -4,7 +4,7 @@ import { existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { logPrediction } from '@/lib/review-store'
 import { loadTunedParams, detectRegime, applyRegimeAdjustments } from '@/lib/auto-tune'
-import { fetchPrices } from '@/lib/yahoo-finance'
+import { fetchYahooChart, fetchPrices } from '@/lib/yahoo-finance'
 
 export const dynamic = 'force-dynamic'
 
@@ -91,8 +91,36 @@ async function fetchPredictionPrices(ticker: string): Promise<{ d: string; p: nu
   return fetchPrices(ticker, '3mo')
 }
 
-// ─── Technical signals ────────────────────────────────────────────────────────
-function calcTechnicals(prices: { d: string; p: number }[]) {
+async function fetchPredictionData(ticker: string): Promise<{ prices: { d: string; p: number }[]; volumes: number[] }> {
+  const { ts, closes, volumes } = await fetchYahooChart(ticker, '3mo', '1d')
+  const prices = ts
+    .map((t, i) => ({ d: new Date(t * 1000).toISOString().slice(0, 10), p: closes[i] }))
+    .filter(x => x.p != null && !isNaN(x.p) && x.p > 0)
+  const validVolumes = volumes.filter(v => v != null && !isNaN(v) && v >= 0)
+  return { prices, volumes: validVolumes }
+}
+
+let vixCache: { value: number; fetchedAt: number } | null = null
+
+async function getVIX(): Promise<number> {
+  const now = Date.now()
+  if (vixCache && now - vixCache.fetchedAt < 30 * 60 * 1000) return vixCache.value
+  try {
+    const pts = await fetchPrices('^VIX', '1mo', '1d')
+    if (pts.length > 0) {
+      vixCache = { value: pts[pts.length - 1].p, fetchedAt: now }
+      return vixCache.value
+    }
+  } catch { /* ignore */ }
+  return 20 // default VIX
+}
+
+// ─── Technical signals (enhanced with volume + support/resistance) ────────────
+function calcTechnicals(
+  prices: { d: string; p: number }[],
+  volumes: number[],
+  vix: number,
+) {
   const v = prices.map(p => p.p)
   if (v.length < 10) return null
 
@@ -104,8 +132,8 @@ function calcTechnicals(prices: { d: string; p: number }[]) {
   const win = Math.min(14, v.length - 1)
   let g = 0, lo = 0
   for (let i = v.length - win; i < v.length; i++) {
-    const d = v[i] - v[i - 1]
-    d > 0 ? (g += d) : (lo -= d)
+    const diff = v[i] - v[i - 1]
+    diff > 0 ? (g += diff) : (lo -= diff)
   }
   const rsi = lo === 0 ? 100 : +(100 - 100 / (1 + (g / win) / (lo / win))).toFixed(1)
   const mom5  = v.length >= 6  ? +((v[v.length-1]/v[v.length-6]  - 1)*100).toFixed(2) : 0
@@ -114,17 +142,88 @@ function calcTechnicals(prices: { d: string; p: number }[]) {
   const r10 = v.slice(-10)
   const atrAbs = r10.reduce((s, x, i) => i === 0 ? 0 : s + Math.abs(x - r10[i-1]), 0) / 9
 
-  const signals = [
-    { bull: s5 > (s20 ?? s5 - 1), w: 0.30 },
-    ...(s20 ? [{ bull: s20 > (s60 ?? s20 - 1), w: 0.25 }] : []),
-    { bull: rsi > 45 && rsi < 72, w: 0.20 },
-    { bull: mom5 > 0,  w: 0.15 },
-    { bull: mom20 > 0, w: 0.10 },
+  // ── Volume analysis ──────────────────────────────────────────────────────────
+  const validVols = volumes.filter(x => x > 0)
+  const vol5 = validVols.slice(-5).reduce((a, b) => a + b, 0) / Math.min(5, validVols.slice(-5).length)
+  const vol20 = validVols.length >= 20
+    ? validVols.slice(-20).reduce((a, b) => a + b, 0) / 20
+    : vol5
+  const volRatio = vol20 > 0 ? vol5 / vol20 : 1 // >1 = increasing volume
+  const volSurging = volRatio > 1.5
+
+  // Volume-price confirmation: rising on high volume = bullish, falling on high volume = bearish
+  const recentVolPriceDirection = mom5 > 0 ? 'up' : 'down'
+  const volConfirmsPrice = (recentVolPriceDirection === 'up' && volRatio > 1.0) ||
+    (recentVolPriceDirection === 'down' && volRatio > 1.0)
+
+  // ── Support / resistance proximity ───────────────────────────────────────────
+  const currentPrice = v[v.length - 1]
+  const ma20 = s20 ?? currentPrice
+  const recent20 = v.slice(-20)
+  const recentLow = recent20.length ? Math.min(...recent20) : currentPrice
+  const recentHigh = recent20.length ? Math.max(...recent20) : currentPrice
+  const distFromSupport = ((currentPrice - recentLow) / recentLow) * 100
+  const distFromResist = ((recentHigh - currentPrice) / currentPrice) * 100
+
+  // Near support (<2% away) → mild bullish bias
+  // Near resistance (<2% away) → mild bearish bias (resistance likely holds)
+  const nearSupport = distFromSupport < 2
+  const nearResist = distFromResist < 2
+
+  // ── VIX-based risk ───────────────────────────────────────────────────────────
+  const vixHigh = vix > 28
+  const vixElevated = vix > 22
+  const vixLow = vix < 14
+
+  // ── Weighted signal scoring ──────────────────────────────────────────────────
+  let signals: { bull: boolean; w: number }[] = [
+    { bull: s5 > (s20 ?? s5 - 1), w: 0.25 },
+    ...(s20 ? [{ bull: s20 > (s60 ?? s20 - 1), w: 0.20 }] : []),
   ]
+
+  // RSI signal: neutralize in overbought/oversold zones (don't blindly follow momentum)
+  if (rsi < 32) {
+    signals.push({ bull: true, w: 0.18 }) // oversold → potential bounce
+  } else if (rsi > 72) {
+    signals.push({ bull: false, w: 0.18 }) // overbought → likely pullback
+  } else {
+    signals.push({ bull: rsi > 50, w: 0.18 })
+  }
+
+  // Momentum signals with diminishing weight in extremes
+  const momWeight = Math.abs(mom5) > 4 ? 0.08 : 0.12
+  signals.push({ bull: mom5 > 0, w: momWeight })
+  signals.push({ bull: mom20 > 0, w: 0.08 })
+
+  // Volume confirmation (new)
+  if (volRatio > 1.0 && !volSurging) {
+    signals.push({ bull: mom5 > 0, w: 0.06 }) // moderate volume confirms trend
+  }
+
+  // VIX signal (new)
+  if (vixHigh) {
+    signals.push({ bull: false, w: 0.06 }) // high fear → downward pressure
+  } else if (vixLow) {
+    signals.push({ bull: true, w: 0.04 }) // complacency → mild tailwind
+  }
+
+  // Support/resistance proximity (new)
+  if (nearSupport && !vixHigh) {
+    signals.push({ bull: true, w: 0.05 })
+  } else if (nearResist) {
+    signals.push({ bull: false, w: 0.05 })
+  }
+
   const tw = signals.reduce((a, s) => a + s.w, 0)
   const bullPct = Math.round(signals.reduce((a, s) => a + (s.bull ? s.w : 0), 0) / tw * 100)
 
-  return { price: v[v.length-1], s5, s20, s60, rsi, mom5, mom20, bullPct, atrAbs }
+  return {
+    price: currentPrice, s5, s20, s60, rsi, mom5, mom20, bullPct, atrAbs,
+    volRatio, volSurging, volConfirmsPrice,
+    vixHigh, vixElevated,
+    nearSupport, nearResist, distFromSupport, distFromResist,
+    ma20, recentLow, recentHigh,
+  }
 }
 
 // ─── Macro score ──────────────────────────────────────────────────────────────
@@ -153,22 +252,26 @@ function buildReasoning(
   macroScore: number,
 ): { reasoning: string; keyRisks: string[] } {
   const combined = Math.round(tech.bullPct * 0.6 + macroScore * 0.4)
-  const dir = combined > 55 ? '看涨' : combined < 45 ? '看跌' : '震荡'
+  const dir = combined > 58 ? '看涨' : combined < 42 ? '看跌' : '震荡'
   const smaMsg = tech.s5 > (tech.s20 ?? tech.s5 - 1) ? 'SMA5在SMA20上方（多头排列）' : 'SMA5跌破SMA20（空头排列）'
-  const rsiMsg = tech.rsi > 72 ? `RSI ${tech.rsi} 超买警告` : tech.rsi < 30 ? `RSI ${tech.rsi} 超卖反弹` : `RSI ${tech.rsi} 中性`
+  const rsiMsg = tech.rsi > 72 ? `RSI ${tech.rsi} 超买警告` : tech.rsi < 32 ? `RSI ${tech.rsi} 超卖反弹` : `RSI ${tech.rsi} 中性`
   const momMsg = tech.mom5 >= 0 ? `5日动量 +${tech.mom5}%` : `5日动量 ${tech.mom5}%`
   const macroMsg = macroScore >= 60 ? `宏观 ${macroScore}%（偏多）` : macroScore <= 40 ? `宏观 ${macroScore}%（偏空）` : `宏观 ${macroScore}%（中性）`
+  const volMsg = tech.volSurging ? `成交量激增${tech.volRatio.toFixed(1)}x` : `成交量${tech.volRatio > 1.05 ? '略增' : tech.volRatio < 0.95 ? '萎缩' : '正常'}`
+  const vixMsg = tech.vixHigh ? `VIX ${tech.vixHigh ? '高危' : '正常'}` : ''
 
-  const reasoning = `${dir}${combined}%：${smaMsg}；${rsiMsg}；${momMsg}；${macroMsg}。技术×60% + 宏观×40% = ${combined}%`
+  const reasoning = `${dir}${combined}%：${smaMsg}；${rsiMsg}；${momMsg}；${volMsg}；${macroMsg}。技术×60% + 宏观×40% = ${combined}%`
 
   const risks: string[] = []
   if (tech.rsi > 70) risks.push(`RSI ${tech.rsi} 超买，回调压力存在`)
   if (tech.rsi < 32) risks.push(`RSI ${tech.rsi} 超卖，可能继续探底`)
   if (Math.abs(tech.mom5) > 3) risks.push(`5日累涨跌幅 ${tech.mom5}%，均值回归压力`)
+  if (tech.volSurging) risks.push('成交量异常放大，波动可能加剧')
+  if (tech.vixHigh) risks.push('VIX高位，系统性风险上升')
   if (macroScore < 45) risks.push('宏观偏弱，系统性风险高于均值')
   risks.push('突发新闻/数据公布可能令预测失效')
 
-  return { reasoning, keyRisks: risks.slice(0, 3) }
+  return { reasoning, keyRisks: risks.slice(0, 4) }
 }
 
 // ─── Post-mortem: why the prediction was wrong (with deep attribution) ──────────
@@ -321,11 +424,14 @@ async function autoReview(store: PredictionStore): Promise<boolean> {
   const pending = store.daily.filter(p => p.result === 'pending' && p.targetDate <= today)
   if (!pending.length) return false
 
-  // Fetch prices in parallel grouped by ticker
+  // Fetch prices + volumes in parallel grouped by ticker
   const tickers = [...new Set(pending.map(p => p.ticker))]
   const priceMap = new Map<string, { d: string; p: number }[]>()
   await Promise.allSettled(
-    tickers.map(async t => { priceMap.set(t, await fetchPredictionPrices(t)) })
+    tickers.map(async t => {
+      const data = await fetchPredictionData(t)
+      priceMap.set(t, data.prices)
+    })
   )
 
   let changed = false
@@ -436,77 +542,117 @@ export async function POST() {
     return NextResponse.json({ message: '今日预测已存在', store }, { status: 200 })
   }
 
-  const macroScore = await getMacroScore()
+  const [macroScore, vix] = await Promise.all([getMacroScore(), getVIX()])
 
   // Load self-tuned parameters
   const params = await loadTunedParams()
 
-  // Detect market regime from VIX approximation and recent trend
-  const nasdaqPrices = await fetchPredictionPrices('^IXIC')
-  const nasdaqTech = nasdaqPrices.length >= 14 ? calcTechnicals(nasdaqPrices) : null
+  // Detect market regime from VIX and recent trend
+  const nasdaqData = await fetchPredictionData('^IXIC')
+  const nasdaqTech = nasdaqData.prices.length >= 14 ? calcTechnicals(nasdaqData.prices, nasdaqData.volumes, vix) : null
   const trendStrength = nasdaqTech ? nasdaqTech.bullPct - 50 : 0
-  const regime = detectRegime(20, trendStrength) // VIX ≈ 20 default when FRED down
+  const regime = detectRegime(vix, trendStrength)
   const regimeAdj = applyRegimeAdjustments(params, regime)
 
-  // Fetch all prices in parallel to keep latency reasonable
-  const priceResults = new Map<string, { d: string; p: number }[]>()
+  // Fetch all prices + volumes in parallel
+  const priceResults = new Map<string, { prices: { d: string; p: number }[]; volumes: number[] }>()
   await Promise.allSettled(
     TRACKED.map(async asset => {
-      priceResults.set(asset.ticker, await fetchPredictionPrices(asset.ticker))
+      priceResults.set(asset.ticker, await fetchPredictionData(asset.ticker))
     })
   )
 
   const newPreds: DailyPrediction[] = []
 
   for (const asset of TRACKED) {
-    const prices = priceResults.get(asset.ticker) ?? []
+    const result = priceResults.get(asset.ticker)
+    const prices = result?.prices ?? []
+    const volumes = result?.volumes ?? []
     if (!prices.length) continue
-    const tech = calcTechnicals(prices)
+    const tech = calcTechnicals(prices, volumes, vix)
     if (!tech) continue
 
-    // ── Review-driven safety adjustments (based on 18-error pattern analysis) ──
+    // ── Guard rails: prevent known failure patterns ──────────────────────────
     let adjustedBullPct = tech.bullPct
+    let forceDir: PredDir | null = null
 
-    // Guard 1: RSI overbought (>72) → strong mean-reversion tendency next day
-    // 7 of 18 errors were RSI>75 "up" predictions that went down
-    if (tech.rsi > 72) {
-      const rsiPenalty = Math.round((tech.rsi - 70) * 0.8)
-      adjustedBullPct = Math.max(40, adjustedBullPct - rsiPenalty)
+    // Guard 1: RSI deep overbought (>75) + positive momentum → force flat/down
+    if (tech.rsi > 75 && tech.mom5 > 0) {
+      const penalty = Math.round((tech.rsi - 70) * 1.2)
+      adjustedBullPct = Math.max(35, adjustedBullPct - penalty)
+    } else if (tech.rsi > 72) {
+      adjustedBullPct = Math.max(40, adjustedBullPct - Math.round((tech.rsi - 70) * 0.8))
     }
 
-    // Guard 2: Extreme 5-day momentum (>5%) + elevated RSI → almost certain pullback
-    // TSLA +11%, AMD +26%, SMH +7%, NVDA +12% all pulled back next day
-    if (tech.mom5 > 5 && tech.rsi > 60) {
-      adjustedBullPct = Math.max(38, adjustedBullPct - 12)
+    // Guard 2: RSI deep oversold (<28) → force flat/up (mean reversion)
+    if (tech.rsi < 28 && tech.mom5 < 0) {
+      adjustedBullPct = Math.min(60, adjustedBullPct + 15)
+    } else if (tech.rsi < 30) {
+      adjustedBullPct = Math.min(55, adjustedBullPct + 8)
     }
 
-    // Guard 3: Technical overconfidence — techScore 100 but market reversed
-    // 6 of 18 errors had techScore ≥ 90
-    if (tech.bullPct >= 85 && tech.rsi > 65) {
-      adjustedBullPct = Math.min(tech.bullPct, Math.max(42, adjustedBullPct - 10))
+    // Guard 3: Extreme momentum exhaustion — almost certain to reverse
+    if (tech.mom5 > 6) {
+      forceDir = 'flat'
+    } else if (tech.mom5 > 4.5 && tech.rsi > 62) {
+      adjustedBullPct = Math.max(40, adjustedBullPct - 15)
+    } else if (tech.mom5 < -6) {
+      forceDir = 'flat'
+    } else if (tech.mom5 < -4.5 && tech.rsi < 40) {
+      adjustedBullPct = Math.min(60, adjustedBullPct + 15)
     }
 
-    // Guard 4: Fighting the macro trend — predicting down while macro > 55
-    // META/NIO predicted down but macro was bullish, price went sideways/up
-    if (adjustedBullPct < 45 && macroScore >= 55) {
-      adjustedBullPct = Math.min(50, adjustedBullPct + 8)
+    // Guard 4: Volume surge without clear direction → high uncertainty, reduce score
+    if (tech.volSurging && !tech.volConfirmsPrice) {
+      adjustedBullPct = 50 + Math.round((adjustedBullPct - 50) * 0.6)
     }
 
-    // Use adjusted scores
+    // Guard 5: VIX > 28 → fear dominates, cap bullish signals
+    if (tech.vixHigh && adjustedBullPct > 55) {
+      adjustedBullPct = Math.max(50, adjustedBullPct - 10)
+    }
+
+    // Guard 6: Fighting macro trend — predicting down while macro > 58
+    if (adjustedBullPct < 45 && macroScore >= 58) {
+      adjustedBullPct = Math.min(52, adjustedBullPct + 10)
+    }
+    // Predicting up while macro < 38
+    if (adjustedBullPct > 55 && macroScore <= 38) {
+      adjustedBullPct = Math.max(48, adjustedBullPct - 10)
+    }
+
+    // Guard 7: Near strong support (<1% away) → don't short
+    if (tech.distFromSupport < 1 && adjustedBullPct < 45) {
+      adjustedBullPct = Math.max(45, adjustedBullPct + 5)
+    }
+    // Near strong resistance (<1% away) → don't buy
+    if (tech.distFromResist < 1 && adjustedBullPct > 55) {
+      adjustedBullPct = Math.min(55, adjustedBullPct - 5)
+    }
+
+    // ── Normalize adjusted score to 0-100 range ────────────────────────────
+    adjustedBullPct = Math.max(10, Math.min(90, adjustedBullPct))
+
     const techW = regimeAdj.techWeight
     const macroW = 1 - techW
     const combined = Math.round(adjustedBullPct * techW + macroScore * macroW)
 
-    const dir: PredDir =
-      combined > params.bullThreshold ? 'up' :
-      combined < params.bearThreshold ? 'down' : 'flat'
+    // Widen flat zone: 58-42 (was 55-45)
+    const bullThresh = Math.max(58, params.bullThreshold)
+    const bearThresh = Math.min(42, params.bearThreshold)
+    const dir: PredDir = forceDir ?? (
+      combined > bullThresh ? 'up' :
+      combined < bearThresh ? 'down' : 'flat'
+    )
 
     const rawConfidence = Math.round(Math.abs(combined - 50) * params.confidenceScale + params.confidenceBase)
     const confidence = Math.min(params.maxConfidence, rawConfidence) + (regimeAdj.confidenceAdjust)
 
-    // Adjust target range wider when RSI is extreme (higher uncertainty)
-    const volatilityMultiplier = tech.rsi > 70 || tech.rsi < 30 ? 1.4 : tech.rsi > 60 || tech.rsi < 40 ? 1.15 : 1.0
-    const bias = dir === 'up' ? 0.003 : dir === 'down' ? -0.003 : 0
+    // Volatility-adjusted target range
+    const rsiVol = tech.rsi > 72 || tech.rsi < 28 ? 1.5 : tech.rsi > 62 || tech.rsi < 38 ? 1.25 : 1.0
+    const vixVol = tech.vixHigh ? 1.3 : tech.vixElevated ? 1.1 : 1.0
+    const volatilityMultiplier = Math.max(rsiVol, vixVol)
+    const bias = dir === 'up' ? 0.004 : dir === 'down' ? -0.004 : 0
     const center = tech.price * (1 + bias)
     const { reasoning, keyRisks } = buildReasoning(tech, macroScore)
 

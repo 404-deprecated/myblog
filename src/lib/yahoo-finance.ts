@@ -85,6 +85,7 @@ export interface YfChartMeta {
 export interface YfChartResult {
   ts: number[]
   closes: number[]
+  volumes: number[]
   meta?: YfChartMeta | null
 }
 
@@ -132,6 +133,7 @@ export async function fetchYahooChart(
       const closes: number[] =
         result.indicators?.adjclose?.[0]?.adjclose ||
         result.indicators?.quote?.[0]?.close || []
+      const volumes: number[] = result.indicators?.quote?.[0]?.volume || []
       if (ts.length > 0 && closes.length > 0) {
         const m = result.meta
         const meta: YfChartMeta | null = m ? {
@@ -149,12 +151,12 @@ export async function fetchYahooChart(
           exchangeName: m.exchangeName,
           marketCap: m.marketCap,
         } : null
-        return { ts, closes, meta }
+        return { ts, closes, volumes, meta }
       }
     } catch { /* try next host */ }
   }
 
-  return { ts: [], closes: [], meta: null }
+  return { ts: [], closes: [], volumes: [], meta: null }
 }
 
 /** Returns parsed PricePoint array (date + price), filtering out invalid values. */

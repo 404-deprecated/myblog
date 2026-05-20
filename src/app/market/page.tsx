@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { SectorValuation } from '@/components/SectorValuation'
 import { FundImageAnalysis } from '@/components/FundImageAnalysis'
 import { PortfolioWatchlist } from '@/components/PortfolioWatchlist'
+import { StockStreakDashboard } from '@/components/StockStreakDashboard'
 import MacroScorePanel from '@/components/MacroScorePanel'
 import { GoldAnalysis } from '@/components/GoldAnalysis'
 import { InteractiveChart, type ChartEvent, type ChartPoint } from '@/components/InteractiveChart'
@@ -685,6 +686,7 @@ export default function MarketDashboard() {
         <section>
           <SectionLabel>我的持仓观察</SectionLabel>
           <PortfolioWatchlist />
+          <StockStreakDashboard />
         </section>
       )}
 

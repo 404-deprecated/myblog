@@ -131,32 +131,70 @@ export async function autoTune(): Promise<TunedParameters> {
   // ── 1. Direction bias correction ──────────────────────────────────────────
   const upPreds = dailyReviewed.filter(r => r.prediction.direction === 'up')
   const downPreds = dailyReviewed.filter(r => r.prediction.direction === 'down')
-  const upAcc = upPreds.length > 3
+  const flatPreds = dailyReviewed.filter(r => r.prediction.direction === 'flat')
+  const upAcc = upPreds.length > 5
     ? Math.round(upPreds.filter(r => r.result === 'correct').length / upPreds.length * 100)
     : null
-  const downAcc = downPreds.length > 3
+  const downAcc = downPreds.length > 5
     ? Math.round(downPreds.filter(r => r.result === 'correct').length / downPreds.length * 100)
     : null
+  const flatAcc = flatPreds.length > 5
+    ? Math.round(flatPreds.filter(r => r.result === 'correct').length / flatPreds.length * 100)
+    : null
 
-  // If bullish predictions are significantly more accurate than bearish,
-  // the model has a bullish bias — adjust thresholds to be more selective on bulls
-  if (upAcc !== null && downAcc !== null) {
-    const bias = upAcc - downAcc
-    if (bias > 15) {
-      // Too bullish: raise bull threshold, lower bear threshold
-      const oldBull = params.bullThreshold
-      params.bullThreshold = Math.min(65, oldBull + Math.round(bias * 0.15))
+  // ── Fix 1a: When UP accuracy is terrible (<35%), raise bull threshold to be more selective
+  if (upAcc !== null && upAcc < 35 && upPreds.length >= 8) {
+    const oldBull = params.bullThreshold
+    params.bullThreshold = Math.min(68, oldBull + 3)
+    if (params.bullThreshold !== oldBull) {
       adjustments.push(
-        `看涨偏误+${bias}%：看涨阈值 ${oldBull}→${params.bullThreshold}（更谨慎做多）`
+        `看涨准确率仅${upAcc}%：看涨阈值 ${oldBull}→${params.bullThreshold}（更严格判定上涨）`
       )
       changed = true
-    } else if (bias < -15) {
-      // Too bearish: lower bull threshold, raise bear threshold
-      const oldBear = params.bearThreshold
-      params.bearThreshold = Math.max(35, oldBear - Math.round(Math.abs(bias) * 0.15))
+    }
+  }
+
+  // ── Fix 1b: When DOWN accuracy is terrible (<35%), lower bear threshold
+  if (downAcc !== null && downAcc < 35 && downPreds.length >= 8) {
+    const oldBear = params.bearThreshold
+    params.bearThreshold = Math.max(32, oldBear - 3)
+    if (params.bearThreshold !== oldBear) {
       adjustments.push(
-        `看跌偏误${bias}%：看跌阈值 ${oldBear}→${params.bearThreshold}（减少误报空头）`
+        `看跌准确率仅${downAcc}%：看跌阈值 ${oldBear}→${params.bearThreshold}（更严格判定下跌）`
       )
+      changed = true
+    }
+  }
+
+  // ── Fix 1c: Relative bias — if one direction is much worse than the other
+  if (upAcc !== null && downAcc !== null) {
+    const bias = upAcc - downAcc
+    if (bias > 20) {
+      // Up predictions much better → model too conservative, lower bull threshold
+      const oldBull = params.bullThreshold
+      params.bullThreshold = Math.max(52, oldBull - 2)
+      if (params.bullThreshold !== oldBull) {
+        adjustments.push(`看涨显著优于看跌(+${bias}%)：看涨阈值 ${oldBull}→${params.bullThreshold}`)
+        changed = true
+      }
+    } else if (bias < -20) {
+      // Down predictions much better → model too aggressive on bulls, raise bull threshold
+      const oldBull = params.bullThreshold
+      params.bullThreshold = Math.min(68, oldBull + 3)
+      if (params.bullThreshold !== oldBull) {
+        adjustments.push(`看跌显著优于看涨(${bias}%)：看涨阈值 ${oldBull}→${params.bullThreshold}（减少盲目看涨）`)
+        changed = true
+      }
+    }
+  }
+
+  // ── Fix 1d: Too many of one direction → rebalance
+  const upRatio = upPreds.length / Math.max(1, dailyReviewed.length)
+  if (upRatio > 0.5 && upAcc !== null && upAcc < 40) {
+    const oldBull = params.bullThreshold
+    params.bullThreshold = Math.min(68, oldBull + 2)
+    if (params.bullThreshold !== oldBull) {
+      adjustments.push(`看涨预测占比${Math.round(upRatio*100)}%但准确率仅${upAcc}%：看涨阈值 ${oldBull}→${params.bullThreshold}`)
       changed = true
     }
   }
@@ -166,7 +204,7 @@ export async function autoTune(): Promise<TunedParameters> {
     return r.result === 'incorrect'
       && r.prediction.direction === 'up'
       && r.actual?.direction === 'down'
-      && r.correctionHint?.includes('超买')
+      && (r.correctionHint?.includes('超买') || r.postMortem?.includes('超买') || r.postMortem?.includes('overbought'))
   })
   if (rsiErrors.length >= 3) {
     const oldMax = params.rsiMax
@@ -228,12 +266,17 @@ export async function autoTune(): Promise<TunedParameters> {
   }
 
   // ── Save if changed ────────────────────────────────────────────────────────
-  if (changed) {
+  if (changed && adjustments.length > 0) {
     params.tunedAt = new Date().toISOString()
-    params.adjustmentLog = [
-      ...params.adjustmentLog.slice(-20),
-      `[${new Date().toISOString().slice(0, 10)}] ${adjustments.join('; ')}`,
-    ]
+    const logEntry = `[${new Date().toISOString().slice(0, 10)}] ${adjustments.join('; ')}`
+    params.adjustmentLog = [...params.adjustmentLog.slice(-20), logEntry]
+
+    // Deduplicate: don't push if last entry is identical
+    const prevEntry = params.adjustmentLog[params.adjustmentLog.length - 2]
+    if (prevEntry === logEntry) {
+      params.adjustmentLog.pop() // remove the duplicate we just pushed
+    }
+
     await saveTunedParams(params)
 
     // Log correction to review store

@@ -1,46 +1,34 @@
 {
-  "tunedAt": "2026-05-12T17:07:04.692Z",
+  "tunedAt": "2026-05-20T00:00:00.000Z",
   "basedOnSamples": 0,
   "overallAccuracy": 0,
-  "techWeight": 0.6,
-  "macroWeight": 0.4,
-  "confidenceBase": 52,
-  "confidenceScale": 2,
-  "maxConfidence": 88,
+  "techWeight": 0.75,
+  "macroWeight": 0.25,
+  "confidenceBase": 50,
+  "confidenceScale": 1.5,
+  "maxConfidence": 70,
   "smaFast": 5,
   "smaSlow": 20,
   "rsiMin": 45,
   "rsiMax": 72,
-  "bullThreshold": 55,
-  "bearThreshold": 45,
+  "bullThreshold": 58,
+  "bearThreshold": 42,
   "momentumWeight": 0.15,
   "rsiWeight": 0.2,
   "regimeAdjustments": {
-    "bull": {
-      "techDelta": 0,
-      "confDelta": -5
-    },
-    "bear": {
-      "techDelta": 0,
-      "confDelta": -10
-    },
-    "volatile": {
-      "techDelta": -0.05,
-      "confDelta": -15
-    },
-    "sideways": {
-      "techDelta": 0,
-      "confDelta": 0
-    }
+    "bull": { "techDelta": 0, "confDelta": -5 },
+    "bear": { "techDelta": 0, "confDelta": -10 },
+    "volatile": { "techDelta": -0.05, "confDelta": -15 },
+    "sideways": { "techDelta": 0, "confDelta": 0 }
   },
   "safeBuyWeights": {
     "bollinger": 0.35,
-    "drawdown": 0.3,
+    "drawdown": 0.30,
     "rsi": 0.15,
-    "valuation": 0.2,
-    "goldMacro": 0.2
+    "valuation": 0.20,
+    "goldMacro": 0.20
   },
   "previousAccuracy": 0,
   "improvement": 0,
-  "adjustmentLog": []
+  "adjustmentLog": ["[2026-05-20] 引擎v2重置：新增成交量/VIX/支撑阻力信号，震荡区间扩至42-58，强化guard rails"]
 }
