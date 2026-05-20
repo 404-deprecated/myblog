@@ -14,6 +14,8 @@ export interface StockFundamentals {
   fundamentalsDate: string
   nextEarnings: string
   sector: string
+  revenueM?: number | null
+  netDebtB?: number | null
 }
 
 export interface FundamentalsStore {

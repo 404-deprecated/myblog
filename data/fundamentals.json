@@ -13,7 +13,9 @@
       "beta": 1.98,
       "fundamentalsDate": "FY2026 Q4",
       "nextEarnings": "2026-05-28",
-      "sector": "AI基础设施"
+      "sector": "AI基础设施",
+      "revenueM": 130497,
+      "netDebtB": -10
     },
     "AMD": {
       "name": "AMD",
@@ -26,7 +28,9 @@
       "beta": 1.72,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-29",
-      "sector": "AI基础设施"
+      "sector": "AI基础设施",
+      "revenueM": 25785,
+      "netDebtB": 1.5
     },
     "AVGO": {
       "name": "Broadcom",
@@ -39,7 +43,9 @@
       "beta": 1.12,
       "fundamentalsDate": "FY2026 Q2",
       "nextEarnings": "2026-06-12",
-      "sector": "AI基础设施"
+      "sector": "AI基础设施",
+      "revenueM": 51574,
+      "netDebtB": 55
     },
     "ANET": {
       "name": "Arista Networks",
@@ -52,7 +58,9 @@
       "beta": 1.15,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-29",
-      "sector": "AI基础设施"
+      "sector": "AI基础设施",
+      "revenueM": 7254,
+      "netDebtB": -3
     },
     "SMCI": {
       "name": "Super Micro",
@@ -65,7 +73,9 @@
       "beta": 1.6,
       "fundamentalsDate": "FY2026 Q3",
       "nextEarnings": "2026-08-12",
-      "sector": "AI基础设施"
+      "sector": "AI基础设施",
+      "revenueM": 14987,
+      "netDebtB": 0.5
     },
     "ARM": {
       "name": "Arm Holdings",
@@ -78,7 +88,9 @@
       "beta": 1.35,
       "fundamentalsDate": "FY2027 Q1",
       "nextEarnings": "2026-07-30",
-      "sector": "AI基础设施"
+      "sector": "AI基础设施",
+      "revenueM": 3957,
+      "netDebtB": -2
     },
     "TSM": {
       "name": "TSMC",
@@ -91,7 +103,9 @@
       "beta": 0.95,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-17",
-      "sector": "AI基础设施"
+      "sector": "AI基础设施",
+      "revenueM": 90000,
+      "netDebtB": -20
     },
     "MRVL": {
       "name": "Marvell",
@@ -104,7 +118,9 @@
       "beta": 1.45,
       "fundamentalsDate": "FY2027 Q1",
       "nextEarnings": "2026-06-05",
-      "sector": "AI基础设施"
+      "sector": "AI基础设施",
+      "revenueM": 5769,
+      "netDebtB": 4
     },
     "INTC": {
       "name": "Intel",
@@ -117,7 +133,9 @@
       "beta": 1.02,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-24",
-      "sector": "AI基础设施"
+      "sector": "AI基础设施",
+      "revenueM": 53100,
+      "netDebtB": 15
     },
     "QCOM": {
       "name": "Qualcomm",
@@ -130,7 +148,9 @@
       "beta": 1.2,
       "fundamentalsDate": "FY2026 Q3",
       "nextEarnings": "2026-07-30",
-      "sector": "AI基础设施"
+      "sector": "AI基础设施",
+      "revenueM": 38960,
+      "netDebtB": -3
     },
     "MSFT": {
       "name": "Microsoft",
@@ -143,7 +163,9 @@
       "beta": 0.9,
       "fundamentalsDate": "FY2026 Q3",
       "nextEarnings": "2026-07-23",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 261400,
+      "netDebtB": -50
     },
     "GOOGL": {
       "name": "Alphabet",
@@ -156,7 +178,9 @@
       "beta": 1.05,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-29",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 350018,
+      "netDebtB": -80
     },
     "AMZN": {
       "name": "Amazon",
@@ -169,7 +193,9 @@
       "beta": 1.15,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-01",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 638000,
+      "netDebtB": 20
     },
     "META": {
       "name": "Meta",
@@ -182,7 +208,9 @@
       "beta": 1.28,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-29",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 164500,
+      "netDebtB": -55
     },
     "ORCL": {
       "name": "Oracle",
@@ -195,7 +223,9 @@
       "beta": 0.85,
       "fundamentalsDate": "FY2026 Q4",
       "nextEarnings": "2026-06-10",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 57000,
+      "netDebtB": 78
     },
     "NOW": {
       "name": "ServiceNow",
@@ -208,7 +238,9 @@
       "beta": 1.05,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-23",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 11500,
+      "netDebtB": -2
     },
     "CRM": {
       "name": "Salesforce",
@@ -221,7 +253,9 @@
       "beta": 1.12,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-06-04",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 38000,
+      "netDebtB": -4
     },
     "ADBE": {
       "name": "Adobe",
@@ -234,7 +268,9 @@
       "beta": 1.18,
       "fundamentalsDate": "FY2026 Q2",
       "nextEarnings": "2026-06-18",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 22000,
+      "netDebtB": -5
     },
     "PLTR": {
       "name": "Palantir",
@@ -247,7 +283,9 @@
       "beta": 2.45,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-04",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 3066,
+      "netDebtB": -4
     },
     "SNOW": {
       "name": "Snowflake",
@@ -260,7 +298,9 @@
       "beta": 1.52,
       "fundamentalsDate": "FY2027 Q1",
       "nextEarnings": "2026-05-21",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 3630,
+      "netDebtB": -3
     },
     "TSLA": {
       "name": "Tesla",
@@ -273,7 +313,9 @@
       "beta": 2.5,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-22",
-      "sector": "具身智能"
+      "sector": "具身智能",
+      "revenueM": 97700,
+      "netDebtB": -29
     },
     "ISRG": {
       "name": "Intuitive Surgical",
@@ -286,7 +328,9 @@
       "beta": 0.88,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-17",
-      "sector": "具身智能"
+      "sector": "具身智能",
+      "revenueM": 8350,
+      "netDebtB": -7
     },
     "SYM": {
       "name": "Symbotic",
@@ -299,7 +343,9 @@
       "beta": 1.65,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-11-10",
-      "sector": "具身智能"
+      "sector": "具身智能",
+      "revenueM": 508,
+      "netDebtB": -0.5
     },
     "ABB": {
       "name": "ABB",
@@ -312,7 +358,9 @@
       "beta": 0.8,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-24",
-      "sector": "具身智能"
+      "sector": "具身智能",
+      "revenueM": 32000,
+      "netDebtB": -2
     },
     "HON": {
       "name": "Honeywell",
@@ -325,7 +373,9 @@
       "beta": 0.78,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-24",
-      "sector": "具身智能"
+      "sector": "具身智能",
+      "revenueM": 37000,
+      "netDebtB": 10
     },
     "APP": {
       "name": "AppLovin",
@@ -338,7 +388,9 @@
       "beta": 1.82,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-06",
-      "sector": "具身智能"
+      "sector": "具身智能",
+      "revenueM": 1435,
+      "netDebtB": 1
     },
     "BRKS": {
       "name": "Azenta",
@@ -351,7 +403,9 @@
       "beta": 1.1,
       "fundamentalsDate": "FY2026 Q2",
       "nextEarnings": "2026-08-05",
-      "sector": "具身智能"
+      "sector": "具身智能",
+      "revenueM": 1100,
+      "netDebtB": 0
     },
     "CEG": {
       "name": "Constellation Energy",
@@ -364,7 +418,9 @@
       "beta": 0.65,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-05",
-      "sector": "AI能源/核能"
+      "sector": "AI能源/核能",
+      "revenueM": 23700,
+      "netDebtB": 5
     },
     "VST": {
       "name": "Vistra",
@@ -377,7 +433,9 @@
       "beta": 1.35,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-07",
-      "sector": "AI能源/核能"
+      "sector": "AI能源/核能",
+      "revenueM": 19200,
+      "netDebtB": 10
     },
     "GEV": {
       "name": "GE Vernova",
@@ -390,7 +448,9 @@
       "beta": 1.2,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-23",
-      "sector": "AI能源/核能"
+      "sector": "AI能源/核能",
+      "revenueM": 36000,
+      "netDebtB": 2
     },
     "NNE": {
       "name": "Nano Nuclear",
@@ -403,7 +463,9 @@
       "beta": 2.8,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-12",
-      "sector": "AI能源/核能"
+      "sector": "AI能源/核能",
+      "revenueM": 5,
+      "netDebtB": -0.5
     },
     "CCJ": {
       "name": "Cameco",
@@ -416,7 +478,9 @@
       "beta": 1.05,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-04",
-      "sector": "AI能源/核能"
+      "sector": "AI能源/核能",
+      "revenueM": 3100,
+      "netDebtB": 1
     },
     "SMR": {
       "name": "NuScale Power",
@@ -429,7 +493,9 @@
       "beta": 2.5,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-12",
-      "sector": "AI能源/核能"
+      "sector": "AI能源/核能",
+      "revenueM": 5,
+      "netDebtB": 0
     },
     "BWX": {
       "name": "BWX Technologies",
@@ -442,7 +508,9 @@
       "beta": 0.72,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-05",
-      "sector": "AI能源/核能"
+      "sector": "AI能源/核能",
+      "revenueM": 2500,
+      "netDebtB": 2
     },
     "OKLO": {
       "name": "Oklo",
@@ -455,7 +523,9 @@
       "beta": 2.8,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-08",
-      "sector": "AI能源/核能"
+      "sector": "AI能源/核能",
+      "revenueM": 1,
+      "netDebtB": -0.3
     },
     "NEE": {
       "name": "NextEra Energy",
@@ -468,7 +538,9 @@
       "beta": 0.58,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-23",
-      "sector": "AI能源/核能"
+      "sector": "AI能源/核能",
+      "revenueM": 24000,
+      "netDebtB": 60
     },
     "AES": {
       "name": "AES Corp",
@@ -481,7 +553,9 @@
       "beta": 0.82,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-05",
-      "sector": "AI能源/核能"
+      "sector": "AI能源/核能",
+      "revenueM": 12000,
+      "netDebtB": 25
     },
     "IONQ": {
       "name": "IonQ",
@@ -494,7 +568,9 @@
       "beta": 2.1,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-11",
-      "sector": "量子计算"
+      "sector": "量子计算",
+      "revenueM": 51,
+      "netDebtB": -0.7
     },
     "RGTI": {
       "name": "Rigetti",
@@ -507,7 +583,9 @@
       "beta": 3.2,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-06",
-      "sector": "量子计算"
+      "sector": "量子计算",
+      "revenueM": 15,
+      "netDebtB": -0.3
     },
     "QBTS": {
       "name": "D-Wave",
@@ -520,7 +598,9 @@
       "beta": 2.9,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-13",
-      "sector": "量子计算"
+      "sector": "量子计算",
+      "revenueM": 10,
+      "netDebtB": -0.2
     },
     "IBM": {
       "name": "IBM",
@@ -533,7 +613,9 @@
       "beta": 0.72,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-22",
-      "sector": "量子计算"
+      "sector": "量子计算",
+      "revenueM": 62000,
+      "netDebtB": 30
     },
     "QUBT": {
       "name": "Quantum Computing",
@@ -546,7 +628,9 @@
       "beta": 3.5,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-14",
-      "sector": "量子计算"
+      "sector": "量子计算",
+      "revenueM": 3,
+      "netDebtB": -0.1
     },
     "LLY": {
       "name": "Eli Lilly",
@@ -559,7 +643,9 @@
       "beta": 0.48,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-05",
-      "sector": "AI生物医药"
+      "sector": "AI生物医药",
+      "revenueM": 45000,
+      "netDebtB": 18
     },
     "MRNA": {
       "name": "Moderna",
@@ -572,7 +658,9 @@
       "beta": 1.38,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-01",
-      "sector": "AI生物医药"
+      "sector": "AI生物医药",
+      "revenueM": 3200,
+      "netDebtB": -7
     },
     "RXRX": {
       "name": "Recursion",
@@ -585,7 +673,9 @@
       "beta": 1.85,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-12",
-      "sector": "AI生物医药"
+      "sector": "AI生物医药",
+      "revenueM": 200,
+      "netDebtB": -0.5
     },
     "CRSP": {
       "name": "CRISPR Tx",
@@ -598,7 +688,9 @@
       "beta": 1.6,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-05",
-      "sector": "AI生物医药"
+      "sector": "AI生物医药",
+      "revenueM": 500,
+      "netDebtB": -2
     },
     "EDIT": {
       "name": "Editas",
@@ -611,7 +703,9 @@
       "beta": 1.72,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-12",
-      "sector": "AI生物医药"
+      "sector": "AI生物医药",
+      "revenueM": 50,
+      "netDebtB": -0.2
     },
     "BEAM": {
       "name": "Beam Tx",
@@ -624,7 +718,9 @@
       "beta": 1.65,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-06",
-      "sector": "AI生物医药"
+      "sector": "AI生物医药",
+      "revenueM": 80,
+      "netDebtB": -0.4
     },
     "NTLA": {
       "name": "Intellia",
@@ -637,7 +733,9 @@
       "beta": 1.58,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-12",
-      "sector": "AI生物医药"
+      "sector": "AI生物医药",
+      "revenueM": 100,
+      "netDebtB": -0.5
     },
     "SANA": {
       "name": "Sana Bio",
@@ -650,7 +748,9 @@
       "beta": 1.45,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-11",
-      "sector": "AI生物医药"
+      "sector": "AI生物医药",
+      "revenueM": 50,
+      "netDebtB": -0.3
     },
     "REGN": {
       "name": "Regeneron",
@@ -663,7 +763,9 @@
       "beta": 0.52,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-01",
-      "sector": "AI生物医药"
+      "sector": "AI生物医药",
+      "revenueM": 13100,
+      "netDebtB": -3
     },
     "NIO": {
       "name": "NIO",
@@ -676,7 +778,9 @@
       "beta": 1.85,
       "fundamentalsDate": "Q4 2025",
       "nextEarnings": "2026-06-05",
-      "sector": "新能源汽车"
+      "sector": "新能源汽车",
+      "revenueM": 9700,
+      "netDebtB": 2
     },
     "XPEV": {
       "name": "XPeng",
@@ -689,7 +793,9 @@
       "beta": 1.72,
       "fundamentalsDate": "Q4 2025",
       "nextEarnings": "2026-06-10",
-      "sector": "新能源汽车"
+      "sector": "新能源汽车",
+      "revenueM": 5200,
+      "netDebtB": -1
     },
     "LI": {
       "name": "Li Auto",
@@ -702,7 +808,9 @@
       "beta": 1.6,
       "fundamentalsDate": "Q4 2025",
       "nextEarnings": "2026-06-05",
-      "sector": "新能源汽车"
+      "sector": "新能源汽车",
+      "revenueM": 22000,
+      "netDebtB": -5
     },
     "RIVN": {
       "name": "Rivian",
@@ -715,7 +823,9 @@
       "beta": 1.95,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-06",
-      "sector": "新能源汽车"
+      "sector": "新能源汽车",
+      "revenueM": 5400,
+      "netDebtB": -6
     },
     "LCID": {
       "name": "Lucid",
@@ -728,7 +838,9 @@
       "beta": 1.8,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-05",
-      "sector": "新能源汽车"
+      "sector": "新能源汽车",
+      "revenueM": 807,
+      "netDebtB": -1
     },
     "F": {
       "name": "Ford",
@@ -741,7 +853,9 @@
       "beta": 1.05,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-28",
-      "sector": "新能源汽车"
+      "sector": "新能源汽车",
+      "revenueM": 185000,
+      "netDebtB": 14
     },
     "GM": {
       "name": "General Motors",
@@ -754,7 +868,9 @@
       "beta": 0.95,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-07-22",
-      "sector": "新能源汽车"
+      "sector": "新能源汽车",
+      "revenueM": 187400,
+      "netDebtB": 10
     },
     "STLA": {
       "name": "Stellantis",
@@ -767,7 +883,9 @@
       "beta": 0.9,
       "fundamentalsDate": "H1 2025",
       "nextEarnings": "2026-07-31",
-      "sector": "新能源汽车"
+      "sector": "新能源汽车",
+      "revenueM": 189000,
+      "netDebtB": -20
     },
     "BLNK": {
       "name": "Blink Charging",
@@ -780,7 +898,9 @@
       "beta": 2.2,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-08-07",
-      "sector": "新能源汽车"
+      "sector": "新能源汽车",
+      "revenueM": 300,
+      "netDebtB": 0
     },
     "CRWD": {
       "name": "CrowdStrike",
@@ -793,7 +913,9 @@
       "beta": 1.28,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-06-03",
-      "sector": "网络安全"
+      "sector": "网络安全",
+      "revenueM": 4240,
+      "netDebtB": -2
     },
     "PANW": {
       "name": "Palo Alto",
@@ -806,7 +928,9 @@
       "beta": 1.06,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-05-20",
-      "sector": "网络安全"
+      "sector": "网络安全",
+      "revenueM": 8700,
+      "netDebtB": -4
     },
     "0700.HK": {
       "name": "腾讯控股",
@@ -819,7 +943,9 @@
       "beta": 0.85,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-05-14",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 90100,
+      "netDebtB": -45
     },
     "PDD": {
       "name": "拼多多",
@@ -832,7 +958,9 @@
       "beta": 0.9,
       "fundamentalsDate": "Q1 2026",
       "nextEarnings": "2026-05-22",
-      "sector": "AI企业软件"
+      "sector": "AI企业软件",
+      "revenueM": 65600,
+      "netDebtB": -38
     },
     "QQQ": {
       "name": "纳指100 ETF",

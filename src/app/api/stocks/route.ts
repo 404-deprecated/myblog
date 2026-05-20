@@ -23,6 +23,9 @@ export interface StockQuote {
   nextEarnings: string
   preEarningsAction: string
   postEarningsAction: string
+  revenueM: number | null
+  netDebtB: number | null
+  evRevenue: number | null
   error?: boolean
 }
 const YF_HEADERS = {
@@ -64,6 +67,8 @@ export async function GET(req: NextRequest) {
   const stocks: StockQuote[] = tickers.map((ticker, i) => {
     const fund = fundamentalsStore?.stocks[ticker]
     const actions = fund ? getEarningsActions(fund.sector) : { pre: '暂无数据', post: '暂无数据' }
+    const revenueM = fund?.revenueM ?? null
+    const netDebtB = fund?.netDebtB ?? null
     const fundData = fund ? {
       sharesOutM: fund.sharesOutM,
       forwardPe: fund.forwardPe,
@@ -77,25 +82,32 @@ export async function GET(req: NextRequest) {
       nextEarnings: fund.nextEarnings,
       preEarningsAction: actions.pre,
       postEarningsAction: actions.post,
+      revenueM,
+      netDebtB,
     } : {
       sharesOutM: null, forwardPe: null, peg: null,
       revenueGrowthPct: null, grossMarginPct: null, operatingMarginPct: null,
       beta: null, fundamentalsDate: '—', fundamentalsUpdatedAt: fundamentalsStore?.updatedAt ?? '—',
       nextEarnings: '—', preEarningsAction: '暂无数据', postEarningsAction: '暂无数据',
+      revenueM: null, netDebtB: null,
     }
 
     const r = priceResults[i]
     if (r.status === 'fulfilled') {
       const { price, ...priceRest } = r.value
       const marketCapB = fundData.sharesOutM ? (fundData.sharesOutM * price) / 1000 : null
-      return { ticker, ...priceRest, price, marketCapB, ...fundData }
+      const evRevenue =
+        revenueM && marketCapB
+          ? Math.round(((marketCapB + (netDebtB ?? 0)) * 1000) / revenueM * 10) / 10
+          : null
+      return { ticker, ...priceRest, price, marketCapB, ...fundData, evRevenue }
     }
     return {
       ticker,
       name: fund?.name ?? ticker,
       price: 0, prevClose: 0, change: 0, changePct: 0,
       high52w: null, low52w: null, marketCapB: null,
-      ...fundData, error: true,
+      ...fundData, evRevenue: null, error: true,
     }
   })
 
