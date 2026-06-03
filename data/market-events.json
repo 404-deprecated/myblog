@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-05-13",
-  "autoCheckedAt": "2026-05-20T05:42:04.869Z",
+  "updatedAt": "2026-06-02",
+  "autoCheckedAt": "2026-06-03T15:46:55.225Z",
   "markets": {
     "nasdaq": [
       {
@@ -188,6 +188,13 @@
         "impact": "pos",
         "detail": "上证在2026-04-08大涨2.7%。vix21；wti原油跌7%至$94。",
         "source": "auto"
+      },
+      {
+        "d": "2026-05-21",
+        "label": "上证明显大跌",
+        "impact": "neg",
+        "detail": "上证在2026-05-21大跌2.0%。宏观环境无明显异常。",
+        "source": "auto"
       }
     ],
     "hangseng": [
@@ -325,6 +332,13 @@
         "label": "恒生显著大涨",
         "impact": "pos",
         "detail": "恒生在2026-04-08大涨3.1%。vix21。",
+        "source": "auto"
+      },
+      {
+        "d": "2026-06-02",
+        "label": "恒生显著大涨",
+        "impact": "pos",
+        "detail": "恒生在2026-06-02大涨2.5%。宏观环境无明显异常。",
         "source": "auto"
       }
     ]

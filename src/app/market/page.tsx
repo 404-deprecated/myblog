@@ -5,6 +5,8 @@ import { SectorValuation } from '@/components/SectorValuation'
 import { FundImageAnalysis } from '@/components/FundImageAnalysis'
 import { PortfolioWatchlist } from '@/components/PortfolioWatchlist'
 import { StockStreakDashboard } from '@/components/StockStreakDashboard'
+import AttributionPanel from '@/components/AttributionPanel'
+import SectorWatchlist from '@/components/SectorWatchlist'
 import MacroScorePanel from '@/components/MacroScorePanel'
 import { GoldAnalysis } from '@/components/GoldAnalysis'
 import { InteractiveChart, type ChartEvent, type ChartPoint } from '@/components/InteractiveChart'
@@ -57,6 +59,7 @@ const NASDAQ_DATA = [
   { m: '2025-12', p: 23242 },
   { m: '2026-01', p: 23462 }, { m: '2026-02', p: 22668 }, { m: '2026-03', p: 21591 },
   { m: '2026-04', p: 24892 }, { m: '2026-05', p: 25780 },
+  { m: '2026-06', p: 26045 },
 ]
 
 // ─── 上证综合指数月度收盘（2016-01 ~ 2026-05）────────────────────────────────
@@ -104,6 +107,7 @@ const SHANGHAI_DATA = [
   { m: '2025-12', p: 3969 },
   { m: '2026-01', p: 4118 }, { m: '2026-02', p: 4163 }, { m: '2026-03', p: 3892 },
   { m: '2026-04', p: 4112 }, { m: '2026-05', p: 4214 },
+  { m: '2026-06', p: 4250 },
 ]
 
 // ─── 恒生指数月度收盘（2016-01 ~ 2026-05）────────────────────────────────────
@@ -151,6 +155,7 @@ const HANG_SENG_DATA = [
   { m: '2025-12', p: 25631 },
   { m: '2026-01', p: 27387 }, { m: '2026-02', p: 26631 }, { m: '2026-03', p: 24788 },
   { m: '2026-04', p: 25777 }, { m: '2026-05', p: 26348 },
+  { m: '2026-06', p: 26700 },
 ]
 
 const HANG_SENG_EVENTS: ChartEvent[] = [
@@ -205,14 +210,14 @@ const TIMELINE_EVENTS = [...NASDAQ_EVENTS, ...SHANGHAI_EVENTS, ...HANG_SENG_EVEN
   .filter((ev, i, arr) => i === 0 || ev.d !== arr[i - 1].d)  // dedupe same date
 
 // Manually maintained — update when market conditions change significantly
-// Last updated: 2026-05
+// Last updated: 2026-06-03
 const RISK_INDICATORS = [
-  { label: '纳指估值 (前向PE)', value: '~30x', status: 'danger', note: '历史均值约23x，AI叙事驱动估值显著扩张，追高需谨慎' },
-  { label: '巴菲特指标', value: '~250%', status: 'danger', note: '远超历史均值(~150%)，美股整体估值处于历史高位' },
+  { label: '纳指估值 (前向PE)', value: '~31x', status: 'danger', note: '历史均值约23x，AI叙事驱动估值显著扩张，追高需谨慎' },
+  { label: '巴菲特指标', value: '~255%', status: 'danger', note: '远超历史均值(~150%)，美股整体估值处于历史高位' },
   { label: 'A股估值 (沪深300PE)', value: '~13x', status: 'safe', note: '历史均值附近，相对美股低估，安全边际更高' },
-  { label: '美联储利率', value: '3.5-3.75%', status: 'warn', note: '降息周期进行中，但仍高于中性水平，对成长股有压制' },
-  { label: '中美贸易风险', value: '缓和中', status: 'safe', note: '90天关税暂停协议有效，期间不确定性减少' },
-  { label: 'AI算力叙事', value: '强劲', status: 'safe', note: 'Blackwell超级周期+数据中心资本开支持续超预期，叙事溢价仍在扩张' },
+  { label: '美联储利率', value: '3.50-3.75%', status: 'warn', note: '降息周期进行中，但仍高于中性水平，对成长股有压制' },
+  { label: '中美贸易风险', value: '暂停中', status: 'safe', note: '90天关税暂停协议继续有效，不确定性暂时可控' },
+  { label: 'AI算力叙事', value: '强劲', status: 'safe', note: 'Blackwell超级周期+数据中心资本开支持续超预期，HBM/GPU需求旺盛' },
 ]
 
 const PRESET_FUNDS = [
@@ -403,15 +408,16 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
-type TabId = 'market' | 'stocks' | 'sectors' | 'fund' | 'gold' | 'review' | 'safebuy'
+type TabId = 'market' | 'stocks' | 'sectors' | 'strategy' | 'fund' | 'gold' | 'review' | 'safebuy'
 const TABS: { id: TabId; label: string }[] = [
-  { id: 'market',  label: '大盘分析' },
-  { id: 'stocks',  label: '个股分析' },
-  { id: 'sectors', label: '赛道估值' },
-  { id: 'fund',    label: '基金工具' },
-  { id: 'gold',    label: '黄金分析' },
-  { id: 'review',  label: '预测复盘' },
-  { id: 'safebuy', label: '安全买入' },
+  { id: 'market',   label: '大盘分析' },
+  { id: 'stocks',   label: '个股分析' },
+  { id: 'sectors',  label: '赛道估值' },
+  { id: 'strategy', label: '十五五策略' },
+  { id: 'fund',     label: '基金工具' },
+  { id: 'gold',     label: '黄金分析' },
+  { id: 'review',   label: '预测复盘' },
+  { id: 'safebuy',  label: '安全买入' },
 ]
 
 // ─── 主组件 ────────────────────────────────────────────────────────────────────
@@ -683,10 +689,25 @@ export default function MarketDashboard() {
 
       {/* ── Tab 2：个股分析 ─────────────────────────────────────────────────── */}
       {activeTab === 'stocks' && (
-        <section>
-          <SectionLabel>我的持仓观察</SectionLabel>
-          <PortfolioWatchlist />
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div>
+            <SectionLabel>我的持仓观察</SectionLabel>
+            <PortfolioWatchlist />
+          </div>
           <StockStreakDashboard />
+          <div style={{ borderTop: '1px solid var(--border)' }} />
+          <div>
+            <SectionLabel>±10% 波动归因面板</SectionLabel>
+            <AttributionPanel />
+          </div>
+        </section>
+      )}
+
+      {/* ── Tab 4：十五五策略 ─────────────────────────────────────────────────── */}
+      {activeTab === 'strategy' && (
+        <section>
+          <SectionLabel>十五五（2026-2030）八大战略赛道 · 上市公司全景图</SectionLabel>
+          <SectorWatchlist />
         </section>
       )}
 

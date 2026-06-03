@@ -1,34 +1,57 @@
 {
-  "tunedAt": "2026-05-20T00:00:00.000Z",
-  "basedOnSamples": 0,
-  "overallAccuracy": 0,
-  "techWeight": 0.75,
-  "macroWeight": 0.25,
+  "tunedAt": "2026-06-03T16:21:48.620Z",
+  "basedOnSamples": 196,
+  "overallAccuracy": 39,
+  "techWeight": 0.8,
+  "macroWeight": 0.19999999999999996,
   "confidenceBase": 50,
-  "confidenceScale": 1.5,
-  "maxConfidence": 70,
+  "confidenceScale": 1,
+  "maxConfidence": 65,
   "smaFast": 5,
   "smaSlow": 20,
   "rsiMin": 45,
   "rsiMax": 72,
   "bullThreshold": 58,
-  "bearThreshold": 42,
+  "bearThreshold": 32,
   "momentumWeight": 0.15,
   "rsiWeight": 0.2,
   "regimeAdjustments": {
-    "bull": { "techDelta": 0, "confDelta": -5 },
-    "bear": { "techDelta": 0, "confDelta": -10 },
-    "volatile": { "techDelta": -0.05, "confDelta": -15 },
-    "sideways": { "techDelta": 0, "confDelta": 0 }
+    "bull": {
+      "techDelta": 0,
+      "confDelta": -5
+    },
+    "bear": {
+      "techDelta": 0,
+      "confDelta": -10
+    },
+    "volatile": {
+      "techDelta": -0.05,
+      "confDelta": -15
+    },
+    "sideways": {
+      "techDelta": 0,
+      "confDelta": 0
+    }
   },
   "safeBuyWeights": {
-    "bollinger": 0.35,
-    "drawdown": 0.30,
-    "rsi": 0.15,
-    "valuation": 0.20,
-    "goldMacro": 0.20
+    "bollinger": 0.45,
+    "drawdown": 0.3,
+    "rsi": 0.1,
+    "valuation": 0.2,
+    "goldMacro": 0.2
   },
-  "previousAccuracy": 0,
+  "previousAccuracy": 39,
   "improvement": 0,
-  "adjustmentLog": ["[2026-05-20] 引擎v2重置：新增成交量/VIX/支撑阻力信号，震荡区间扩至42-58，强化guard rails"]
+  "adjustmentLog": [
+    "[2026-05-20] 引擎v2重置：新增成交量/VIX/支撑阻力信号，震荡区间扩至42-58，强化guard rails",
+    "[2026-05-22] 宏观信号噪声大：技术权重 0.75→0.80; 准确率49%偏低：缩减置信度 scale 1.5→1.2",
+    "[2026-05-22] 宏观信号噪声大：技术权重 0.80→0.80; 准确率49%偏低：缩减置信度 scale 1.2→1",
+    "[2026-05-22] 宏观信号噪声大：技术权重 0.80→0.80; 准确率49%偏低：缩减置信度 scale 1→1",
+    "[2026-05-31] 宏观信号噪声大：技术权重 0.80→0.80; 准确率49%偏低：缩减置信度 scale 1→1",
+    "[2026-06-02] 看跌准确率仅33%：看跌阈值 42→39（更严格判定下跌）; 宏观信号噪声大：技术权重 0.80→0.80; 准确率44%偏低：缩减置信度 scale 1→1; 安全买价准确率58%偏低：增加布林带权重",
+    "[2026-06-02] 看跌准确率仅33%：看跌阈值 39→36（更严格判定下跌）; 宏观信号噪声大：技术权重 0.80→0.80; 准确率44%偏低：缩减置信度 scale 1→1; 安全买价准确率59%偏低：增加布林带权重",
+    "[2026-06-02] 看跌准确率仅33%：看跌阈值 36→33（更严格判定下跌）; 宏观信号噪声大：技术权重 0.80→0.80; 准确率45%偏低：缩减置信度 scale 1→1; 安全买价准确率59%偏低：增加布林带权重",
+    "[2026-06-02] 看跌准确率仅33%：看跌阈值 33→32（更严格判定下跌）; 宏观信号噪声大：技术权重 0.80→0.80; 准确率44%偏低：缩减置信度 scale 1→1; 安全买价准确率59%偏低：增加布林带权重",
+    "[2026-06-03] 宏观信号噪声大：技术权重 0.80→0.80; 准确率39%偏低：缩减置信度 scale 1→1; 安全买价准确率51%偏低：增加布林带权重"
+  ]
 }

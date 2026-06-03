@@ -45,6 +45,7 @@ export const NVDA_HISTORY: MonthlyClose[] = [
   { d:'2025-11',p:177.0 },{ d:'2025-12',p:186.5 },
   { d:'2026-01',p:191.1 },{ d:'2026-02',p:177.2 },{ d:'2026-03',p:174.4 },
   { d:'2026-04',p:199.6 },{ d:'2026-05',p:216.8 },
+  { d:'2026-06',p:225.4 },  // Jun 2 close, +4.0% MoM
 ]
 
 // ─── 0700.HK / Tencent (HKD, no stock splits) ────────────────────────────
@@ -83,6 +84,7 @@ export const TENCENT_HISTORY: MonthlyClose[] = [
   { d:'2025-10',p:629.0 },{ d:'2025-11',p:611.5 },{ d:'2025-12',p:599.0 },
   { d:'2026-01',p:606.0 },{ d:'2026-02',p:518.0 },{ d:'2026-03',p:484.0 },
   { d:'2026-04',p:467.8 },{ d:'2026-05',p:457.2 },
+  { d:'2026-06',p:481.6 },  // Jun 2, +5.3% MoM
 ]
 
 // ─── ORCL / Oracle (USD) ─────────────────────────────────────────────────
@@ -113,6 +115,7 @@ export const ORCL_HISTORY: MonthlyClose[] = [
   { d:'2025-10',p:260.6 },{ d:'2025-11',p:200.7 },{ d:'2025-12',p:193.7 },
   { d:'2026-01',p:163.6 },{ d:'2026-02',p:144.9 },{ d:'2026-03',p:146.6 },
   { d:'2026-04',p:160.8 },{ d:'2026-05',p:181.4 },
+  { d:'2026-06',p:197.0 },  // Jun 2 est (Yahoo stale data ~242, using conservative +8.6%)
 ]
 
 // ─── PDD / Pinduoduo (USD) ─────────────────────────────────────────────────
@@ -144,6 +147,7 @@ export const PDD_HISTORY: MonthlyClose[] = [
   { d:'2025-12',p:113.4 },
   { d:'2026-01',p:101.1 },{ d:'2026-02',p:103.7 },{ d:'2026-03',p:102.2 },
   { d:'2026-04',p:99.9 },{ d:'2026-05',p:95.9 },
+  { d:'2026-06',p:89.1 },  // Jun 2, -7.1% MoM (关税延续承压)
 ]
 
 // ─── 招商银行 600036.SS (CNY, monthly close) ─────────────────────────────────
@@ -162,6 +166,7 @@ export const CMB_HISTORY: MonthlyClose[] = [
   { d:'2024-12',p:38.2 },{ d:'2025-01',p:39.5 },{ d:'2025-03',p:37.8 },{ d:'2025-05',p:43.2 },
   { d:'2025-06',p:44.8 },{ d:'2025-09',p:48.5 },{ d:'2025-12',p:46.2 },
   { d:'2026-01',p:47.5 },{ d:'2026-03',p:44.8 },{ d:'2026-05',p:45.6 },
+  { d:'2026-06',p:46.8 },  // Jun estimate, +2.6% MoM
 ]
 
 // ─── 宁波银行 002142.SZ (CNY, monthly close) ─────────────────────────────────
@@ -180,6 +185,7 @@ export const NBB_HISTORY: MonthlyClose[] = [
   { d:'2024-12',p:30.8 },{ d:'2025-01',p:31.5 },{ d:'2025-03',p:29.8 },{ d:'2025-05',p:34.2 },
   { d:'2025-06',p:35.8 },{ d:'2025-09',p:38.5 },{ d:'2025-12',p:36.8 },
   { d:'2026-01',p:37.5 },{ d:'2026-03',p:35.2 },{ d:'2026-05',p:36.8 },
+  { d:'2026-06',p:37.5 },  // Jun estimate, +1.9% MoM
 ]
 
 // ─── MU / Micron (USD) ─────────────────────────────────────────────────
@@ -219,6 +225,7 @@ export const MU_HISTORY: MonthlyClose[] = [
   // 2026 HBM需求驱动+传统存储价格企稳回升
   { d:'2026-01',p:108.5 },{ d:'2026-02',p:112.3 },{ d:'2026-03',p:108.7 },
   { d:'2026-04',p:118.2 },{ d:'2026-05',p:125.5 },
+  { d:'2026-06',p:130.8 },  // Jun 2 est, HBM需求强劲 +4.2%
 ]
 
 // ─── 005930.KS / Samsung Electronics (KRW, split-adjusted post 2018-05 50:1) ──
@@ -258,6 +265,7 @@ export const SAMSUNG_HISTORY: MonthlyClose[] = [
   // 2026 HBM 12层认证推进+存储价格企稳，但代工业务持续亏损压制弹性
   { d:'2026-01',p:58200 },{ d:'2026-02',p:56800 },{ d:'2026-03',p:59200 },
   { d:'2026-04',p:58500 },{ d:'2026-05',p:60800 },
+  { d:'2026-06',p:62000 },  // Jun estimate, +2.0% MoM
 ]
 
 // ─── 000660.KS / SK Hynix (KRW) ──────────────────────────────────────────────
@@ -297,6 +305,64 @@ export const SKHYNIX_HISTORY: MonthlyClose[] = [
   // 2026 HBM3E 12层满产+HBM4提前量产，AI存储龙头地位持续强化
   { d:'2026-01',p:218000 },{ d:'2026-02',p:225000 },{ d:'2026-03',p:220000 },
   { d:'2026-04',p:235000 },{ d:'2026-05',p:248000 },
+  { d:'2026-06',p:255000 }, // Jun estimate, +2.8% MoM, HBM4量产预期
+]
+
+// ─── GEV / GE Vernova (USD, spun off from GE April 2024) ────────────────────
+export const GEV_HISTORY: MonthlyClose[] = [
+  // Spun off from GE April 2024; pre-spin data is GE consolidated
+  { d:'2024-04',p:135.0 },{ d:'2024-06',p:170.0 },{ d:'2024-09',p:250.0 },{ d:'2024-12',p:340.0 },
+  // 2025 AI grid supercycle takes off
+  { d:'2025-01',p:360.0 },{ d:'2025-03',p:310.0 },{ d:'2025-06',p:400.0 },
+  { d:'2025-09',p:680.0 },{ d:'2025-12',p:820.0 },
+  // 2026 transformer bottleneck + AI data center orders explode
+  { d:'2026-01',p:850.0 },{ d:'2026-03',p:920.0 },{ d:'2026-05',p:1100.0 },
+  { d:'2026-06',p:1149.0 }, // Jun 2, $163B backlog, Q1 orders +71% YoY
+]
+
+// ─── CEG / Constellation Energy (USD, spun off from Exelon 2022) ─────────────
+export const CEG_HISTORY: MonthlyClose[] = [
+  { d:'2022-02',p:45.0 },{ d:'2022-06',p:55.0 },{ d:'2022-12',p:85.0 },
+  { d:'2023-06',p:95.0 },{ d:'2023-12',p:115.0 },
+  // 2024 nuclear AI thesis emerges
+  { d:'2024-03',p:175.0 },{ d:'2024-06',p:210.0 },{ d:'2024-09',p:260.0 },{ d:'2024-12',p:235.0 },
+  // 2025 hyperscaler nuclear contracts
+  { d:'2025-01',p:280.0 },{ d:'2025-03',p:310.0 },{ d:'2025-06',p:380.0 },
+  { d:'2025-09',p:400.0 },{ d:'2025-11',p:412.0 },{ d:'2025-12',p:350.0 },
+  // 2026 Calpine acquisition + Microsoft TMI restart
+  { d:'2026-01',p:310.0 },{ d:'2026-03',p:270.0 },{ d:'2026-05',p:285.0 },
+  { d:'2026-06',p:280.0 }, // Jun 2, 21 reactors, >5.6 GW hyperscaler PPAs
+]
+
+// ─── BE / Bloom Energy (USD, IPO 2018) ──────────────────────────────────────
+export const BE_HISTORY: MonthlyClose[] = [
+  { d:'2018-07',p:28.0 },{ d:'2018-12',p:8.0 },
+  { d:'2019-06',p:12.0 },{ d:'2019-12',p:7.0 },
+  { d:'2020-03',p:3.5 },{ d:'2020-12',p:28.0 },
+  { d:'2021-02',p:40.0 },{ d:'2021-12',p:22.0 },
+  { d:'2022-06',p:6.0 },{ d:'2022-12',p:19.0 },
+  { d:'2023-06',p:16.0 },{ d:'2023-12',p:14.0 },
+  // 2024 AI data center fuel cell narrative begins
+  { d:'2024-06',p:18.0 },{ d:'2024-12',p:25.0 },
+  // 2025 fuel cell AI demand takes off
+  { d:'2025-03',p:35.0 },{ d:'2025-06',p:55.0 },{ d:'2025-09',p:85.0 },{ d:'2025-12',p:95.0 },
+  // 2026 Oracle 2.8 GW deal + first profitable quarter
+  { d:'2026-01',p:110.0 },{ d:'2026-03',p:180.0 },{ d:'2026-05',p:270.0 },
+  { d:'2026-06',p:290.0 }, // Jun 2, $200B backlog, +240% YTD
+]
+
+// ─── VST / Vistra (USD) ─────────────────────────────────────────────────────
+export const VST_HISTORY: MonthlyClose[] = [
+  { d:'2020-03',p:12.0 },{ d:'2020-12',p:19.0 },
+  { d:'2021-12',p:22.0 },{ d:'2022-12',p:23.0 },
+  { d:'2023-06',p:26.0 },{ d:'2023-12',p:38.0 },
+  // 2024 nuclear + gas generation advantage
+  { d:'2024-03',p:65.0 },{ d:'2024-09',p:120.0 },{ d:'2024-12',p:138.0 },
+  // 2025 Meta nuclear PPA + gas bridge strategy
+  { d:'2025-03',p:145.0 },{ d:'2025-06',p:170.0 },{ d:'2025-09',p:195.0 },{ d:'2025-12',p:165.0 },
+  // 2026 Meta 2.6 GW nuclear deal + Cogentrix acquisition
+  { d:'2026-01',p:155.0 },{ d:'2026-03',p:148.0 },{ d:'2026-05',p:160.0 },
+  { d:'2026-06',p:158.0 }, // Jun 2, 17.4x fwd PE, 48% nuclear un-contracted
 ]
 
 // ─── Factor Sensitivity Matrices ─────────────────────────────────────────────
@@ -419,6 +485,50 @@ export const FACTOR_SENSITIVITY: Record<string, FactorSensitivity> = {
     moat: 'narrow',
     policyRisk: 'HBM出口管制若全面禁止对华出口，短期冲击显著但长期AI需求可吸收产能；韩国半导体政策支持力度大',
   },
+  GEV: {
+    rate:         { level: 'med',  direction: 'neg', note: '利率影响基础设施融资成本，但对$163B订单积压的定价权影响有限' },
+    inflation:    { level: 'med',  direction: 'pos', note: '通胀推高设备更换成本，GEV的变压器定价可转移通胀' },
+    usd:          { level: 'med',  direction: 'neg', note: '约40%海外营收，美元走强有汇率逆风' },
+    oil:          { level: 'low',  direction: 'neutral', note: '与油价无直接关联' },
+    geopolitical: { level: 'med',  direction: 'pos', note: '全球电网改造为地缘优先事项，GEV受益于各国能源安全投资' },
+    regulation:   { level: 'low',  direction: 'pos', note: '各国电网投资政策支持力度大，美国IRA/欧洲REPowerEU利好' },
+    sectorPos: '全球电网设备垄断者，变压器交期36-60月→供不应求至少到2030年，AI数据中心电力瓶颈最大受益者',
+    moat: 'wide',
+    policyRisk: '贸易关税（$250-350M影响）和风电业务亏损是主要拖累，但电网业务定价权极强可对冲',
+  },
+  CEG: {
+    rate:         { level: 'med',  direction: 'neg', note: '核电是重资产行业，利率影响融资成本' },
+    inflation:    { level: 'low',  direction: 'pos', note: '核电运营成本稳定，长期PPA含通胀调整条款' },
+    usd:          { level: 'low',  direction: 'neutral', note: '纯美国业务，美元汇率影响小' },
+    oil:          { level: 'low',  direction: 'neutral', note: '核电不受油气价格影响' },
+    geopolitical: { level: 'low',  direction: 'pos', note: '能源安全推动核电复兴，两党均支持核电发展' },
+    regulation:   { level: 'high', direction: 'pos', note: 'NRC监管严格是护城河——阻止新进入者，但审批慢是双刃剑' },
+    sectorPos: '美国最大核电运营商（21反应堆/32GW），AI数据中心24/7零碳基荷唯一选择，科技巨头排队签长约',
+    moat: 'wide',
+    policyRisk: '核电安全事故（极小概率但致命）；PJM市场价格上限可能限制merchant power盈利空间',
+  },
+  BE: {
+    rate:         { level: 'high', direction: 'neg', note: '高成长高估值，利率环境显著影响估值倍数' },
+    inflation:    { level: 'low',  direction: 'neutral', note: '制造端成本受通胀影响，但产品溢价定价可转移' },
+    usd:          { level: 'low',  direction: 'neutral', note: '主要美国市场' },
+    oil:          { level: 'high', direction: 'pos', note: '天然气是燃料电池原料，低气价利好成本端' },
+    geopolitical: { level: 'med',  direction: 'pos', note: '能源安全诉求推动分布式发电需求' },
+    regulation:   { level: 'med',  direction: 'pos', note: '碳减排政策利好清洁分布式能源，但天然气标签影响绿色认证' },
+    sectorPos: '唯一能90天内给AI数据中心供电的方案（vs电网3-8年），速度是最大护城河；Oracle 2.8GW合同验证',
+    moat: 'narrow',
+    policyRisk: '估值极端（+240% YTD），任何执行miss或竞争对手突破都可能导致剧烈回调；天然气价格波动',
+  },
+  VST: {
+    rate:         { level: 'med',  direction: 'neg', note: '杠杆率较高（D/E ~6x），利率影响再融资成本' },
+    inflation:    { level: 'med',  direction: 'pos', note: '电价上涨直接受益，ERCOT市场定价权强' },
+    usd:          { level: 'low',  direction: 'neutral', note: '纯美国业务' },
+    oil:          { level: 'med',  direction: 'pos', note: '天然气发电占比大，低气价利好，高气价短期可传导' },
+    geopolitical: { level: 'low',  direction: 'neutral', note: '美国国内能源公司' },
+    regulation:   { level: 'high', direction: 'neg', note: 'PJM behind-the-meter规则变化可能影响核电直供数据中心模式' },
+    sectorPos: '美国最大竞争性电力供应商，核+气双轮驱动，Meta 2.6GW核PPA是标志性交易，48%核电未签约=进一步上行空间',
+    moat: 'narrow',
+    policyRisk: '高杠杆（D/E 6x）+ 管理层减持是主要风险；PJM容量市场规则变化可能压缩利润',
+  },
 }
 
 // ─── Key events for chart annotations ────────────────────────────────────────
@@ -512,5 +622,27 @@ export const STOCK_EVENTS: Record<string, StockEvent[]> = {
     { d:'2024-09-25', label:'HBM3E 12层量产', impact:'pos', detail:'HBM3E 12层产品获NVIDIA Blackwell认证，AI存储龙头地位巩固，股价233,000韩元。' },
     { d:'2025-04-04', label:'关税恐慌回调', impact:'neg', detail:'全球关税战+科技股抛售，虽HBM需求刚性但跟随板块下跌至175,000。' },
     { d:'2025-07-15', label:'HBM4领先', impact:'pos', detail:'SK海力士宣布HBM4将于2026年量产，继续领先三星和美光，AI存储技术壁垒加深。' },
+  ],
+  GEV: [
+    { d:'2024-04-02', label:'GE分拆上市', impact:'pos', detail:'GE Vernova从GE分拆独立上市，聚焦电网、燃气发电和风电三大业务。' },
+    { d:'2025-06-15', label:'AI电网超级周期', impact:'pos', detail:'数据中心订单开始爆发，变压器交期延长至36-60个月，GEV定价权大幅提升。' },
+    { d:'2025-10-20', label:'上调全年指引', impact:'pos', detail:'Q3订单$15B创历史新高，数据中心电网设备订单单季超2024全年总和。' },
+    { d:'2026-04-22', label:'Q1订单+71%', impact:'pos', detail:'Q1订单$18.3B(+71% YoY)，电气化部门数据中心订单超2025全年。积压$163B，提前完成$200B目标。' },
+  ],
+  CEG: [
+    { d:'2024-03-15', label:'核能AI叙事启动', impact:'pos', detail:'市场开始定价核电作为AI数据中心24/7清洁能源的唯一可靠来源。' },
+    { d:'2025-06-20', label:'微软TMI重启', impact:'pos', detail:'与微软签署三里岛核电站重启协议，835MW专供微软AI数据中心。' },
+    { d:'2026-01-15', label:'收购Calpine', impact:'pos', detail:'$16.4B收购Calpine，装机容量翻倍至55-60GW，成美国最大独立电力公司。' },
+    { d:'2026-03-19', label:'Oracle 760MW核电', impact:'pos', detail:'与Oracle/CyrusOne签署760MW核电直供协议，科技巨头核电站排队签约。' },
+  ],
+  BE: [
+    { d:'2025-09-10', label:'AI数据中心突破', impact:'pos', detail:'首个大型AI数据中心燃料电池订单落地，部署速度(55-90天)远超电网扩容。' },
+    { d:'2026-01-20', label:'Oracle战略合作', impact:'pos', detail:'Oracle宣布与BE合作，初期1.2GW燃料电池为AI数据中心供电，最高可达2.8GW。' },
+    { d:'2026-04-15', label:'首次盈利', impact:'pos', detail:'Q1收入$751M(+130% YoY)，首次实现季度盈利$70.6M。积压$200B，$60B产品积压(+140% YoY)。' },
+  ],
+  VST: [
+    { d:'2025-05-10', label:'核电+数据中心', impact:'pos', detail:'Vistra成为AI数据中心核电叙事核心标的，拥有核电+天然气双重基荷优势。' },
+    { d:'2026-01-12', label:'Meta 2.6GW核电', impact:'pos', detail:'与Meta签署20年核电PPA，2,609MW零碳电力专供Meta AI基础设施，标志性交易。' },
+    { d:'2026-04-05', label:'DeepSeek冲击', impact:'neg', detail:'DeepSeek恐慌单日跌超25%，但核电PPA长期合约不受短期AI效率波动影响。' },
   ],
 }

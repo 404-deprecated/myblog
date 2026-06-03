@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { NVDA_HISTORY, TENCENT_HISTORY, ORCL_HISTORY, PDD_HISTORY, CMB_HISTORY, NBB_HISTORY, MU_HISTORY, SAMSUNG_HISTORY, SKHYNIX_HISTORY, FACTOR_SENSITIVITY, STOCK_EVENTS, type MonthlyClose } from './portfolio-data'
+import { NVDA_HISTORY, TENCENT_HISTORY, ORCL_HISTORY, PDD_HISTORY, CMB_HISTORY, NBB_HISTORY, MU_HISTORY, SAMSUNG_HISTORY, SKHYNIX_HISTORY, GEV_HISTORY, CEG_HISTORY, BE_HISTORY, VST_HISTORY, FACTOR_SENSITIVITY, STOCK_EVENTS, type MonthlyClose } from './portfolio-data'
 import { InteractiveChart, type ChartEvent } from './InteractiveChart'
 
 interface StockDetailData {
@@ -230,6 +230,63 @@ const WATCHLIST = [
     earningsOutlook: 'positive' as 'positive' | 'neutral' | 'negative',
     preAction: 'HBM垄断地位提供估值溢价但存储周期风险仍在。财报前仓位≤15%，若HBM订单消息积极可加仓至20%。设止损-12%因波动较大。注意韩元汇率对KRW计价价格的影响。',
     postAction: '超预期+HBM利润率继续提升：持有核心仓位，回调10%可加仓。HBM订单不及预期或竞争加剧（三星/美光追赶）：减仓1/3。HBM出口管制若全面禁止对华出口则减仓50%，但长期AI需求可对冲。',
+  },
+  // ── Layer 6: AI电力/能源 ──
+  {
+    ticker: 'GEV',
+    yfTicker: 'GEV',
+    cnName: 'GE Vernova',
+    currency: 'USD',
+    color: '#f59e0b',
+    flag: '🇺🇸',
+    history: GEV_HISTORY,
+    nextEarnings: '2026-07-22',
+    earningsNote: '全球电网设备龙头，变压器交期36-60月→供不应求持续到2030年。Q1订单$18.3B(+71% YoY)，积压$163B。关键指标：电气化部门订单增速、变压器产能扩张进度、FCF转化率、$200B积压目标完成时间。',
+    earningsOutlook: 'positive' as 'positive' | 'neutral' | 'negative',
+    preAction: 'AI电网超级周期核心标的，估值37x PE不便宜但订单可见性极强。仓位上限15%，设止损-10%。若回调至$900-1000可加仓。',
+    postAction: '订单持续超预期+产能扩张顺利：持有核心仓位。订单增速放缓或积压消化不及预期：减仓1/3。关税影响超预期（>$350M）：暂时减仓观察。',
+  },
+  {
+    ticker: 'CEG',
+    yfTicker: 'CEG',
+    cnName: 'Constellation能源',
+    currency: 'USD',
+    color: '#0891b2',
+    flag: '🇺🇸',
+    history: CEG_HISTORY,
+    nextEarnings: '2026-08-04',
+    earningsNote: '美国最大核电运营商(21反应堆/32GW)，微软TMI重启+Meta核PPA+Oracle 760MW，>5.6GW长期清洁能源合同已锁定。Calpine收购后总装机55-60GW。关键指标：新增核电PPA签约规模、核电站运营效率、监管审批进度。',
+    earningsOutlook: 'positive' as 'positive' | 'neutral' | 'negative',
+    preAction: 'AI电力赛道中风险最低的标的，核电PPA收入高度可预测。仓位上限12%，设止损-10%。若回调至$250以下可考虑加仓。',
+    postAction: '新签大型核PPA：加仓至15%。核电安全事故或监管重大变化：立即减仓50%。PJM价格上限政策若出台，重新评估核电merchant power盈利模式。',
+  },
+  {
+    ticker: 'BE',
+    yfTicker: 'BE',
+    cnName: 'Bloom能源',
+    currency: 'USD',
+    color: '#059669',
+    flag: '🇺🇸',
+    history: BE_HISTORY,
+    nextEarnings: '2026-08-06',
+    earningsNote: '唯一能在90天内给AI数据中心供电的方案（vs电网3-8年）。Oracle 2.8GW合同+$200B积压。2026年首次盈利。关键指标：季度部署量(MW)、毛利率提升路径、新增大型客户（除Oracle外）、现金流扭正时间。',
+    earningsOutlook: 'positive' as 'positive' | 'neutral' | 'negative',
+    preAction: '极高波动（+240% YTD），仓位上限5%，设止损-20%。这是期权型持仓——赌的是燃料电池成为AI数据中心的标配供电方案。不要重仓。',
+    postAction: '新签第二个大型客户（Meta/Google/AWS）：加仓至8%。季度部署量miss或毛利率下滑：减仓50%。技术路线被竞争对手超越：清仓。',
+  },
+  {
+    ticker: 'VST',
+    yfTicker: 'VST',
+    cnName: 'Vistra能源',
+    currency: 'USD',
+    color: '#ca8a04',
+    flag: '🇺🇸',
+    history: VST_HISTORY,
+    nextEarnings: '2026-08-05',
+    earningsNote: '美国最大竞争性电力供应商，Meta 2.6GW核PPA标志性交易（48%核电产能仍未签约=进一步上行空间）。ERCOT市场定价权+天然气桥接策略。关键指标：剩余核电签约进展、EBITDA/FCF转化率、负债率下降速度。',
+    earningsOutlook: 'positive' as 'positive' | 'neutral' | 'negative',
+    preAction: '估值较低（17.4x PE）但杠杆率较高（D/E 6x）。仓位上限10%，设止损-12%。注意管理层近期减持信号，若继续减持需警惕。',
+    postAction: '新签大型核电PPA（类似Meta级别）：加仓至15%。PJM监管规则不利变动：减仓1/3。管理层持续减持或负债率恶化：减仓50%。',
   },
 ]
 
