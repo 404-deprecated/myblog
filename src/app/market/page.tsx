@@ -8,6 +8,7 @@ import StageMacro from './components/StageMacro'
 import StageFundamental from './components/StageFundamental'
 import StageTechnical from './components/StageTechnical'
 import StageExecution from './components/StageExecution'
+import InstitutionalFlow from '@/components/InstitutionalFlow'
 import StagePosition from './components/StagePosition'
 import StageReview from './components/StageReview'
 import FundAnalysisTab from './components/FundAnalysisTab'
@@ -20,12 +21,12 @@ import {
 } from './market-data'
 
 // ─── 8-Tab Trading Workflow ────────────────────────────────────────
-type TabId = 'macro' | 'fundamental' | 'technical' | 'execute' | 'position' | 'review' | 'fund' | 'gold'
+type TabId = 'macro' | 'fundamental' | 'technical' | 'flow' | 'position' | 'review' | 'fund' | 'gold'
 const TABS: { id: TabId; label: string }[] = [
   { id: 'macro',       label: '① 宏观' },
   { id: 'fundamental', label: '② 选股' },
   { id: 'technical',   label: '③ 择时' },
-  { id: 'execute',     label: '④ 执行' },
+  { id: 'flow',        label: '④ 主力' },
   { id: 'position',    label: '⑤ 持仓' },
   { id: 'review',      label: '⑥ 复盘' },
   { id: 'fund',        label: '基金' },
@@ -116,8 +117,8 @@ export default function MarketDashboard() {
       {activeTab === 'fundamental' && <StageFundamental />}
       {/* ═══════ ③ 技术面择时 ═══════ */}
       {activeTab === 'technical' && <StageTechnical />}
-      {/* ═══════ ④ 交易执行 ═══════ */}
-      {activeTab === 'execute' && <StageExecution />}
+      {/* ═══════ ④ 主力动向 ═══════ */}
+      {activeTab === 'flow' && <InstitutionalFlow />}
       {/* ═══════ ⑤ 持仓管理 ═══════ */}
       {activeTab === 'position' && <StagePosition />}
       {/* ═══════ ⑥ 复盘优化 ═══════ */}

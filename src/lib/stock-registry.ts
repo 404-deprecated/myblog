@@ -97,6 +97,18 @@ const ALL_STOCKS: StockEntry[] = [
   {code:'601698',name:'中国卫通',exchange:'A股',sector:'航天/军工',tags:['短线','十五五'],active:true,notes:'卫星运营稀缺标的'},
   {code:'688631',name:'莱斯信息',exchange:'A股',sector:'航天/军工',tags:['短线','十五五'],active:true,notes:'低空空管系统龙头'},
   {code:'002236',name:'大华股份',exchange:'A股',sector:'航天/军工',tags:['短线','十五五'],active:true,notes:'全球视频监控#2'},
+  {code:'600893',name:'航发动力',exchange:'A股',sector:'航天/军工',tags:['短线','十五五'],active:true,notes:'航空发动机龙头·低空动力'},
+  {code:'002179',name:'中航光电',exchange:'A股',sector:'航天/军工',tags:['短线','十五五'],active:true,notes:'军工连接器龙头·低空电子'},
+  {code:'600990',name:'四创电子',exchange:'A股',sector:'航天/军工',tags:['短线','十五五'],active:true,notes:'雷达电子·低空监视'},
+  {code:'002126',name:'银轮股份',exchange:'A股',sector:'航天/军工',tags:['短线','十五五'],active:true,notes:'热管理+低空散热'},
+  {code:'000099',name:'中信海直',exchange:'A股',sector:'航天/军工',tags:['短线','十五五'],active:true,notes:'低空直升机运营龙头'},
+  {code:'300777',name:'中简科技',exchange:'A股',sector:'航天/军工',tags:['短线','十五五'],active:true,notes:'碳纤维·低空轻量化'},
+  {code:'603950',name:'长源东谷',exchange:'A股',sector:'航天/军工',tags:['短线','十五五'],active:true,notes:'航空发动机精密铸件'},
+  {code:'603009',name:'北特科技',exchange:'A股',sector:'机器人/工控',tags:['短线','十五五'],active:true,notes:'行星滚柱丝杠·产能最激进'},
+  {code:'002472',name:'双环传动',exchange:'A股',sector:'机器人/工控',tags:['短线','十五五'],active:true,notes:'RV减速器国产龙头'},
+  {code:'300115',name:'长盈精密',exchange:'A股',sector:'机器人/工控',tags:['短线','十五五'],active:true,notes:'结构件+指尖传感器'},
+  {code:'300007',name:'汉威科技',exchange:'A股',sector:'机器人/工控',tags:['短线','十五五'],active:true,notes:'六维力传感器国产替代'},
+  {code:'301076',name:'新瀚新材',exchange:'A股',sector:'机器人/工控',tags:['短线','十五五'],active:true,notes:'PEEK原料DFBP全球≤3家'},
   // ── 存储/分销 ──
   {code:'300736',name:'香农芯创',exchange:'A股',sector:'半导体/芯片',tags:['短线'],active:true,notes:'存储芯片分销'},
   // ── 港股 ──
