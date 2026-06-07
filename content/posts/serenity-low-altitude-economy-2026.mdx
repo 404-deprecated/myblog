@@ -1,0 +1,845 @@
+---
+title: "低空经济 · Serenity-skill 完整扫描"
+date: "2026-06-07"
+description: "Serenity-skill 产业链瓶颈点扫描报告。"
+tags: ['投资', 'Serenity', '低空经济', 'eVTOL', 'A股']
+author: "投资研究"
+---
+
+<style>
+
+*{box-sizing:border-box;margin:0;padding:0}
+.serenity-report{
+  --bg:#0d0d11;--bg2:#13131a;--bg3:#1a1a24;--border:rgba(255,255,255,.07);
+  --text:#e2e0f0;--text2:#9a97b0;--text3:#5e5b74;
+  --sky:#38bdf8;--sky2:rgba(56,189,248,.12);
+  --green:#34d399;--green2:rgba(52,211,153,.12);
+  --blue:#60a5fa;--blue2:rgba(96,165,250,.12);
+  --amber:#f59e0b;--amber2:rgba(245,158,11,.12);
+  --red:#f87171;--red2:rgba(248,113,113,.1);
+  --purple:#9b91f5;--purple2:rgba(155,145,245,.15);
+  --teal:#2dd4bf;--teal2:rgba(45,212,191,.1);
+}
+.serenity-report{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;font-size:14px;line-height:1.65}
+.wrap{max-width:1020px;margin:0 auto;padding:22px 18px 80px}
+
+.hdr{padding:18px 0 14px}
+.hdr-badge{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--sky);margin-bottom:8px}
+.hdr-title{font-size:22px;font-weight:800;color:#f0eeff}
+.hdr-sub{font-size:13px;color:var(--text2);margin-top:5px;max-width:700px}
+
+.skill-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 12px;margin:12px 0 18px;color:var(--text2)}
+.skill-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+.sys-box{background:var(--bg3);border:1px solid rgba(56,189,248,.2);border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:12.5px;color:var(--text2);line-height:1.8}
+.sys-box strong{color:var(--text)}
+
+.el-box{display:flex;flex-wrap:wrap;gap:8px;padding:11px 16px;background:var(--bg3);border:1px solid rgba(245,158,11,.2);border-radius:10px;margin-bottom:20px}
+.el-title{font-size:11px;font-weight:700;color:var(--amber);width:100%;margin-bottom:2px}
+.el-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.et{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.et-ok{background:rgba(52,211,153,.2);color:#34d399}
+.et-no{background:rgba(248,113,113,.2);color:#f87171}
+.et-us{background:rgba(96,165,250,.2);color:#60a5fa}
+.et-hk{background:rgba(56,189,248,.2);color:#38bdf8}
+
+.tabs{display:flex;gap:3px;margin-bottom:20px;background:rgba(255,255,255,.04);border-radius:10px;padding:4px}
+.tab{flex:1;text-align:center;padding:9px 6px;font-size:12px;font-weight:600;border-radius:7px;cursor:pointer;color:var(--text3);transition:all .15s}
+.tab.on{background:rgba(56,189,248,.2);color:#7dd3fc}
+.panel{display:block}
+
+.layer-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+.layer-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.lchip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px}
+.lc-hot{background:var(--red2);color:var(--red)}
+.lc-med{background:var(--amber2);color:var(--amber)}
+.lc-sky{background:var(--sky2);color:var(--sky)}
+.lc-low{background:var(--blue2);color:var(--blue)}
+
+.cards{display:flex;flex-direction:column;gap:10px;margin-bottom:4px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:13px;overflow:hidden;transition:border-color .15s}
+.card:hover{border-color:rgba(56,189,248,.2)}
+.card-inner{display:flex;align-items:stretch}
+.rank{width:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;border-right:1px solid var(--border)}
+.r1{background:rgba(52,211,153,.07);color:var(--green)}
+.r2{background:rgba(56,189,248,.07);color:var(--sky)}
+.r3{background:rgba(155,145,245,.07);color:var(--purple)}
+.r4{background:rgba(245,158,11,.07);color:var(--amber)}
+.r5{background:rgba(248,113,113,.07);color:var(--red)}
+.r6{background:rgba(45,212,191,.07);color:var(--teal)}
+.strip{width:5px;flex-shrink:0}
+.s-ok{background:var(--green)}.s-no{background:var(--red)}.s-us{background:var(--blue)}.s-hk{background:var(--sky)}.s-warn{background:var(--amber)}
+
+.body{flex:1;padding:13px 16px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:7px}
+.cname{font-size:15px;font-weight:700;color:#f0eeff}
+.ccode{font-size:11px;color:var(--text3);margin-top:1px}
+.badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.badge{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:600;white-space:nowrap;border:1px solid}
+.bg{background:var(--green2);color:var(--green);border-color:rgba(52,211,153,.2)}
+.bb{background:var(--blue2);color:var(--blue);border-color:rgba(96,165,250,.2)}
+.ba{background:var(--amber2);color:var(--amber);border-color:rgba(245,158,11,.2)}
+.br{background:var(--red2);color:var(--red);border-color:rgba(248,113,113,.2)}
+.bsk{background:var(--sky2);color:var(--sky);border-color:rgba(56,189,248,.2)}
+.bp{background:var(--purple2);color:var(--purple);border-color:rgba(155,145,245,.2)}
+
+.buy-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;border:1px solid;flex-shrink:0;margin-top:2px}
+.bt-ok{background:rgba(52,211,153,.15);color:#34d399;border-color:rgba(52,211,153,.3)}
+.bt-no{background:rgba(248,113,113,.15);color:#f87171;border-color:rgba(248,113,113,.3)}
+.bt-us{background:rgba(96,165,250,.15);color:#60a5fa;border-color:rgba(96,165,250,.3)}
+.bt-hk{background:rgba(56,189,248,.15);color:#38bdf8;border-color:rgba(56,189,248,.3)}
+.bt-warn{background:rgba(245,158,11,.15);color:#f59e0b;border-color:rgba(245,158,11,.3)}
+
+.logic{font-size:12.5px;color:var(--text2);line-height:1.7;margin-bottom:8px}
+.logic strong{color:var(--text)}
+
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:7px;margin:8px 0}
+.db{background:var(--bg3);border-radius:7px;padding:8px 10px}
+.db-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:3px}
+.db-val{font-size:12px;color:var(--text2);line-height:1.55}
+.db-val strong{color:var(--text)}
+.ev{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:999px;margin-top:3px}
+.es{background:var(--green2);color:var(--green)}
+.em{background:var(--amber2);color:var(--amber)}
+.ew{background:var(--red2);color:var(--red)}
+
+.foot{border-top:1px solid var(--border);padding:9px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;background:rgba(0,0,0,.12)}
+.fl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:3px}
+.fv{font-size:11.5px;color:var(--text2);line-height:1.6}
+
+.ltable{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0 22px}
+.ltable th{text-align:left;padding:7px 12px;background:var(--bg3);color:var(--text3);font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.ltable td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+.ltable tr:hover td{background:rgba(255,255,255,.02)}
+.sdots{display:inline-flex;gap:2px}
+.sd{width:8px;height:8px;border-radius:2px;background:var(--border)}
+.sh{background:var(--red)}.sm{background:var(--amber)}.sl{background:var(--green)}
+.lv{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px}
+.lv-top{background:var(--red2);color:var(--red)}
+.lv-mid{background:var(--amber2);color:var(--amber)}
+.lv-low{background:var(--blue2);color:var(--blue)}
+
+.warn{padding:11px 15px;background:var(--red2);border:1px solid rgba(248,113,113,.2);border-radius:9px;font-size:12px;color:var(--red);line-height:1.7;margin:16px 0}
+
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:9px;margin-bottom:22px}
+.sc{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.sc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;gap:6px}
+.sc-name{font-size:13px;font-weight:700;color:var(--text)}
+.sc-body{font-size:11.5px;color:var(--text2);line-height:1.6}
+.sc-risk{font-size:11px;color:var(--red);margin-top:4px}
+
+.disc{font-size:11px;color:var(--text3);line-height:1.7;padding:12px 0;border-top:1px solid var(--border);margin-top:16px}
+
+.serenity-key{padding:12px 16px;background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.15);border-radius:10px;font-size:12.5px;color:var(--text2);line-height:1.8;margin-bottom:20px}
+
+@media(max-width:600px){.foot{grid-template-columns:1fr}.dgrid{grid-template-columns:1fr 1fr}}
+
+</style>
+
+<div class="serenity-report">
+<div class="wrap">
+
+<div class="wrap">
+
+<div class="hdr">
+  <div class="hdr-badge">Serenity-skill · 低空经济产业链扫描 · 美股+A股 · 2026年6月</div>
+  <div class="hdr-title">低空经济 · 卡脖子公司优先研究清单</div>
+  <div class="hdr-sub">延续机器人/AI药物/物理AI同一框架：先排层级后排公司，证据分级，含反方理由与验证清单，附买入资格标注。</div>
+</div>
+
+<div class="skill-pill"><span class="dot"></span>Serenity-skill v1.0.0 · github.com/muxuuu/serenity-skill · 研究辅助，不构成投资建议</div>
+
+<div class="sys-box">
+  <strong>核心系统变化（SKILL.md Step②）：</strong>低空经济的本质是<strong style="color:var(--sky)">空域资源商业化</strong>——3000米以下空域从军事/行政专用转变为可商业利用的新资源。2024年低空经济首次写入政府工作报告，2026年7月新《民用航空法》正式施行，标准体系四维落地，适航认证加速。真正稀缺层不是整机厂（eVTOL整合者），而是：<strong style="color:var(--green)">① 低空通信/监控基础设施（空管、测控）</strong>、<strong style="color:var(--green)">② 核心零部件（连接器、碳纤维、热管理）</strong>、<strong style="color:var(--green)">③ 适航验证已完成的整机（极少数）</strong>、<strong style="color:var(--green)">④ 运营场景落地（飞行服务商）</strong>。
+  <br><br>
+  <strong>关键判断：</strong>当前eVTOL订单中超过90%为意向订单，不具备法律约束力，无需支付订金——<strong style="color:var(--amber)">整机厂"订单注水"是行业最大认知陷阱</strong>。Serenity框架下，整机厂是最后选择，<strong>上游零部件和基础设施是真正的卡脖子方向</strong>。
+</div>
+
+<div class="el-box">
+  <div class="el-title">⚡ 你的账户买入资格</div>
+  <div class="el-row"><span class="et et-ok">✅ 可买</span>A股主板（600/000/002/001开头）无门槛</div>
+  <div class="el-row"><span class="et et-no">🚫 暂不可买</span>科创板688 — 需50万+2年</div>
+  <div class="el-row"><span class="et et-no">🚫 暂不可买</span>创业板300/301 — 需账户2年+10万</div>
+  <div class="el-row"><span class="et et-us">🇺🇸 美股</span>需单独开美股账户</div>
+</div>
+
+<div class="tabs">
+  <div class="tab on" onclick="sw('layer')">📊 产业链层级</div>
+  <div class="tab" onclick="sw('cn')">🇨🇳 A股详析</div>
+  <div class="tab" onclick="sw('us')">🇺🇸 美股详析</div>
+  <div class="tab" onclick="sw('sum')">📋 总览+降级区</div>
+</div>
+
+<!-- ══ 产业链层级 ══ -->
+<div id="panel-layer" class="panel on">
+
+  <div class="serenity-key">
+    <strong style="color:var(--sky)">Serenity关键判断：</strong>低空经济和机器人一样，真正稀缺的不在整机，在<strong style="color:var(--text)">中间层</strong>。eVTOL/无人机就像人形机器人整机——买了也会被上下游挤压。真正要找的是：<strong>无论哪家整机厂成功，都必须用的那些东西</strong>——连接器、碳纤维、空管系统、热管理。
+  </div>
+
+  <table class="ltable">
+  <thead><tr><th>层级</th><th>环节</th><th>稀缺性</th><th>扩产难度</th><th>典型代表</th><th>优先级</th></tr></thead>
+  <tbody>
+  <tr>
+    <td><strong>L1</strong></td>
+    <td><strong>低空通信/监控基础设施</strong><br><span style="font-size:11px;color:var(--text3)">低空空管、测控雷达、通感一体化、无人机反制、UTM系统</span></td>
+    <td><div class="sdots"><div class="sd sh"></div><div class="sd sh"></div><div class="sd sh"></div><div class="sd sh"></div><div class="sd sh"></div></div></td>
+    <td>极高（政策壁垒+军民通信技术）</td>
+    <td>四创电子、中航机载、航天发展</td>
+    <td><span class="lv lv-top">★ 最优先</span></td>
+  </tr>
+  <tr>
+    <td><strong>L2</strong></td>
+    <td><strong>核心连接器/互连系统</strong><br><span style="font-size:11px;color:var(--text3)">宇航级连接器、光连接器、液冷互连、线缆组件</span></td>
+    <td><div class="sdots"><div class="sd sh"></div><div class="sd sh"></div><div class="sd sh"></div><div class="sd sh"></div><div class="sd sm"></div></div></td>
+    <td>高（50年技术积累+军认证）</td>
+    <td>中航光电、航天电器</td>
+    <td><span class="lv lv-top">★ 优先</span></td>
+  </tr>
+  <tr>
+    <td><strong>L3</strong></td>
+    <td><strong>轻量化材料（碳纤维）</strong><br><span style="font-size:11px;color:var(--text3)">高性能碳纤维、预浸料、复合材料结构件</span></td>
+    <td><div class="sdots"><div class="sd sh"></div><div class="sd sh"></div><div class="sd sh"></div><div class="sd sm"></div><div class="sd sm"></div></div></td>
+    <td>较高（T800以上国产化率仍低）</td>
+    <td>光威复材、中简科技</td>
+    <td><span class="lv lv-top">★ 优先（长线卡点）</span></td>
+  </tr>
+  <tr>
+    <td><strong>L4</strong></td>
+    <td><strong>动力系统/热管理</strong><br><span style="font-size:11px;color:var(--text3)">航空发动机、电动推进系统、电池热管理</span></td>
+    <td><div class="sdots"><div class="sd sh"></div><div class="sd sh"></div><div class="sd sm"></div><div class="sd sm"></div><div class="sd"></div></div></td>
+    <td>较高（航发技术壁垒极深）</td>
+    <td>航发动力、银轮股份、长源东谷</td>
+    <td><span class="lv lv-mid">▲ 关注</span></td>
+  </tr>
+  <tr>
+    <td><strong>L5</strong></td>
+    <td><strong>适航已取证整机</strong><br><span style="font-size:11px;color:var(--text3)">已获民航局适航证/型号认证的极少数公司</span></td>
+    <td><div class="sdots"><div class="sd sh"></div><div class="sd sh"></div><div class="sd sm"></div><div class="sd"></div><div class="sd"></div></div></td>
+    <td>高（适航周期5-8年，极少数完成）</td>
+    <td>亿航智能（港股）</td>
+    <td><span class="lv lv-mid">▲ 关注（极稀缺认证壁垒）</span></td>
+  </tr>
+  <tr>
+    <td><strong>L6</strong></td>
+    <td><strong>eVTOL/无人机整机集成者</strong><br><span style="font-size:11px;color:var(--text3)">沃飞长空、峰飞航空等，意向订单注水严重</span></td>
+    <td><div class="sdots"><div class="sd sm"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div></div></td>
+    <td>低（集成者，被上下游挤压）</td>
+    <td>多数未上市，万丰奥威等</td>
+    <td><span class="lv lv-low">◎ 最低优先（订单注水）</span></td>
+  </tr>
+  </tbody>
+  </table>
+
+  <div class="serenity-key">
+    <strong>Serenity产业链总结：</strong>低空经济=商业航天的地面延伸。空管系统(L1)=卫星测控，连接器(L2)=商业航天互连，碳纤维(L3)=火箭箭体材料。这三层<strong style="color:var(--text)">无论是无人机、eVTOL还是飞行汽车都必须用</strong>，且均已有收入验证的上市公司。整机集成层=火箭整机厂（故事好听，但利润薄）。
+  </div>
+</div>
+
+<!-- ══ A股 ══ -->
+<div id="panel-cn" class="panel">
+  <div class="warn">⚠ <strong>买入提醒：</strong>科创板688和创业板300/301开头暂不可买，已在每张卡右上角标注。</div>
+
+  <div class="layer-lbl">L1 · 低空通信/监控基础设施 <span class="lchip lc-hot">最稀缺层</span></div>
+  <div class="cards">
+
+    <!-- 四创电子 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="rank r1">1</div>
+        <div class="strip s-ok"></div>
+        <div class="body">
+          <div class="head">
+            <div>
+              <div class="cname">四创电子 <span style="color:var(--text3);font-size:13px">600990 · 上交所主板</span></div>
+              <div class="ccode">低空监视雷达+空管系统 · 主板 · 市值约140亿</div>
+              <div class="badges">
+                <span class="badge bg">2026年机构调研4次</span>
+                <span class="badge bg">低空监视雷达核心供应商</span>
+                <span class="badge bsk">主板可买 市值较小</span>
+              </div>
+            </div>
+            <span class="buy-tag bt-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic">
+            <strong>卡住的环节：</strong>低空经济大规模商业化，<strong>空管是不可绕过的基础设施</strong>——没有低空监视雷达和空域管理系统，所有eVTOL/无人机都无法合法飞行。四创电子是国内低空监视雷达系统核心供应商，技术来源于中国电子科技集团，军民两用壁垒极深。<br>
+            <strong>Serenity视角：</strong>市值约140亿，相对冷门，2026年以来连续被机构调研4次，是机构发现认知差后开始密集调研的典型信号。
+          </div>
+          <div class="dgrid">
+            <div class="db">
+              <div class="db-lbl">核心产品</div>
+              <div class="db-val">低空监视雷达系统，可实现<strong>组网对广域范围低空空域连续监视</strong>，是低空经济必须部署的基础设施</div>
+              <span class="ev es">强 · 产品手册+公司公告</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">机构关注信号</div>
+              <div class="db-val">2026年1月至3月，机构调研<strong>4次</strong>，是低空经济板块中被调研次数最多的公司之一</div>
+              <span class="ev es">强 · 互动平台可查</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">政策驱动</div>
+              <div class="db-val">新《民用航空法》2026年7月施行，低空监管标准落地，<strong>空管雷达部署是前提条件</strong>，政策强制力驱动需求</div>
+              <span class="ev es">强 · 公开法规</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">Serenity评级</div>
+              <div class="db-val">市值140亿，Serenity框架下<strong>最符合"冷门+不可绕开+政策强制"三重标准</strong>的低空经济标的</div>
+              <span class="ev em">中 · 收入数据待进一步核实</span>
+            </div>
+          </div>
+          <div class="foot">
+            <div><div class="fl">⚠ 反方理由</div><div class="fv">① 低空监视系统采购主体是政府，依赖财政预算，节奏不可控 ② 中国电科系统内竞争（安达维尔等同为CETC系）③ 实际低空商业落地速度可能慢于政策预期 ④ 军品依赖度高，防务周期波动影响整体</div></div>
+            <div><div class="fl">🔍 验证重点</div><div class="fv">① 低空空管业务新签合同规模（半年报） ② 非军品收入占比变化 ③ 地方政府低空基础设施采购规划是否落地 ④ 2026年7月新航空法实施后订单变化</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 航天发展 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="rank r2">2</div>
+        <div class="strip s-ok"></div>
+        <div class="body">
+          <div class="head">
+            <div>
+              <div class="cname">航天发展 <span style="color:var(--text3);font-size:13px">002163 · 深交所主板</span></div>
+              <div class="ccode">无人机测控+低空通信 · 航天科工系 · 市值约230亿</div>
+              <div class="badges">
+                <span class="badge bg">无人机测控国内领先</span>
+                <span class="badge bg">主板可买</span>
+                <span class="badge ba">2026年净买入超3亿元</span>
+              </div>
+            </div>
+            <span class="buy-tag bt-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic">
+            <strong>卡住的环节：</strong>无人机集群测控和低空通信系统，覆盖无人机指挥控制、数据链和低空通感一体化。航天科工系背景，技术来源于弹道导弹测控，<strong>军民两用性极强</strong>，在民商无人机快速增长时天然受益。<br>
+            <strong>2026年1月融资净买入超3亿元</strong>，是资金流向的强信号。
+          </div>
+          <div class="dgrid">
+            <div class="db">
+              <div class="db-lbl">资金信号</div>
+              <div class="db-val">2026年1月以来融资客净买入<strong>超3亿元</strong>，是低空经济板块资金流入最大的主板公司之一</div>
+              <span class="ev es">强 · 交易所公开数据</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">技术壁垒</div>
+              <div class="db-val">无人机测控技术迁移自弹道导弹测控，技术难度高，<strong>民营企业极难复制</strong>，航天科工系垄断优势明显</div>
+              <span class="ev em">中 · 技术路径推断</span>
+            </div>
+          </div>
+          <div class="foot">
+            <div><div class="fl">⚠ 反方理由</div><div class="fv">① 航天科工系体制内公司，市场化进度相对慢 ② 无人机测控收入占比需拆分验证 ③ 低空通信和商业航天业务有所重叠，催化节奏不确定</div></div>
+            <div><div class="fl">🔍 验证重点</div><div class="fv">① 低空通信业务新签订单 ② 无人机测控收入单独披露 ③ 是否有与地方政府低空基础设施合作项目公告</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="layer-lbl">L2 · 核心连接器/互连系统 <span class="lchip lc-hot">50年技术壁垒</span></div>
+  <div class="cards">
+
+    <!-- 中航光电 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="rank r1">A股1</div>
+        <div class="strip s-ok"></div>
+        <div class="body">
+          <div class="head">
+            <div>
+              <div class="cname">中航光电 <span style="color:var(--text3);font-size:13px">002179 · 深交所主板</span></div>
+              <div class="ccode">宇航级连接器+光连接器+液冷 · 市值约550亿</div>
+              <div class="badges">
+                <span class="badge bg">商业航天市占率超60%</span>
+                <span class="badge bg">低空+航天+AI液冷三线受益</span>
+                <span class="badge ba">2025利润承压 2026预期反转</span>
+              </div>
+            </div>
+            <span class="buy-tag bt-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic">
+            <strong>卡住的环节：</strong>中航光电是低空飞行器"神经与血管"的核心供应商——任何飞行器的电气信号、光信号、液冷介质的传输，都要经过连接器。<strong>深耕连接器行业50年以上，商业航天市占率超60%</strong>。低空经济、商业航天、AI数据中心液冷三线并进，是典型的"底层基础设施"型公司。<br>
+            <strong>Serenity重要信号：</strong>2025年利润受防务周期和原材料涨价影响同比下降35.56%，造成明显的<strong>认知差机会</strong>——市场在低点时，主业护城河完全没变，2026年预期反转。
+          </div>
+          <div class="dgrid">
+            <div class="db">
+              <div class="db-lbl">最新财报</div>
+              <div class="db-val">2025年营收<strong>213.86亿元</strong>（+3.39%），净利润21.62亿（-35.56%）。光连接器收入36.59亿（+28.74%），是最强增长线</div>
+              <span class="ev es">强 · 年报已披露</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">商业航天</div>
+              <div class="db-val">商业航天收入预计<strong>2026年48-55亿</strong>（+40-60%），订单排产至2027年，火箭回收业务带来新增量</div>
+              <span class="ev em">中 · 机构研报预测</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">低空布局</div>
+              <div class="db-val">无人机/低空飞行器互连产品已进入供应链，公司明确布局无人、深水、星箭等<strong>新兴领域综合互连方案</strong></div>
+              <span class="ev em">中 · 业绩说明会</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">Serenity判断</div>
+              <div class="db-val">利润低点制造了认知差，但护城河不变（50年壁垒+三线增量）。<strong>2026Q1业绩预期反转</strong>是关键验证节点</div>
+              <span class="ev em">中 · 等Q1财报确认</span>
+            </div>
+          </div>
+          <div class="foot">
+            <div><div class="fl">⚠ 反方理由</div><div class="fv">① 2025利润大幅下滑，若2026恢复不及预期则逻辑受损 ② 应收账款157亿规模庞大，回款风险 ③ 防务领域周期性需求波动仍存 ④ 竞争对手（航天电器等）在特定细分市场侵蚀份额</div></div>
+            <div><div class="fl">🔍 验证重点</div><div class="fv">① 2026Q1归母净利润是否实现同比反转 ② 光连接器+液冷业务收入占比继续提升 ③ 低空飞行器连接器新客户公告 ④ 应收账款周转率改善情况</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="layer-lbl">L3 · 轻量化材料（碳纤维）<span class="lchip lc-med">2026年行业拐点</span></div>
+  <div class="cards">
+
+    <!-- 光威复材 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="rank r2">A股2</div>
+        <div class="strip s-no"></div>
+        <div class="body">
+          <div class="head">
+            <div>
+              <div class="cname">光威复材 <span style="color:var(--text3);font-size:13px">300699 · 创业板</span></div>
+              <div class="ccode">碳纤维全产业链龙头 · 创业板 · 市值约200亿</div>
+              <div class="badges">
+                <span class="badge br">创业板 ❌</span>
+                <span class="badge bg">在手订单超40亿</span>
+                <span class="badge bg">2026为行业转折年</span>
+                <span class="badge bsk">低空合作已推进</span>
+              </div>
+            </div>
+            <span class="buy-tag bt-no">🚫 暂不可买 · 创业板</span>
+          </div>
+          <div class="logic">
+            <strong style="color:var(--red)">创业板（300699），暂不可买。</strong>但这是低空经济供应链上认知差最大的材料标的之一。公司手握超40亿元订单，2026年将是碳纤维行业的转折点，随着价格回升和需求增长，业绩有望迎来明显改善。碳纤维是eVTOL/无人机机体、机翼、螺旋桨的不可替代材料，国产高端碳纤维（T800以上）替代进口的逻辑极为清晰。<br>
+            <strong>和低空经济的最新进展：</strong>已与上工飞人合作成立合资公司，专门做民用航空器碳纤维零部件。公司明确表示低空经济将持续为碳纤维带来增量市场空间。
+          </div>
+          <div class="dgrid">
+            <div class="db">
+              <div class="db-lbl">订单能见度</div>
+              <div class="db-val">在手订单<strong>超40亿元</strong>，"客户A"大合同36.64亿已签，覆盖2026-2027年，年均锁定约10亿元收入</div>
+              <span class="ev es">强 · 公告可查</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">低空合作</div>
+              <div class="db-val">全资子公司光威新材与上工飞人<strong>设立合资公司</strong>，专注民用航空器碳纤维零部件；已确认为航空发动机复材核心供应商</div>
+              <span class="ev es">强 · 公告</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">行业拐点</div>
+              <div class="db-val">日本东丽涨价是风向标；前期产能过剩消化中；商业航天+低空经济新需求叠加，<strong>2026年供需关系明确改善</strong></div>
+              <span class="ev em">中 · 行业研判</span>
+            </div>
+          </div>
+          <div class="foot">
+            <div><div class="fl">权限开通后的优先级</div><div class="fv">创业板权限开通（2年+10万）后，光威复材是低空经济材料层第一选择。当前市值200亿，处于历史估值低位，叠加行业拐点逻辑，是典型的"Serenity等待区"标的。</div></div>
+            <div><div class="fl">🔍 现在可做的事</div><div class="fv">① 关注公司互动易上低空客户新签合同公告 ② 跟踪碳纤维行业价格走势（东丽报价） ③ 等待创业板权限开通后择机建仓</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 中简科技 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="rank r3">补充</div>
+        <div class="strip s-no"></div>
+        <div class="body">
+          <div class="head">
+            <div>
+              <div class="cname">中简科技 <span style="color:var(--text3);font-size:13px">300777 · 创业板</span></div>
+              <div class="ccode">高强高模碳纤维 · ZT7/ZT8系列 · 创业板</div>
+              <div class="badges"><span class="badge br">创业板 ❌</span><span class="badge bg">ZT8高端碳纤维国内唯一</span></div>
+            </div>
+            <span class="buy-tag bt-no">🚫 暂不可买 · 创业板</span>
+          </div>
+          <div class="logic"><strong style="color:var(--red)">创业板，暂不可买。</strong>ZT8系列对标日本东丽T800，是国内唯一量产高强高模碳纤维的厂商，技术壁垒极深。低空飞行器高性能结构件指定材料，但产能规模小于光威，流动性更低。等权限后配合光威复材一同关注。</div>
+          <div class="foot">
+            <div><div class="fl">和光威的差异</div><div class="fv">光威偏全产业链，中简科技更聚焦高端碳纤维原丝，技术壁垒更深但体量更小。两者是互补关系而非替代。</div></div>
+            <div><div class="fl">🔍 验证</div><div class="fv">低空飞行器采用ZT8系列的认证进展；产能扩张节奏</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="layer-lbl">L4 · 动力/热管理系统 <span class="lchip lc-med">有收入的主板标的</span></div>
+  <div class="cards">
+
+    <!-- 银轮股份 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="rank r2">A股3</div>
+        <div class="strip s-ok"></div>
+        <div class="body">
+          <div class="head">
+            <div>
+              <div class="cname">银轮股份 <span style="color:var(--text3);font-size:13px">002126 · 深交所主板</span></div>
+              <div class="ccode">热交换器+eVTOL热管理 · 主板 · 市值约120亿</div>
+              <div class="badges">
+                <span class="badge bg">机构调研2次</span>
+                <span class="badge bg">eVTOL电池热管理切入</span>
+                <span class="badge bsk">年涨43.68% 2026Q1</span>
+              </div>
+            </div>
+            <span class="buy-tag bt-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic">
+            <strong>卡住的环节：</strong>eVTOL电动推进系统最大的工程挑战之一是<strong>电池热管理</strong>——高功率密度放电会产生大量热量，热失控即是灾难。银轮股份是热交换器国内龙头，正在向eVTOL热管理系统迁移，是eVTOL行业的"隐形必需品"。汽车热管理主业为现金流底座。<br>
+            <strong>Serenity加分项：</strong>市值约120亿，比中航光电小5倍，认知度更低，是主板里认知差最大的低空经济标的之一。
+          </div>
+          <div class="dgrid">
+            <div class="db">
+              <div class="db-lbl">机构信号</div>
+              <div class="db-val">2026年1月以来机构调研<strong>2次</strong>，年初以来股价+43.68%（截至3月8日），是低空经济主板个股中涨幅最高之一</div>
+              <span class="ev es">强 · 公开数据</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">eVTOL切入</div>
+              <div class="db-val">已与eVTOL整机厂开展热管理系统合作，<strong>汽车热管理技术向航空器迁移</strong>的路径清晰，无需重新研发基础技术</div>
+              <span class="ev em">中 · 渠道信息，需公告核实</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">底座业务</div>
+              <div class="db-val">汽车热管理（发动机冷却+空调+新能源电池热管理）主业稳健，<strong>现金流底座充足</strong>，不依赖低空单一逻辑</div>
+              <span class="ev es">强 · 年报</span>
+            </div>
+          </div>
+          <div class="foot">
+            <div><div class="fl">⚠ 反方理由</div><div class="fv">① eVTOL热管理合同尚未公告，属于"待验证"阶段 ② 汽车热管理竞争激烈（三花、法雷奥等），主业受压 ③ eVTOL量产时间不确定，热管理订单可能延迟 ④ 年初已涨43%，认知差部分收窄</div></div>
+            <div><div class="fl">🔍 验证重点</div><div class="fv">① eVTOL客户正式合同公告（零件级合同而非意向）② 低空业务收入首次在财报中独立披露的时间节点 ③ 毛利率是否因eVTOL业务提升</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 长源东谷 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="rank r3">A股4</div>
+        <div class="strip s-ok"></div>
+        <div class="body">
+          <div class="head">
+            <div>
+              <div class="cname">长源东谷 <span style="color:var(--text3);font-size:13px">603950 · 上交所主板</span></div>
+              <div class="ccode">航空发动机机匣+精密铸件 · 主板 · 市值约90亿</div>
+              <div class="badges">
+                <span class="badge bg">航发机匣精密铸件</span>
+                <span class="badge bg">2026年涨幅89.43%</span>
+                <span class="badge ba">认知差已明显收窄</span>
+              </div>
+            </div>
+            <span class="buy-tag bt-warn">✅ 可买 · 主板（但已大涨）</span>
+          </div>
+          <div class="logic">
+            <strong>卡住的环节：</strong>航空发动机机匣精密铸件，是航发的核心结构件，国产替代逻辑清晰。低空经济中使用内燃机或涡桨发动机的飞行器均为其潜在客户。<br>
+            <strong>Serenity警告：</strong>2026年涨幅已达89.43%，是低空经济板块涨幅第一，认知差已明显收窄。<strong>逻辑正确，但买入时机需谨慎——等回调。</strong>
+          </div>
+          <div class="foot">
+            <div><div class="fl">⚠ 核心风险</div><div class="fv">年涨89%，估值已大幅透支预期。航发机匣属于防务为主，低空经济只是新增量，市场可能过度炒作了低空逻辑。等较大幅度回调（-20%+）后再评估。</div></div>
+            <div><div class="fl">🔍 验证</div><div class="fv">低空航发用机匣具体订单规模；非军品收入占比趋势</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 航发动力 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="rank r1">核心</div>
+        <div class="strip s-ok"></div>
+        <div class="body">
+          <div class="head">
+            <div>
+              <div class="cname">航发动力 <span style="color:var(--text3);font-size:13px">600893 · 上交所主板</span></div>
+              <div class="ccode">航空发动机整机 · 国之重器 · 主板 · 市值约1800亿</div>
+              <div class="badges">
+                <span class="badge bg">唯一航发整机上市公司</span>
+                <span class="badge bg">主板可买</span>
+                <span class="badge ba">市值1800亿 认知差低</span>
+              </div>
+            </div>
+            <span class="buy-tag bt-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic">
+            <strong>卡住的环节：</strong>A股唯一的航空发动机整机上市公司，垄断国内航发整机制造。低空经济中传统涡桨/活塞发动机飞行器均绕不开航发动力的产业链。同时是军用航发的核心受益标的，低空经济是增量逻辑。<br>
+            <strong>Serenity定位：</strong>市值1800亿，认知度极高，<strong>适合作为低空经济的"压舱石"底仓</strong>，而非博弈认知差的标的。2026年年涨幅52.84%，认知差已收窄。
+          </div>
+          <div class="foot">
+            <div><div class="fl">⚠ 注意</div><div class="fv">军品为主，低空经济只是次要逻辑。主要跟随军工周期，与低空商业化节奏关联有限。适合长期持有，不适合短期博弈低空故事。</div></div>
+            <div><div class="fl">🔍 验证</div><div class="fv">通航/低空用发动机收入占比；军品订单回暖节奏</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="layer-lbl">L5 · 适航已取证整机（稀缺认证壁垒）<span class="lchip lc-sky">港股通</span></div>
+  <div class="cards">
+
+    <!-- 亿航智能 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="rank r2">港股</div>
+        <div class="strip s-hk"></div>
+        <div class="body">
+          <div class="head">
+            <div>
+              <div class="cname">亿航智能 <span style="color:var(--text3);font-size:13px">EH · NASDAQ美股</span></div>
+              <div class="ccode">全球首家eVTOL适航认证公司 · AAC/AO/AMC三证 · 美股</div>
+              <div class="badges">
+                <span class="badge bsk">全球唯一完整三证</span>
+                <span class="badge bg">中国商业运营已启动</span>
+                <span class="badge ba">仍处于亏损早期</span>
+              </div>
+            </div>
+            <span class="buy-tag bt-us">🇺🇸 美股账户</span>
+          </div>
+          <div class="logic">
+            <strong>卡住的环节：</strong>亿航智能是<strong>全球唯一取得完整三证（型号合格证+生产许可证+标准适航证）的eVTOL企业</strong>，在竞争对手（Joby/Archer/沃飞）仍在认证中时，已实现有限商业运营。适航认证是eVTOL行业最深的护城河——认证周期5-8年，极难复制。<br>
+            <strong>Serenity视角：</strong>高风险高弹性，适合小仓位"期权"式持有。全球第一个完成适航的公司，但商业模式仍在早期验证阶段。
+          </div>
+          <div class="dgrid">
+            <div class="db">
+              <div class="db-lbl">适航进展</div>
+              <div class="db-val">全球首家获得中国民航局<strong>型号合格证+生产许可证+标准适航证</strong>三证齐全，在城市空中旅游场景已有商业运营</div>
+              <span class="ev es">强 · 民航局官网可查</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">竞争优势</div>
+              <div class="db-val">Joby/Archer等美国竞争对手2026年争取FAA认证，国内竞争者全部仍在认证中，<strong>至少2-3年领先优势</strong></div>
+              <span class="ev es">强 · 行业对比可查</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">风险</div>
+              <div class="db-val">仍处于亏损，商业化规模极小；载人eVTOL公众接受度需要时间建立；<strong>高度依赖政策支持和空域开放进度</strong></div>
+              <span class="ev ew">弱 · 商业化早期</span>
+            </div>
+          </div>
+          <div class="foot">
+            <div><div class="fl">⚠ 反方理由</div><div class="fv">① 获证≠大规模商业化，空域开放进度仍是瓶颈 ② 公众接受载人无人驾驶eVTOL需要时间 ③ 亏损持续，融资稀释风险 ④ 中美地缘政治下，美股上市但主营在中国，两头受压</div></div>
+            <div><div class="fl">🔍 下一步验证</div><div class="fv">① 商业运营订单笔数和收入首次披露 ② 国内空域开放进度（民航法7月施行后政策落地） ③ 是否有大型出行运营商（滴滴/美团）合作落地</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ══ 美股 ══ -->
+<div id="panel-us" class="panel">
+
+  <div class="layer-lbl">L5 · eVTOL整机（美股代表）<span class="lchip lc-med">期权属性，高风险</span></div>
+  <div class="cards">
+
+    <!-- Joby Aviation -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="rank r1">美股1</div>
+        <div class="strip s-us"></div>
+        <div class="body">
+          <div class="head">
+            <div>
+              <div class="cname">Joby Aviation <span style="color:var(--text3);font-size:13px">JOBY · NYSE · 市值约120亿</span></div>
+              <div class="ccode">美国eVTOL领头羊 · 倾转旋翼 · 达美合作 · 迪拜商业落地</div>
+              <div class="badges">
+                <span class="badge bg">迪拜首架交付已完成</span>
+                <span class="badge bg">FAA认证2026年预期</span>
+                <span class="badge bg">特朗普行政令加速</span>
+                <span class="badge ba">仍处于亏损</span>
+              </div>
+            </div>
+            <span class="buy-tag bt-us">🇺🇸 美股账户</span>
+          </div>
+          <div class="logic">
+            <strong>核心逻辑：</strong>Joby是美国eVTOL里技术最成熟、资本最充裕、认证进度最快的公司。<strong>2026年FAA型号认证是关键催化剂</strong>——分析师预测概率超60%。迪拜已交付首架，商业服务在2026年迪拜启动，是全球eVTOL商业化的旗帜事件。<br>
+            <strong>特朗普加速：</strong>特朗普行政令明确支持eVTOL产业，FAA规则加速制定，政策顺风明确。达美航空战略合作锁定了核心商业场景（机场→市区）。
+          </div>
+          <div class="dgrid">
+            <div class="db">
+              <div class="db-lbl">FAA认证进度</div>
+              <div class="db-val">600+次测试飞行完成；FAA飞行员测试<strong>2026年启动</strong>；Part 135承运人证书已获得；分析师预测2026年获得型号认证概率超60%</div>
+              <span class="ev es">强 · 公司公告+分析师报告</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">商业落地</div>
+              <div class="db-val">迪拜已交付首架，<strong>2026年迪拜商业服务启动</strong>；与达美航空合作纽约/洛杉矶航线；Blade合作已承运超4万名乘客</div>
+              <span class="ev es">强 · 公告</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">现金储备</div>
+              <div class="db-val">资金可支撑<strong>35-39个月运营</strong>，足以覆盖FAA认证完成时间，无需立即融资稀释</div>
+              <span class="ev es">强 · 财报</span>
+            </div>
+            <div class="db">
+              <div class="db-lbl">Serenity判断</div>
+              <div class="db-val">整机逻辑，非Serenity首选（集成者）。但Joby的<strong>认证壁垒</strong>使其具有特殊稀缺性。FAA认证后是股价的最强催化剂，适合小仓位高风险博弈</div>
+              <span class="ev ew">弱→中 · 期权属性</span>
+            </div>
+          </div>
+          <div class="foot">
+            <div><div class="fl">⚠ 反方理由</div><div class="fv">① FAA认证延期风险（历史上多次推迟）②整机集成者利润薄，商业化成功不等于利润丰厚 ③ Vertiport基础设施需大规模投资，短期制约商业化速度 ④ 中国产品在美国市场竞争不到，但中国玩家（亿航等）可能在全球其他市场抢份额</div></div>
+            <div><div class="fl">🔍 下一步验证</div><div class="fv">① FAA型号认证最终获批时间（2026年最关键事件）② 迪拜商业服务正式启动日期和早期运营数据 ③ 纽约商业服务时间表 ④ 年度烧钱率变化</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Archer Aviation -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="rank r2">美股2</div>
+        <div class="strip s-us"></div>
+        <div class="body">
+          <div class="head">
+            <div>
+              <div class="cname">Archer Aviation <span style="color:var(--text3);font-size:13px">ACHR · NYSE · 市值约40亿</span></div>
+              <div class="ccode">eVTOL · 美联航合作 · 更小市值更高弹性</div>
+              <div class="badges">
+                <span class="badge bg">美联航战略合作</span>
+                <span class="badge bb">市值更小弹性更大</span>
+                <span class="badge ba">FAA认证节奏略落后Joby</span>
+              </div>
+            </div>
+            <span class="buy-tag bt-us">🇺🇸 美股账户</span>
+          </div>
+          <div class="logic">
+            <strong>Serenity视角：</strong>Archer是Joby的"高弹性平替"——美联航合作（vs Joby的达美），FAA认证略落后一步，但市值只有Joby的1/3，如果行业顺风，弹性更大。<strong>特朗普行政令同样利好Archer</strong>。与Joby是互补关系，若只买一个选Joby（确定性更高），若两个都买则Archer提供更大弹性。
+          </div>
+          <div class="foot">
+            <div><div class="fl">⚠ 反方理由</div><div class="fv">认证进度落后Joby；现金跑道相对更紧；若Joby认证成功大涨后，Archer可能被遗忘而表现不佳</div></div>
+            <div><div class="fl">🔍 验证</div><div class="fv">FAA认证里程碑节点；量产工厂建设进度（乔治亚州工厂）</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="layer-lbl">降级区 · 美股低空经济不值得买的方向</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:9px;margin-bottom:12px">
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">Lilium（已破产）</div>
+      <div style="font-size:11px;color:var(--text2)">2023年破产清算，提醒eVTOL行业资本密集、烧钱不止的风险。低空经济里"看故事"的代价。</div>
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">Eve Air Mobility (EVEX)</div>
+      <div style="font-size:11px;color:var(--text2)">巴西航空工业Embraer背景，但认证进度落后，市值小流动性差，不优先。</div>
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">纯无人机快递公司</div>
+      <div style="font-size:11px;color:var(--text2)">Wing(Google)/Prime Air(Amazon)均未上市。上市的商业无人机公司多数处于亏损高烧钱阶段，谨慎。</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ 总览 ══ -->
+<div id="panel-sum" class="panel">
+
+  <div class="serenity-key">
+    <strong style="color:var(--sky)">低空经济 Serenity 核心结论：</strong><br>
+    ① <strong style="color:var(--text)">不买整机厂</strong>（90%是意向订单，利润被挤压）<br>
+    ② <strong style="color:var(--text)">买"飞什么都要用"的基础设施和零部件</strong>：空管雷达(四创)、连接器(中航光电)、碳纤维(光威，等权限)、热管理(银轮)<br>
+    ③ <strong style="color:var(--text)">唯一值得关注的整机</strong>：适航已取证（亿航）或FAA认证最近的（Joby），用期权逻辑小仓位参与<br>
+    ④ <strong style="color:var(--text)">核心触发器</strong>：2026年7月新《民用航空法》施行 + FAA型号认证是最大的年内催化剂
+  </div>
+
+  <div class="sum-grid">
+    <div class="sc">
+      <div class="sc-head"><div class="sc-name">四创电子 600990</div><span class="buy-tag bt-ok" style="font-size:10px">✅主板</span></div>
+      <div class="sc-body">低空监视雷达+空管，L1核心不可绕开。市值140亿，机构调研4次，认知差存在，是Serenity最偏爱的低空经济标的。</div>
+      <div class="sc-risk">风险：采购主体是政府，节奏不可控</div>
+    </div>
+    <div class="sc">
+      <div class="sc-head"><div class="sc-name">中航光电 002179</div><span class="buy-tag bt-ok" style="font-size:10px">✅主板</span></div>
+      <div class="sc-body">宇航级连接器50年壁垒，L2。2025利润承压制造认知差，三线并进（低空+航天+液冷）2026预期反转。市值550亿。</div>
+      <div class="sc-risk">风险：2026Q1业绩反转需确认</div>
+    </div>
+    <div class="sc">
+      <div class="sc-head"><div class="sc-name">航天发展 002163</div><span class="buy-tag bt-ok" style="font-size:10px">✅主板</span></div>
+      <div class="sc-body">无人机测控+低空通信，L1。航天科工系，技术壁垒深。2026年1月资金净买入3亿+。市值约230亿。</div>
+      <div class="sc-risk">风险：体制内市场化进度较慢</div>
+    </div>
+    <div class="sc">
+      <div class="sc-head"><div class="sc-name">银轮股份 002126</div><span class="buy-tag bt-ok" style="font-size:10px">✅主板</span></div>
+      <div class="sc-body">eVTOL热管理切入，L4。市值最小（120亿），汽车热管理底座，认知差最大的主板低空标的。</div>
+      <div class="sc-risk">风险：eVTOL热管理订单尚未公告</div>
+    </div>
+    <div class="sc">
+      <div class="sc-head"><div class="sc-name">航发动力 600893</div><span class="buy-tag bt-ok" style="font-size:10px">✅主板</span></div>
+      <div class="sc-body">航发整机A股唯一上市，L4。低空经济增量逻辑+军品主业。市值1800亿，认知差低，适合底仓配置。</div>
+      <div class="sc-risk">风险：主要跟随军工周期，低空是次要逻辑</div>
+    </div>
+    <div class="sc" style="opacity:.6">
+      <div class="sc-head"><div class="sc-name">光威复材 300699</div><span class="buy-tag bt-no" style="font-size:10px">🚫创业板</span></div>
+      <div class="sc-body">碳纤维龙头，40亿在手订单，2026年行业拐点。创业板暂不可买——等权限后低空经济材料层首选。</div>
+      <div class="sc-risk">创业板：账户满2年+资产10万</div>
+    </div>
+    <div class="sc" style="opacity:.6">
+      <div class="sc-head"><div class="sc-name">中简科技 300777</div><span class="buy-tag bt-no" style="font-size:10px">🚫创业板</span></div>
+      <div class="sc-body">ZT8高端碳纤维国内唯一，技术壁垒最深。创业板暂不可买，等权限后配合光威复材一同关注。</div>
+      <div class="sc-risk">创业板：账户满2年+资产10万</div>
+    </div>
+    <div class="sc">
+      <div class="sc-head"><div class="sc-name">亿航智能 EH</div><span class="buy-tag bt-us" style="font-size:10px">🇺🇸 美股</span></div>
+      <div class="sc-body">全球唯一eVTOL三证公司，中国商业运营已启动。高风险高弹性，期权式小仓位参与。</div>
+      <div class="sc-risk">风险：亏损+空域开放进度慢</div>
+    </div>
+    <div class="sc">
+      <div class="sc-head"><div class="sc-name">Joby Aviation JOBY</div><span class="buy-tag bt-us" style="font-size:10px">🇺🇸 美股</span></div>
+      <div class="sc-body">美国eVTOL领头羊，FAA认证2026年预期，迪拜商业服务启动，特朗普政令加速。期权属性，认证落地是最大催化剂。</div>
+      <div class="sc-risk">风险：认证可能延期；整机利润薄</div>
+    </div>
+    <div class="sc">
+      <div class="sc-head"><div class="sc-name">Archer Aviation ACHR</div><span class="buy-tag bt-us" style="font-size:10px">🇺🇸 美股</span></div>
+      <div class="sc-body">Joby的高弹性平替，市值仅Joby的1/3，美联航合作，认证略落后。若整体赛道顺风弹性更大。</div>
+      <div class="sc-risk">风险：认证落后+现金跑道相对紧</div>
+    </div>
+    <div class="sc" style="opacity:.6">
+      <div class="sc-head"><div class="sc-name">长源东谷 603950</div><span class="buy-tag bt-warn" style="font-size:10px">⚠已大涨</span></div>
+      <div class="sc-body">航发机匣精密铸件，逻辑正确，但年涨89.43%，认知差已大幅收窄。Serenity等候回调（-20%+）后再评估。</div>
+      <div class="sc-risk">年涨89% 估值透支</div>
+    </div>
+  </div>
+
+  <div style="padding:12px 16px;background:var(--bg3);border:1px solid rgba(245,158,11,.2);border-radius:10px;font-size:12.5px;color:var(--text2);line-height:1.85;margin-bottom:14px">
+    <strong style="color:var(--amber)">你现在可买汇总：</strong><br>
+    <strong style="color:var(--green)">✅ A股主板：</strong>四创电子(600990) · 中航光电(002179) · 航天发展(002163) · 银轮股份(002126) · 航发动力(600893)<br>
+    <strong style="color:var(--blue)">🇺🇸 美股：</strong>Joby Aviation(JOBY) · Archer Aviation(ACHR) · 亿航智能(EH)<br>
+    <strong style="color:var(--red)">🚫 暂不可买：</strong>光威复材(300699创业板) · 中简科技(300777创业板)<br>
+    <strong style="color:var(--amber)">⚠ 可买但需谨慎（已大涨）：</strong>长源东谷(603950) · 航发动力(600893，认知度高)
+  </div>
+
+  <div style="padding:11px 15px;background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.15);border-radius:9px;font-size:12px;color:var(--text2);line-height:1.75">
+    <strong style="color:var(--sky)">2026年低空经济最重要的验证节点：</strong><br>
+    ① <strong>2026年7月1日</strong>：新《民用航空法》正式施行 → 监管落地，基础设施采购加速<br>
+    ② <strong>2026年全年</strong>：Joby Aviation FAA型号认证（概率60%+）→ 如认证成功，全球eVTOL估值重估<br>
+    ③ <strong>2026年Q3</strong>：迪拜商业服务正式运营 → 验证eVTOL商业模式可行性<br>
+    ④ <strong>2026Q1-Q2财报</strong>：四创电子/中航光电低空相关订单是否有实质性增长
+  </div>
+
+  <div class="disc">
+    <strong>研究边界（SKILL.md risk-boundary）：</strong>低空经济处于从政策期向落地期过渡阶段，商业化不确定性极高。90%意向订单不具法律约束力。eVTOL适航认证可能延期。整机公司高烧钱风险真实存在（Lilium已破产）。上游零部件标的业绩兑现时间依赖整机量产节奏，存在"逻辑对、节奏错"的风险。据此操作风险自担，不构成投资建议。
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+
+</div>
+</div>
+
+

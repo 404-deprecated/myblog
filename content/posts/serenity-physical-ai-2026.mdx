@@ -1,0 +1,887 @@
+---
+title: "物理AI · 美股+A股 Serenity扫描"
+date: "2026-06-07"
+description: "Serenity-skill 产业链瓶颈点扫描报告。"
+tags: ['投资', 'Serenity', '物理AI', '机器人', '美股', 'A股']
+author: "投资研究"
+---
+
+<style>
+
+*{box-sizing:border-box;margin:0;padding:0}
+.serenity-report{
+  --bg:#0d0d11;--bg2:#13131a;--bg3:#1a1a24;--border:rgba(255,255,255,.07);
+  --text:#e2e0f0;--text2:#9a97b0;--text3:#5e5b74;
+  --purple:#9b91f5;--purple2:rgba(155,145,245,.15);
+  --green:#34d399;--green2:rgba(52,211,153,.12);
+  --blue:#60a5fa;--blue2:rgba(96,165,250,.12);
+  --amber:#f59e0b;--amber2:rgba(245,158,11,.12);
+  --red:#f87171;--red2:rgba(248,113,113,.1);
+  --teal:#2dd4bf;--teal2:rgba(45,212,191,.1);
+}
+.serenity-report{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;font-size:14px;line-height:1.65}
+.wrap{max-width:1020px;margin:0 auto;padding:22px 18px 80px}
+
+/* Header */
+.hdr{padding:18px 0 14px}
+.hdr-badge{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--purple);margin-bottom:8px}
+.hdr-title{font-size:22px;font-weight:800;color:#f0eeff}
+.hdr-sub{font-size:13px;color:var(--text2);margin-top:5px;max-width:700px}
+
+/* Buy eligibility legend */
+.eligibility-box{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;background:var(--bg3);border:1px solid rgba(245,158,11,.25);border-radius:10px;margin:14px 0 22px}
+.el-title{font-size:11px;font-weight:700;color:var(--amber);width:100%;margin-bottom:2px}
+.el-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.el-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.et-ok{background:rgba(52,211,153,.2);color:#34d399}
+.et-no{background:rgba(248,113,113,.2);color:#f87171}
+.et-us{background:rgba(96,165,250,.2);color:#60a5fa}
+
+/* Market tabs */
+.mktabs{display:flex;gap:3px;margin-bottom:20px;background:rgba(255,255,255,.04);border-radius:10px;padding:4px}
+.mktab{flex:1;text-align:center;padding:9px 8px;font-size:12px;font-weight:600;border-radius:7px;cursor:pointer;color:var(--text3);transition:all .15s}
+.mktab.on{background:rgba(155,145,245,.2);color:#c0b8ff}
+
+/* Panel */
+.panel{display:block}
+
+/* Layer label */
+.layer-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+.layer-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Card */
+.cards{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:13px;overflow:hidden;transition:border-color .15s}
+.card:hover{border-color:rgba(155,145,245,.25)}
+.card-inner{display:flex;align-items:stretch}
+.card-rank{width:38px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;border-right:1px solid var(--border)}
+.r1{background:rgba(52,211,153,.08);color:var(--green)}
+.r2{background:rgba(96,165,250,.08);color:var(--blue)}
+.r3{background:rgba(155,145,245,.08);color:var(--purple)}
+.r4{background:rgba(245,158,11,.08);color:var(--amber)}
+.r5{background:rgba(248,113,113,.08);color:var(--red)}
+.r6{background:rgba(45,212,191,.08);color:var(--teal)}
+
+/* Buy flag strip */
+.buy-strip{width:6px;flex-shrink:0}
+.bs-ok{background:var(--green)}
+.bs-no{background:var(--red)}
+.bs-us{background:var(--blue)}
+.bs-warn{background:var(--amber)}
+
+.card-body{flex:1;padding:13px 16px}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:7px;flex-wrap:wrap}
+.card-id .cname{font-size:15px;font-weight:700;color:#f0eeff}
+.card-id .ccode{font-size:11px;color:var(--text3);margin-top:1px}
+.badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
+.badge{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:600;white-space:nowrap}
+.b-g{background:var(--green2);color:var(--green);border:1px solid rgba(52,211,153,.2)}
+.b-b{background:var(--blue2);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+.b-a{background:var(--amber2);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.b-r{background:var(--red2);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.b-p{background:var(--purple2);color:var(--purple);border:1px solid rgba(155,145,245,.2)}
+.b-t{background:var(--teal2);color:var(--teal);border:1px solid rgba(45,212,191,.2)}
+
+/* BUY BADGE - prominent */
+.buy-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;border:1px solid}
+.buy-ok{background:rgba(52,211,153,.15);color:#34d399;border-color:rgba(52,211,153,.3)}
+.buy-no{background:rgba(248,113,113,.15);color:#f87171;border-color:rgba(248,113,113,.3)}
+.buy-us{background:rgba(96,165,250,.15);color:#60a5fa;border-color:rgba(96,165,250,.3)}
+
+/* Logic text */
+.logic{font-size:12.5px;color:var(--text2);line-height:1.7;margin-bottom:8px}
+.logic strong{color:var(--text)}
+
+/* Data grid */
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:7px;margin:8px 0}
+.dblock{background:var(--bg3);border-radius:7px;padding:8px 10px}
+.db-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:3px}
+.db-val{font-size:12px;color:var(--text2);line-height:1.55}
+.db-val strong{color:var(--text)}
+.ev-str{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:999px;margin-top:3px}
+.es-s{background:var(--green2);color:var(--green)}
+.es-m{background:var(--amber2);color:var(--amber)}
+.es-w{background:var(--red2);color:var(--red)}
+
+/* Footer */
+.card-footer{border-top:1px solid var(--border);padding:9px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;background:rgba(0,0,0,.12)}
+.cf-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:3px}
+.cf-val{font-size:11.5px;color:var(--text2);line-height:1.6}
+
+/* Warning box */
+.warn{padding:11px 15px;background:var(--red2);border:1px solid rgba(248,113,113,.2);border-radius:9px;font-size:12px;color:var(--red);line-height:1.7;margin:18px 0}
+
+/* Summary table */
+.sum-table{width:100%;border-collapse:collapse;font-size:12px;margin:12px 0 24px}
+.sum-table th{text-align:left;padding:7px 12px;background:var(--bg3);color:var(--text3);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.sum-table td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+.sum-table tr:hover td{background:rgba(255,255,255,.02)}
+
+/* disc */
+.disc{font-size:11px;color:var(--text3);line-height:1.7;padding:12px 0;border-top:1px solid var(--border);margin-top:12px}
+
+@media(max-width:600px){
+  .card-footer{grid-template-columns:1fr}
+  .dgrid{grid-template-columns:1fr 1fr}
+  .sum-table{display:none}
+}
+
+</style>
+
+<div class="serenity-report">
+<div class="wrap">
+
+<div class="wrap">
+
+<div class="hdr">
+  <div class="hdr-badge">Serenity-skill · 物理AI全市场扫描 · 美股 + A股 · 2026年6月</div>
+  <div class="hdr-title">物理AI卡脖子公司 · 美股完整分析 + A股买入资格标注</div>
+  <div class="hdr-sub">严格遵循 SKILL.md 工作流。美股新增完整扫描，A股结合新开户创业板权限限制，逐一标注是否可买。</div>
+</div>
+
+<!-- 买入资格说明 -->
+<div class="eligibility-box">
+  <div class="el-title">⚡ 新开户A股买入资格说明（你的情况）</div>
+  <div class="el-item"><span class="el-tag et-ok">✅ 可买</span> 沪深主板（上交所主板、深交所主板）— 无门槛限制</div>
+  <div class="el-item"><span class="el-tag et-no">🚫 暂不可买</span> 创业板（300开头）— 需开户满两年+10万资产才能开通权限</div>
+  <div class="el-item"><span class="el-tag et-no">🚫 暂不可买</span> 科创板（688开头）— 需50万资产+两年交易经验，门槛更高</div>
+  <div class="el-item"><span class="el-tag et-us">🇺🇸 美股</span> 需开通港股通/美股账户，与A股账户分开操作</div>
+</div>
+
+<!-- 市场切换 -->
+<div class="mktabs">
+  <div class="mktab on" onclick="switchTab('us')">🇺🇸 美股 · 新增完整分析</div>
+  <div class="mktab" onclick="switchTab('ashare')">🇨🇳 A股 · 更新+买入资格</div>
+  <div class="mktab" onclick="switchTab('summary')">📊 总览对比表</div>
+</div>
+
+<!-- ══════════ 美股 PANEL ══════════ -->
+<div id="panel-us" class="panel on">
+
+  <div style="padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;font-size:12.5px;color:var(--text2);line-height:1.75;margin-bottom:18px">
+    <strong style="color:var(--text)">美股物理AI供应链核心判断：</strong>美股的卡脖子层级与A股不同——美股更多在<strong style="color:var(--green)">AI芯片测试设备（Teradyne）、机器视觉（Cognex）、精密传动（Harmonic Drive）、手术机器人平台（Intuitive Surgical）</strong>，以及边缘AI芯片（Ambarella）。真正的"测试=收费站"逻辑在美股更为清晰，而且已有财报数据支撑，认知差相对低于A股小市值。
+  </div>
+
+  <div class="layer-lbl">L1 · 测试设备层 — "物理AI需要什么，就先测试什么"</div>
+  <div class="cards">
+
+    <!-- Teradyne -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r1">1</div>
+        <div class="buy-strip bs-us"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">Teradyne <span style="color:var(--text3);font-size:13px">TER · NASDAQ</span></div>
+              <div class="ccode">AI芯片测试 + 协作机器人 · 双重卡位 · 市值约470亿美元</div>
+              <div class="badges">
+                <span class="badge b-g">Q1 营收+87% YoY</span>
+                <span class="badge b-g">70%收入绑定AI需求</span>
+                <span class="badge b-a">年涨94% 认知差收窄</span>
+              </div>
+            </div>
+            <span class="buy-badge buy-us">🇺🇸 美股账户</span>
+          </div>
+          <div class="logic">
+            <strong>卡住的环节：</strong>任何AI芯片（GPU/HBM/自定义ASIC）量产前必须经过Teradyne测试。CEO称之为"wafer to AI data center"策略——芯片越复杂，测试时间越长，单台测试机价值越高。同时通过Universal Robots（协作机器人）和MiR（自主移动机器人）卡住工厂自动化。<br>
+            <strong>产业链位置：</strong>L1 测试层 — 不卖机器人，卖"测试机器人大脑芯片的设备"，典型收费站逻辑。
+          </div>
+          <div class="dgrid">
+            <div class="dblock">
+              <div class="db-label">最新财报</div>
+              <div class="db-val">Q1 2026营收<strong>$12.82亿</strong>（vs预期$12.2亿），YoY+87%；非GAAP EPS $2.56（vs预期$1.96），YoY+241%</div>
+              <span class="ev-str es-s">强 · SEC 8-K</span>
+            </div>
+            <div class="dblock">
+              <div class="db-label">AI收入占比</div>
+              <div class="db-val">约<strong>70%</strong>营收绑定AI需求，半导体测试收入$11.1亿，创历史新高；机器人分部$9100万，YoY+32%</div>
+              <span class="ev-str es-s">强 · 电话会记录</span>
+            </div>
+            <div class="dblock">
+              <div class="db-label">机器人具体</div>
+              <div class="db-val">UR（协作机器人）+MiR（AMR），Q1第四季连续增长，AI产品占机器人分部收入<strong>15%</strong>且快速上升</div>
+              <span class="ev-str es-s">强 · 季报</span>
+            </div>
+            <div class="dblock">
+              <div class="db-label">Serenity判断</div>
+              <div class="db-val">年涨94%，估值已贵；但<strong>业绩持续超预期</strong>+双线卡位使其仍有研究价值。关注Q2营收是否兑现$12亿指引。</div>
+              <span class="ev-str es-m">中 · 追高风险存在</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div>
+              <div class="cf-label">⚠ 反方理由</div>
+              <div class="cf-val">① 年涨94%，认知差基本消失 ② Q1大超预期后Q2指引$11.5-12.5亿略低于市场最乐观预期，已引发一日大跌18% ③ 半导体测试高度集中于少数大客户（英伟达/AMD），单点集中风险 ④ 中国竞品（中科飞测等）在国内市场侵蚀份额</div>
+            </div>
+            <div>
+              <div class="cf-label">🔍 下一步验证</div>
+              <div class="cf-val">① Q2 2026营收是否达到$12亿指引中值 ② Universal Robots AI订单增长率 ③ 首批GPU merchant测试订单是否如期Q2出货 ④ 等待回调后重新评估入场点</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="layer-lbl">L2 · 机器视觉层 — "机器人的眼睛"</div>
+  <div class="cards">
+
+    <!-- Cognex -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r2">2</div>
+        <div class="buy-strip bs-us"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">Cognex <span style="color:var(--text3);font-size:13px">CGNX · NASDAQ</span></div>
+              <div class="ccode">工业机器视觉 AI化 · 市值约90亿美元</div>
+              <div class="badges">
+                <span class="badge b-g">Q1营收+24% YoY</span>
+                <span class="badge b-g">Q2指引EPS增68%</span>
+                <span class="badge b-b">市值小 Serenity风格</span>
+              </div>
+            </div>
+            <span class="buy-badge buy-us">🇺🇸 美股账户</span>
+          </div>
+          <div class="logic">
+            <strong>卡住的环节：</strong>工厂和仓库里的机器视觉传感器——机器人每次拿起零件前，必须"看清楚"位置。Cognex是工业机器视觉全球龙头，CEO明确宣布目标"成为AI驱动机器视觉#1供应商"。物理AI规模扩大 → 视觉传感器需求倍增。<br>
+            <strong>为什么比大家说得更值得关注：</strong>市值仅约90亿美元，比Teradyne小5倍，比NVIDIA小100倍，但是同样的物理AI基础设施受益者。认知差相对较大。
+          </div>
+          <div class="dgrid">
+            <div class="dblock">
+              <div class="db-label">最新财报</div>
+              <div class="db-val">Q1 2026营收$2.68亿，YoY+24.3%，调整后EPS $0.34（vs预期$0.25）。Q2指引EPS $0.40-0.44，中值YoY+68%</div>
+              <span class="ev-str es-s">强 · 季报</span>
+            </div>
+            <div class="dblock">
+              <div class="db-label">AI化转型</div>
+              <div class="db-val">CEO直接定义战略为"AI-powered machine vision #1"，产品从传统图像处理向深度学习视觉迁移，毛利率高达<strong>75%+</strong></div>
+              <span class="ev-str es-s">强 · 电话会</span>
+            </div>
+            <div class="dblock">
+              <div class="db-label">年涨幅</div>
+              <div class="db-val">年涨约<strong>86%</strong>（同期），但比Teradyne仍处于较低知名度，主流媒体关注度低，认知差存在</div>
+              <span class="ev-str es-m">中</span>
+            </div>
+            <div class="dblock">
+              <div class="db-label">风险</div>
+              <div class="db-val">周期性强，受制造业capex周期影响，2022-2024曾深度下跌。<strong>非纯物理AI标的</strong>，主要受益于自动化大趋势</div>
+              <span class="ev-str es-m">中</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div>
+              <div class="cf-label">⚠ 反方理由</div>
+              <div class="cf-val">① 制造业capex周期敏感，非刚需而是资本支出 ② 竞争对手快速AI化（Keyence、Basler），护城河动态变化 ③ 83倍TTM PE，估值不便宜 ④ 机器人视觉具体渗透率比想象慢</div>
+            </div>
+            <div>
+              <div class="cf-label">🔍 下一步验证</div>
+              <div class="cf-val">① Q2营收是否达到$275-295M指引 ② 机器人和AI应用收入占比趋势 ③ 毛利率能否维持75%以上（AI化通常提高毛利率）④ Keyence在AI视觉的威胁程度</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="layer-lbl">L3 · 手术机器人平台层 — "最成熟的物理AI商业模式"</div>
+  <div class="cards">
+
+    <!-- Intuitive Surgical -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r1">1</div>
+        <div class="buy-strip bs-us"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">Intuitive Surgical <span style="color:var(--text3);font-size:13px">ISRG · NASDAQ</span></div>
+              <div class="ccode">手术机器人平台 · 装机量11,395台 · 市值约1730亿美元</div>
+              <div class="badges">
+                <span class="badge b-g">Q1营收+23% YoY</span>
+                <span class="badge b-g">毛利率67.8% 持续改善</span>
+                <span class="badge b-g">86%为循环收入</span>
+                <span class="badge b-a">市值大 认知差低</span>
+              </div>
+            </div>
+            <span class="buy-badge buy-us">🇺🇸 美股账户</span>
+          </div>
+          <div class="logic">
+            <strong>卡住的环节：</strong>全球最成功的物理AI商业模式——硬件（装机量1.1万台）+ 软件（AI辅助手术）+ 服务（耗材循环收入占86%）三层锁定。每台Da Vinci 5手术生成的数据反哺AI模型训练，越用越聪明，越聪明越难替代。<br>
+            <strong>为何排名靠前：</strong>Serenity框架里，<strong>循环收入占86%+毛利率67.8%+装机壁垒</strong> = 最完美的"卡脖子后还能持续收费"的商业模式。这是美股物理AI里唯一"已经赚了大钱"的公司。
+          </div>
+          <div class="dgrid">
+            <div class="dblock">
+              <div class="db-label">Q1 2026财报</div>
+              <div class="db-val">营收<strong>$27.7亿</strong>（+23% YoY），非GAAP EPS $2.50（vs预期$2.12，超预期18%），全年指引上调至程序量增长13.5%-15.5%</div>
+              <span class="ev-str es-s">强 · SEC 8-K</span>
+            </div>
+            <div class="dblock">
+              <div class="db-label">AI化证据</div>
+              <div class="db-val">Da Vinci 5搭载AI辅助功能，Q1放置<strong>232台</strong>（Q1 2025仅147台），装机量增速加速；力反馈器械获FDA新510(k)批准</div>
+              <span class="ev-str es-s">强 · SEC + 电话会</span>
+            </div>
+            <div class="dblock">
+              <div class="db-label">护城河质量</div>
+              <div class="db-val">装机11,395台，换机成本极高；循环收入<strong>86%</strong>，每台手术收入约$1,880，每年程序量+16%复合叠加</div>
+              <span class="ev-str es-s">强 · 公司IR</span>
+            </div>
+            <div class="dblock">
+              <div class="db-label">Serenity定位</div>
+              <div class="db-val">美股物理AI里"确定性最高"的标的。但市值$1730亿，认知差极低，适合<strong>长期持有而非博弈认知差</strong></div>
+              <span class="ev-str es-m">中 · 适合价值持仓</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div>
+              <div class="cf-label">⚠ 反方理由</div>
+              <div class="cf-val">① 市值$1730亿，Serenity框架里"市值太大认知差消失"的典型 ② 中国市场持续承压（低招标活动+国产竞争+政策定价压力），预计2027年才有望改善 ③ GLP-1减肥药冲击减重手术场景 ④ 竞品Johnson & Johnson（Ottava）和Medtronic正在追赶</div>
+            </div>
+            <div>
+              <div class="cf-label">🔍 下一步验证</div>
+              <div class="cf-val">① Da Vinci 5全年装机量节奏（2026指引上调信号） ② Ion肺诊断系统+39%增速是否持续 ③ 中国市场政策变化（2027招标恢复预期） ④ 力反馈器械FDA推广速度</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="layer-lbl">L4 · 边缘AI芯片层 — "机器人的神经系统"（冷门高弹性）</div>
+  <div class="cards">
+
+    <!-- Ambarella -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r3">3</div>
+        <div class="buy-strip bs-us"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">Ambarella <span style="color:var(--text3);font-size:13px">AMBA · NASDAQ</span></div>
+              <div class="ccode">边缘AI视觉芯片 · 机器人感知层 · 市值约43亿美元</div>
+              <div class="badges">
+                <span class="badge b-b">Serenity式冷门小市值</span>
+                <span class="badge b-b">NVIDIA Jetson替代逻辑</span>
+                <span class="badge b-a">证据偏中等</span>
+              </div>
+            </div>
+            <span class="buy-badge buy-us">🇺🇸 美股账户</span>
+          </div>
+          <div class="logic">
+            <strong>卡住的环节：</strong>机器人本地实时感知决策需要边缘AI芯片——不能依赖云端，延迟太高。Ambarella的CV系列芯片专为机器人视觉和运动控制设计，消耗极低功率实现实时推理，是NVIDIA Jetson的竞争替代。<br>
+            <strong>Serenity加分项：</strong>市值约43亿美元，相对冷门，主流投资者关注度低于NVIDIA/Teradyne，认知差存在。
+          </div>
+          <div class="dgrid">
+            <div class="dblock">
+              <div class="db-label">卡位逻辑</div>
+              <div class="db-val">机器人实时感知决策不可绕过边缘推理芯片，Ambarella CV系列专为此设计，<strong>功耗比Jetson低30-50%</strong></div>
+              <span class="ev-str es-m">中 · 技术规格可查</span>
+            </div>
+            <div class="dblock">
+              <div class="db-label">客户基础</div>
+              <div class="db-val">覆盖安防、汽车ADAS、机器人多赛道，已有头部机器人公司采用，但具体机器人客户占比披露有限</div>
+              <span class="ev-str es-m">中 · 需进一步核实</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div>
+              <div class="cf-label">⚠ 反方理由</div>
+              <div class="cf-val">① NVIDIA Jetson生态更完整，切换成本高 ② 盈利能力弱（亏损阶段），现金消耗需关注 ③ 机器人边缘芯片收入占比小，主要收入仍在安防/汽车 ④ 汽车ADAS需求不及预期可能拖累整体</div>
+            </div>
+            <div>
+              <div class="cf-label">🔍 下一步验证</div>
+              <div class="cf-val">① 机器人客户收入占比首次达到10%的时间节点 ② 是否有头部人形机器人厂商采用Ambarella芯片的公告 ③ 毛利率改善趋势 ④ 亏损收窄节奏</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="layer-lbl">🔽 美股降级区 — 物理AI故事正确但非Serenity首选</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:9px;margin-bottom:12px">
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">NVIDIA <span style="color:var(--text3);font-weight:400">NVDA</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">物理AI最大受益者，但市值$3.3万亿，认知差归零，Serenity框架下降级为"用来读懂整个生态地图的起点"。正确，但没有认知差可以博弈。</div>
+      <div style="margin-top:5px;font-size:11px;color:var(--red)">降级：认知差已归零</div>
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">Boston Dynamics <span style="color:var(--text3);font-weight:400">私有（现代汽车子公司）</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">整机公司，Serenity框架下属于"集成者"——逻辑好，但利润被上下游挤压。且非上市公司，无法直接投资。</div>
+      <div style="margin-top:5px;font-size:11px;color:var(--red)">降级：不可买+集成者逻辑弱</div>
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">Symbotic <span style="color:var(--text3);font-weight:400">SYM · NASDAQ</span></div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">仓储机器人领域高速增长（Q营收+23%），但高度依赖沃尔玛单一大客户，集中风险极高。且亏损状态，估值泡沫明显。</div>
+      <div style="margin-top:5px;font-size:11px;color:var(--red)">降级：单客户集中+亏损</div>
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">Figure AI / 1X / Physical Intelligence</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">私有公司，无法直接投资。估值极高（Figure估值$390亿），整机逻辑。对于投资来说只有间接意义——通过研究它们来找上游供应商。</div>
+      <div style="margin-top:5px;font-size:11px;color:var(--red)">降级：不可买</div>
+    </div>
+  </div>
+
+</div><!-- /panel-us -->
+
+<!-- ══════════ A股 PANEL ══════════ -->
+<div id="panel-ashare" class="panel">
+
+  <div class="warn">
+    ⚠ <strong>你的情况：</strong>新开户A股账户，创业板（300开头）暂不可买，科创板（688开头）也暂不可买。下面每张卡片右上角有明确标注。主板（600/000/001等开头）无限制可买。
+  </div>
+
+  <div class="layer-lbl">L3 · 执行器总成层</div>
+  <div class="cards">
+    <!-- 拓普集团 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r1">1</div>
+        <div class="buy-strip bs-ok"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">拓普集团 <span style="color:var(--text3);font-size:13px">601689 · 上交所主板</span></div>
+              <div class="ccode">线性执行器总成独家 · 灵巧手驱动 · 市值约1400亿</div>
+              <div class="badges">
+                <span class="badge b-g">T2ONE 已确认供货</span>
+                <span class="badge b-g">机器人毛利率52%</span>
+                <span class="badge b-g">订单15亿已确认</span>
+              </div>
+            </div>
+            <span class="buy-badge buy-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic"><strong>卡住的环节：</strong>Optimus线性执行器总成+灵巧手驱动组件独家供应商，宁波基地一期30万套/年已投产，墨西哥工厂适配量产节奏。机器人毛利率52%，价值量单台3.5万元，是Optimus供应链价值量最大的单一供应商。</div>
+          <div class="card-footer">
+            <div><div class="cf-label">⚠ 反方理由</div><div class="cf-val">① Optimus V3量产节点存在不确定性（6月底决策） ② 市值1400亿认知差已收窄 ③ Tesla历史上多次自研垂直整合 ④ 关税风险（中国→美国供货路径）</div></div>
+            <div><div class="cf-label">🔍 验证重点</div><div class="cf-val">① 2026H1财报机器人业务收入 ② Optimus V3量产节点确认 ③ 宁波工厂产能利用率</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 三花智控 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r4">—</div>
+        <div class="buy-strip bs-warn"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">三花智控 <span style="color:var(--text3);font-size:13px">002050 · 深交所主板</span></div>
+              <div class="ccode">旋转执行器+热管理 · 市值约2000亿</div>
+              <div class="badges"><span class="badge b-a">认知差已归零</span><span class="badge b-g">T2ONE 已确认</span></div>
+            </div>
+            <span class="buy-badge buy-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic"><strong>卡住的环节：</strong>旋转执行器总成+液冷热管理，T2ONE已确认，墨西哥工厂已发货。技术壁垒极强。但市值2000亿，2025年最高涨163%，Serenity框架下降为"供应链地图起点"，往上游再找一层比追高更优。</div>
+          <div class="card-footer">
+            <div><div class="cf-label">⚠ Serenity降级原因</div><div class="cf-val">市值太大，认知差已消失。正确的做法：用三花的供应链地图挖其上游——精密密封件/特种润滑脂/铜合金铸件供应商，才是Serenity真正要找的目标。</div></div>
+            <div><div class="cf-label">🔍 若要买入</div><div class="cf-val">等待较大幅度回调（-20%+）再重新评估估值合理性；或以小仓位长期持有。</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer-lbl">L1 · 精密传动层</div>
+  <div class="cards">
+    <!-- 五洲新春 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r2">2</div>
+        <div class="buy-strip bs-ok"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">五洲新春 <span style="color:var(--text3);font-size:13px">603667 · 上交所主板</span></div>
+              <div class="ccode">行星滚柱丝杠 · 特斯拉已验证 · 市值约320亿</div>
+              <div class="badges"><span class="badge b-g">特斯拉供应链验证</span><span class="badge b-g">2025业绩增120%</span></div>
+            </div>
+            <span class="buy-badge buy-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic">行星滚柱丝杠L1核心，全球供应商≤5家，Optimus每台14个。市值320亿，认知差仍存在，市场仍多数定性为"轴承公司"。</div>
+          <div class="card-footer">
+            <div><div class="cf-label">⚠ 反方理由</div><div class="cf-val">拓普自研丝杠深化可能蚕食需求；北特同赛道竞争；汽车主业长期面临电动化替代</div></div>
+            <div><div class="cf-label">🔍 验证重点</div><div class="cf-val">2026H1机器人业务收入占比；扩产项目进度；与拓普长期锁量合同细节</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 北特科技 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r6">6</div>
+        <div class="buy-strip bs-ok"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">北特科技 <span style="color:var(--text3);font-size:13px">603009 · 上交所主板</span></div>
+              <div class="ccode">行星滚柱丝杠 · 最大产能 · 市值约200亿</div>
+              <div class="badges"><span class="badge b-b">市值最小弹性最大</span><span class="badge b-a">非TR1核心证据偏弱</span></div>
+            </div>
+            <span class="buy-badge buy-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic">同赛道，产能规划最激进（100万台目标），市值200亿，弹性最大。但尚未进入TR1核心供应商序列，是"高弹性候补"标的。</div>
+          <div class="card-footer">
+            <div><div class="cf-label">⚠ 反方理由</div><div class="cf-val">未进TR1；产能超前建设若量产延迟产能空置损失大；与五洲新春差异化不足</div></div>
+            <div><div class="cf-label">🔍 验证重点</div><div class="cf-val">是否有新客户认证公告；2026年机器人业务收入首次披露节点</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 绿的谐波 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r4">4</div>
+        <div class="buy-strip bs-no"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">绿的谐波 <span style="color:var(--text3);font-size:13px">688017 · 科创板</span></div>
+              <div class="ccode">谐波减速器龙头 · 已确认供货</div>
+              <div class="badges"><span class="badge b-r">科创板 ❌</span><span class="badge b-g">T2ONE已确认</span><span class="badge b-a">年涨70%</span></div>
+            </div>
+            <span class="buy-badge buy-no">🚫 暂不可买 · 科创板</span>
+          </div>
+          <div class="logic">谐波减速器龙头，逻辑最确定，但<strong style="color:var(--red)">科创板（688开头）需50万资产+2年经验，你现在买不了</strong>。而且年涨70%，认知差已收窄，即使权限开通后也应等回调。</div>
+          <div class="card-footer">
+            <div><div class="cf-label">权限开通路径</div><div class="cf-val">账户内资产达50万元 + 证券交易满2年 → 向券商申请开通科创板权限 → 之后才能买688开头的股票</div></div>
+            <div><div class="cf-label">🔍 若权限开通后</div><div class="cf-val">等待较大幅度回调；关注Optimus量产节点确认；关注摆线减速器替代技术路线进展</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 双环传动 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r5">补充</div>
+        <div class="buy-strip bs-ok"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">双环传动 <span style="color:var(--text3);font-size:13px">002472 · 深交所主板</span></div>
+              <div class="ccode">RV减速器 · 大负载关节 · 主板</div>
+              <div class="badges"><span class="badge b-g">主板可买</span><span class="badge b-g">RV减速器国产第一</span></div>
+            </div>
+            <span class="buy-badge buy-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic">RV减速器（大负载关节专用）国产龙头，比绿的谐波认知度低，市值更小，进入特斯拉/库卡供应链。是<strong>绿的谐波科创板买不了时的主板替代选项</strong>——同层级，但市场认知差更大。</div>
+          <div class="card-footer">
+            <div><div class="cf-label">⚠ 与绿的谐波的差异</div><div class="cf-val">RV减速器用于大负载关节（腰、腿），谐波用于小关节（手指、手腕）。两者互补，但谐波在人形机器人中用量更大。双环传动在工业机器人中地位更稳固。</div></div>
+            <div><div class="cf-label">🔍 验证重点</div><div class="cf-val">2025年机器人业务营收增速及占比；特斯拉供应链验证级别；RV在人形机器人的用量比例</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer-lbl">L2 · 高力密度电机层</div>
+  <div class="cards">
+    <!-- 鸣志电器 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r3">3</div>
+        <div class="buy-strip bs-ok"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">鸣志电器 <span style="color:var(--text3);font-size:13px">603728 · 上交所主板</span></div>
+              <div class="ccode">空心杯电机全球前三 · 市值约300亿</div>
+              <div class="badges"><span class="badge b-g">净利率22%</span><span class="badge b-g">订单至2027</span></div>
+            </div>
+            <span class="buy-badge buy-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic">空心杯电机灵巧手核心驱动，全球前三，净利率22%证明定价权真实，订单锁定至2027年。主板可买，弹性大。</div>
+          <div class="card-footer">
+            <div><div class="cf-label">⚠ 反方理由</div><div class="cf-val">灵巧手量产节奏慢于执行器，是整机厂最后攻克的难题；腱绳驱动替代方案减少空心杯用量的风险</div></div>
+            <div><div class="cf-label">🔍 验证重点</div><div class="cf-val">2026年灵巧手出货规模；整机厂量产进度；净利率是否维持22%以上</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer-lbl">L4 · 传感器层</div>
+  <div class="cards">
+    <!-- 长盈精密 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r5">7</div>
+        <div class="buy-strip bs-no"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">长盈精密 <span style="color:var(--text3);font-size:13px">300115 · 创业板</span></div>
+              <div class="ccode">结构件+指尖传感器 · 价值量最高</div>
+              <div class="badges"><span class="badge b-r">创业板 ❌</span><span class="badge b-g">单台价值4万元</span></div>
+            </div>
+            <span class="buy-badge buy-no">🚫 暂不可买 · 创业板</span>
+          </div>
+          <div class="logic"><strong style="color:var(--red)">创业板（300开头），你现在买不了。</strong>需开户满2年+资产10万才能申请创业板权限。逻辑不错（双层卡位，价值量最高），但先等权限开通。</div>
+          <div class="card-footer">
+            <div><div class="cf-label">创业板权限开通条件</div><div class="cf-val">① 证券账户开立满24个月 ② 账户内资产≥10万元 ③ 向券商申请开通创业板交易权限</div></div>
+            <div><div class="cf-label">注意</div><div class="cf-val">创业板权限开通门槛低于科创板（仅需2年+10万），科创板需50万+2年。优先开通创业板。</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 汉威科技 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r5">补充</div>
+        <div class="buy-strip bs-no"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">汉威科技 <span style="color:var(--text3);font-size:13px">300007 · 创业板</span></div>
+              <div class="ccode">六维力传感器 · 编码器</div>
+              <div class="badges"><span class="badge b-r">创业板 ❌</span><span class="badge b-g">国产化率超90%</span></div>
+            </div>
+            <span class="buy-badge buy-no">🚫 暂不可买 · 创业板</span>
+          </div>
+          <div class="logic"><strong style="color:var(--red)">创业板，暂不可买。</strong>六维力传感器国产替代，逻辑成立，但同样是创业板（300开头）。等权限开通后再考虑。</div>
+          <div class="card-footer">
+            <div><div class="cf-label">同类可买替代</div><div class="cf-val">目前A股主板没有完全对标的六维力传感器公司。可关注柯力传感（603662 · 主板），在一维/二维力传感器领域有基础，虽非六维力核心，但主板可买。</div></div>
+            <div><div class="cf-label">🔍 权限开通后</div><div class="cf-val">关注汉威六维力传感器业务占比、与整机厂合同情况</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 柯力传感 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r5">补充</div>
+        <div class="buy-strip bs-ok"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">柯力传感 <span style="color:var(--text3);font-size:13px">603662 · 上交所主板</span></div>
+              <div class="ccode">力传感器 · 主板可买替代</div>
+              <div class="badges"><span class="badge b-g">主板可买</span><span class="badge b-a">非六维力核心</span></div>
+            </div>
+            <span class="buy-badge buy-ok">✅ 可买 · 主板</span>
+          </div>
+          <div class="logic">汉威买不了的主板替代——柯力传感是国内力传感器领先企业，在机器人力控赛道有布局，但六维力传感器核心技术弱于汉威。<strong>主要价值：可买+同方向，是创业板权限开通前的过渡选择。</strong></div>
+          <div class="card-footer">
+            <div><div class="cf-label">⚠ 注意</div><div class="cf-val">柯力传感并非六维力传感器核心标的，Serenity评级中等偏下。买入前需确认其六维力业务实际收入占比</div></div>
+            <div><div class="cf-label">🔍 验证重点</div><div class="cf-val">六维力产品线在机器人客户中的实际销售情况；与整机厂是否有具体合同</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer-lbl">L5 · 底层材料层（长线逻辑）</div>
+  <div class="cards">
+    <!-- 新瀚新材 -->
+    <div class="card">
+      <div class="card-inner">
+        <div class="card-rank r5">5</div>
+        <div class="buy-strip bs-no"></div>
+        <div class="card-body">
+          <div class="card-head">
+            <div class="card-id">
+              <div class="cname">新瀚新材 <span style="color:var(--text3);font-size:13px">301076 · 创业板</span></div>
+              <div class="ccode">PEEK原料DFBP · 第三层底层卡点 · 市值约60亿</div>
+              <div class="badges"><span class="badge b-r">创业板 ❌</span><span class="badge b-b">认知差最大</span><span class="badge b-b">第三层卡点</span></div>
+            </div>
+            <span class="buy-badge buy-no">🚫 暂不可买 · 创业板</span>
+          </div>
+          <div class="logic"><strong style="color:var(--red)">创业板（301076），暂不可买。</strong>这是Serenity最喜欢的"第三层底层卡点"，但是创业板。等权限开通后这是优先关注的冷门标的——PEEK原料DFBP全球≤3家供应商，市值60亿，认知差极大。</div>
+          <div class="card-footer">
+            <div><div class="cf-label">权限开通后的优先级</div><div class="cf-val">创业板权限开通后，新瀚新材是Serenity框架下优先度最高的冷门标的之一。但需注意：短期催化不足，适合小仓位长线持有。</div></div>
+            <div><div class="cf-label">🔍 现在可做的事</div><div class="cf-val">关注其定增募资进度公告（上交所公告查询）；关注DFBP行业动态；等待权限开通后买入窗口</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /panel-ashare -->
+
+<!-- ══════════ 总览 PANEL ══════════ -->
+<div id="panel-summary" class="panel">
+  <p style="font-size:12px;color:var(--text2);margin-bottom:14px">全部候选标的一览，含市场、买入资格、Serenity评级、证据强度。</p>
+  <table class="sum-table">
+    <thead>
+      <tr>
+        <th>公司</th>
+        <th>代码/市场</th>
+        <th>卡脖子环节</th>
+        <th>产业链层</th>
+        <th>买入资格</th>
+        <th>证据</th>
+        <th>评级</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>拓普集团</strong></td>
+        <td>601689 · 主板</td>
+        <td>执行器总成独家</td>
+        <td>L3</td>
+        <td><span class="el-tag et-ok">✅ 可买</span></td>
+        <td><span class="ev-str es-s">强</span></td>
+        <td>🥇 TOP1</td>
+      </tr>
+      <tr>
+        <td><strong>五洲新春</strong></td>
+        <td>603667 · 主板</td>
+        <td>行星滚柱丝杠</td>
+        <td>L1</td>
+        <td><span class="el-tag et-ok">✅ 可买</span></td>
+        <td><span class="ev-str es-s">强</span></td>
+        <td>🥈 TOP2</td>
+      </tr>
+      <tr>
+        <td><strong>鸣志电器</strong></td>
+        <td>603728 · 主板</td>
+        <td>空心杯电机</td>
+        <td>L2</td>
+        <td><span class="el-tag et-ok">✅ 可买</span></td>
+        <td><span class="ev-str es-s">强</span></td>
+        <td>🥉 TOP3</td>
+      </tr>
+      <tr>
+        <td><strong>北特科技</strong></td>
+        <td>603009 · 主板</td>
+        <td>行星滚柱丝杠</td>
+        <td>L1</td>
+        <td><span class="el-tag et-ok">✅ 可买</span></td>
+        <td><span class="ev-str es-m">中</span></td>
+        <td>TOP6 高弹性候补</td>
+      </tr>
+      <tr>
+        <td><strong>双环传动</strong></td>
+        <td>002472 · 主板</td>
+        <td>RV减速器</td>
+        <td>L1</td>
+        <td><span class="el-tag et-ok">✅ 可买</span></td>
+        <td><span class="ev-str es-m">中</span></td>
+        <td>补充 谐波买不了的替代</td>
+      </tr>
+      <tr>
+        <td><strong>三花智控</strong></td>
+        <td>002050 · 主板</td>
+        <td>热管理+旋转执行器</td>
+        <td>L3</td>
+        <td><span class="el-tag et-ok">✅ 可买</span></td>
+        <td><span class="ev-str es-s">强</span></td>
+        <td>降级 认知差归零</td>
+      </tr>
+      <tr>
+        <td><strong>柯力传感</strong></td>
+        <td>603662 · 主板</td>
+        <td>力传感器</td>
+        <td>L4</td>
+        <td><span class="el-tag et-ok">✅ 可买</span></td>
+        <td><span class="ev-str es-m">中</span></td>
+        <td>补充 汉威替代</td>
+      </tr>
+      <tr style="opacity:.55">
+        <td><strong>绿的谐波</strong> <span style="color:var(--red);font-size:11px">🚫</span></td>
+        <td>688017 · 科创板</td>
+        <td>谐波减速器</td>
+        <td>L1</td>
+        <td><span class="el-tag et-no">🚫 科创板</span></td>
+        <td><span class="ev-str es-s">强</span></td>
+        <td>TOP4 (权限开通后)</td>
+      </tr>
+      <tr style="opacity:.55">
+        <td><strong>长盈精密</strong> <span style="color:var(--red);font-size:11px">🚫</span></td>
+        <td>300115 · 创业板</td>
+        <td>结构件+传感器</td>
+        <td>L3/4</td>
+        <td><span class="el-tag et-no">🚫 创业板</span></td>
+        <td><span class="ev-str es-m">中</span></td>
+        <td>TOP7 (权限开通后)</td>
+      </tr>
+      <tr style="opacity:.55">
+        <td><strong>汉威科技</strong> <span style="color:var(--red);font-size:11px">🚫</span></td>
+        <td>300007 · 创业板</td>
+        <td>六维力传感器</td>
+        <td>L4</td>
+        <td><span class="el-tag et-no">🚫 创业板</span></td>
+        <td><span class="ev-str es-m">中</span></td>
+        <td>补充 (权限开通后)</td>
+      </tr>
+      <tr style="opacity:.55">
+        <td><strong>新瀚新材</strong> <span style="color:var(--red);font-size:11px">🚫</span></td>
+        <td>301076 · 创业板</td>
+        <td>PEEK原料DFBP</td>
+        <td>L5</td>
+        <td><span class="el-tag et-no">🚫 创业板</span></td>
+        <td><span class="ev-str es-m">中</span></td>
+        <td>冷门长线 (权限开通后)</td>
+      </tr>
+      <tr>
+        <td><strong>Teradyne</strong></td>
+        <td>TER · NASDAQ</td>
+        <td>AI芯片测试+协作机器人</td>
+        <td>L1</td>
+        <td><span class="el-tag et-us">🇺🇸 美股</span></td>
+        <td><span class="ev-str es-s">强</span></td>
+        <td>美股 TOP1</td>
+      </tr>
+      <tr>
+        <td><strong>Intuitive Surgical</strong></td>
+        <td>ISRG · NASDAQ</td>
+        <td>手术机器人平台</td>
+        <td>L3</td>
+        <td><span class="el-tag et-us">🇺🇸 美股</span></td>
+        <td><span class="ev-str es-s">强</span></td>
+        <td>美股 TOP2 确定性最高</td>
+      </tr>
+      <tr>
+        <td><strong>Cognex</strong></td>
+        <td>CGNX · NASDAQ</td>
+        <td>工业机器视觉AI化</td>
+        <td>L2</td>
+        <td><span class="el-tag et-us">🇺🇸 美股</span></td>
+        <td><span class="ev-str es-s">强</span></td>
+        <td>美股 TOP3</td>
+      </tr>
+      <tr>
+        <td><strong>Ambarella</strong></td>
+        <td>AMBA · NASDAQ</td>
+        <td>边缘AI视觉芯片</td>
+        <td>L4</td>
+        <td><span class="el-tag et-us">🇺🇸 美股</span></td>
+        <td><span class="ev-str es-m">中</span></td>
+        <td>美股冷门候选</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="padding:12px 16px;background:var(--bg3);border:1px solid rgba(245,158,11,.2);border-radius:10px;font-size:12.5px;color:var(--text2);line-height:1.8;margin-bottom:16px">
+    <strong style="color:var(--amber)">你现在能买的A股汇总（新开户无创业板/科创板权限）：</strong><br>
+    <strong style="color:var(--green)">✅ 拓普集团(601689) · 五洲新春(603667) · 鸣志电器(603728) · 北特科技(603009) · 双环传动(002472) · 三花智控(002050) · 柯力传感(603662)</strong><br><br>
+    <strong style="color:var(--red)">🚫 暂不可买（等权限）：绿的谐波(688017 科创板) · 长盈精密(300115 创业板) · 汉威科技(300007 创业板) · 新瀚新材(301076 创业板)</strong><br><br>
+    <strong style="color:var(--blue)">🇺🇸 美股需单独开户：Teradyne(TER) · Intuitive Surgical(ISRG) · Cognex(CGNX) · Ambarella(AMBA)</strong>
+  </div>
+</div>
+
+<div class="disc">
+  <strong>研究边界（SKILL.md risk-boundary）：</strong>本报告为研究优先级排序工具，不构成投资建议。所有证据已标注强度，强结论依托公司公告/财报/SEC文件，中等证据依托机构研报/渠道调研，弱证据为行业测算。买入资格判断基于A股监管规定，具体权限以你的券商实际认定为准。据此操作风险自担。
+</div>
+
+</div><!-- /wrap -->
+
+
+
+</div>
+</div>
+
+

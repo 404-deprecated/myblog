@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-06-02",
-  "autoCheckedAt": "2026-06-03T15:46:55.225Z",
+  "updatedAt": "2026-06-07",
+  "autoCheckedAt": "2026-06-07T11:58:41.806Z",
   "markets": {
     "nasdaq": [
       {
@@ -92,6 +92,13 @@
         "label": "纳斯达克明显大涨",
         "impact": "pos",
         "detail": "纳斯达克在2026-05-06大涨2.0%。美元走弱利好出口企业和新兴市场资金流入。",
+        "source": "auto"
+      },
+      {
+        "d": "2026-06-05",
+        "label": "纳斯达克剧烈大跌",
+        "impact": "neg",
+        "detail": "纳斯达克在2026-06-05大跌4.2%。盘中出现剧烈波动，宏观环境无明显异常。",
         "source": "auto"
       }
     ],
@@ -343,5 +350,12 @@
       }
     ]
   },
-  "pendingFlags": []
+  "pendingFlags": [
+    {
+      "d": "2026-06-05",
+      "changePct": -4.2,
+      "market": "纳斯达克",
+      "idx": "^IXIC"
+    }
+  ]
 }
