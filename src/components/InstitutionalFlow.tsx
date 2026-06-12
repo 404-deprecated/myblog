@@ -13,8 +13,8 @@ interface StockFlow {
   signals: Signal[]; warnings: string[]; checklist: number; buySignal: boolean
 }
 interface SectorTop3 { code:string; name:string; flow:number; chg?:number }
-interface SectorHeat { name:string;total:number;accum:number;markup:number;dist:number;buySignal:number;flow:number;score:number;top3:SectorTop3[] }
-interface MidcapStock { code:string;name:string;price:number;chg1d:number;chg3d:number|null;chg7d:number|null;marketCapB:number;industry:string;desc:string;turnover:number;pe:number }
+interface SectorHeat { name:string;total:number;accum:number;markup:number;dist:number;buySignal:number;flow:number;score:number;top3:SectorTop3[];outflow3?:SectorTop3[] }
+interface MidcapStock { code:string;name:string;price:number;chg1d:number;chg3d:number|null;chg7d:number|null;marketCapB:number;industry:string;desc:string;reason:string;turnover:number;pe:number }
 interface NorthBound { direction:string;amount:number;signal:string;isTrading:boolean }
 interface FlowData { stocks: StockFlow[]; breadth: { bullish:number;bearish:number;total:number;distribution:number;accumulation:number;markup:number }; sectorHeat?:Record<string,SectorHeat[]>; midcapGainers?:Record<string,MidcapStock[]>; northBound?:NorthBound; moneyTypes?:Record<string,{desc:string;typical:string[];cap:string}>; updatedAt: string }
 
@@ -89,7 +89,6 @@ export default function InstitutionalFlow() {
       {/* 🏗️ 主力建仓热力图 */}
       {data?.sectorHeat && (() => {
         const sectors = (data.sectorHeat[heatmapTf] || []).slice(0, 10)
-        if (sectors.length === 0) return null
         return (
           <div style={{ padding: '0.5rem 0.7rem', borderRadius: '8px', backgroundColor: DARK.card, border: `1px solid ${DARK.cardBorder}` }}>
             {/* Header + timeframe toggle */}
@@ -109,54 +108,74 @@ export default function InstitutionalFlow() {
             </div>
 
             {/* Sector rows */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              {sectors.map(s => {
-                const barColor = s.score >= 3 ? '#f87171' : s.score >= 1 ? '#fbbf24' : s.score >= 0 ? '#4ade80' : '#8b949e'
-                return (
-                  <div key={s.name}>
-                    {/* Bar row */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.55rem' }}>
-                      <span style={{ fontWeight: 600, color: DARK.text, minWidth: '72px' }}>{s.name}</span>
-                      <span style={{ flex: 1, height: '6px', borderRadius: '3px', backgroundColor: DARK.dim, overflow: 'hidden' }}>
-                        <span style={{ display: 'block', height: '100%', borderRadius: '3px', backgroundColor: barColor,
-                          width: `${Math.min(100, Math.max(5, (s.score + 3) * 12))}%`, transition: 'width 0.3s' }} />
-                      </span>
-                      <span style={{ fontFamily: 'var(--font-mono)', color: barColor, fontWeight: 700, minWidth: '32px' }}>
-                        {s.score >= 0 ? '+' : ''}{s.score}
-                      </span>
-                      {heatmapTf === '1d' && (
-                        <span style={{ color: DARK.muted, fontSize: '0.46rem', minWidth: '80px' }}>
-                          {s.accum > 0 && `🏗️${s.accum}只 `}{s.markup > 0 && `🚀${s.markup}只 `}{s.dist > 0 && `⚠️${s.dist}只`}
+            {sectors.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '1rem 0', color: DARK.muted, fontSize: '0.55rem' }}>
+                暂无{heatmapTf === '3d' ? '3天' : '7天'}数据，K线数据加载中 — 请重新扫描
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                {sectors.map(s => {
+                  const barColor = s.score >= 3 ? '#f87171' : s.score >= 1 ? '#fbbf24' : s.score >= 0 ? '#4ade80' : '#8b949e'
+                  return (
+                    <div key={s.name}>
+                      {/* Bar row */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.55rem' }}>
+                        <span style={{ fontWeight: 600, color: DARK.text, minWidth: '72px' }}>{s.name}</span>
+                        <span style={{ flex: 1, height: '6px', borderRadius: '3px', backgroundColor: DARK.dim, overflow: 'hidden' }}>
+                          <span style={{ display: 'block', height: '100%', borderRadius: '3px', backgroundColor: barColor,
+                            width: `${Math.min(100, Math.max(5, (s.score + 3) * 12))}%`, transition: 'width 0.3s' }} />
                         </span>
-                      )}
-                      <span style={{ color: s.flow >= 0 ? '#f87171' : '#4ade80', fontFamily: 'var(--font-mono)', fontSize: '0.5rem', minWidth: '52px', textAlign: 'right' }}>
-                        {s.flow >= 0 ? '+' : ''}{s.flow}亿
-                      </span>
-                    </div>
-                    {/* Top3 inflow companies */}
-                    {s.top3 && s.top3.length > 0 && (
-                      <div style={{ display: 'flex', gap: '0.5rem', paddingLeft: '76px', marginTop: '0.15rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                        {s.top3.map((t, i) => (
-                          <span key={t.code} style={{ fontSize: '0.48rem', display: 'flex', alignItems: 'center', gap: '0.2rem',
-                            padding: '0.06rem 0.3rem', borderRadius: '3px',
-                            backgroundColor: i === 0 ? '#fbbf2418' : '#ffffff08',
-                            border: `1px solid ${i === 0 ? '#fbbf2440' : DARK.cardBorder}` }}>
-                            <span style={{ color: i === 0 ? '#fbbf24' : DARK.dim, fontWeight: 700 }}>#{i + 1}</span>
-                            <span style={{ color: DARK.text }}>{t.name}</span>
-                            <span style={{ fontFamily: 'var(--font-mono)', color: '#f87171', fontWeight: 600 }}>+{t.flow}亿</span>
-                            {t.chg != null && (
-                              <span style={{ fontFamily: 'var(--font-mono)', color: t.chg >= 0 ? '#f87171' : '#4ade80', fontSize: '0.44rem' }}>
-                                {t.chg >= 0 ? '+' : ''}{t.chg}%
-                              </span>
-                            )}
+                        <span style={{ fontFamily: 'var(--font-mono)', color: barColor, fontWeight: 700, minWidth: '32px' }}>
+                          {s.score >= 0 ? '+' : ''}{s.score}
+                        </span>
+                        {heatmapTf === '1d' && (
+                          <span style={{ color: DARK.muted, fontSize: '0.46rem', minWidth: '80px' }}>
+                            {s.accum > 0 && `🏗️${s.accum}只 `}{s.markup > 0 && `🚀${s.markup}只 `}{s.dist > 0 && `⚠️${s.dist}只`}
                           </span>
-                        ))}
+                        )}
+                        <span style={{ color: s.flow >= 0 ? '#f87171' : '#4ade80', fontFamily: 'var(--font-mono)', fontSize: '0.5rem', minWidth: '52px', textAlign: 'right' }}>
+                          {s.flow >= 0 ? '+' : ''}{s.flow}亿
+                        </span>
                       </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+                      {/* Inflow top3 */}
+                      {s.top3 && s.top3.length > 0 && (
+                        <div style={{ display: 'flex', gap: '0.35rem', paddingLeft: '76px', marginTop: '0.12rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.44rem', color: '#f87171', marginRight: '0.1rem' }}>▲流入</span>
+                          {s.top3.map((t, i) => (
+                            <span key={t.code} style={{ fontSize: '0.46rem', display: 'flex', alignItems: 'center', gap: '0.18rem',
+                              padding: '0.05rem 0.28rem', borderRadius: '3px',
+                              backgroundColor: i === 0 ? '#f8717115' : '#ffffff06',
+                              border: `1px solid ${i === 0 ? '#f8717140' : DARK.cardBorder}` }}>
+                              <span style={{ color: i === 0 ? '#fbbf24' : DARK.dim, fontWeight: 700 }}>#{i + 1}</span>
+                              <span style={{ color: DARK.text }}>{t.name}</span>
+                              <span style={{ fontFamily: 'var(--font-mono)', color: '#f87171', fontWeight: 600 }}>+{t.flow}亿</span>
+                              {t.chg != null && <span style={{ fontFamily: 'var(--font-mono)', color: '#f87171', fontSize: '0.42rem' }}>{t.chg >= 0 ? '+' : ''}{t.chg}%</span>}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {/* Outflow top3 */}
+                      {s.outflow3 && s.outflow3.length > 0 && (
+                        <div style={{ display: 'flex', gap: '0.35rem', paddingLeft: '76px', marginTop: '0.08rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.44rem', color: '#4ade80', marginRight: '0.1rem' }}>▼流出</span>
+                          {s.outflow3.map((t, i) => (
+                            <span key={t.code} style={{ fontSize: '0.46rem', display: 'flex', alignItems: 'center', gap: '0.18rem',
+                              padding: '0.05rem 0.28rem', borderRadius: '3px',
+                              backgroundColor: '#4ade8010',
+                              border: `1px solid #4ade8030` }}>
+                              <span style={{ color: DARK.dim, fontWeight: 700 }}>#{i + 1}</span>
+                              <span style={{ color: DARK.text }}>{t.name}</span>
+                              <span style={{ fontFamily: 'var(--font-mono)', color: '#4ade80', fontWeight: 600 }}>{t.flow}亿</span>
+                              {t.chg != null && <span style={{ fontFamily: 'var(--font-mono)', color: '#4ade80', fontSize: '0.42rem' }}>{t.chg >= 0 ? '+' : ''}{t.chg}%</span>}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
             <div style={{ fontSize: '0.46rem', color: DARK.dim, marginTop: '0.4rem' }}>
               {heatmapTf === '1d' ? '得分 = (建仓×3 + 拉升×2 - 出货×2 + 买入信号×2) ÷ 股票数  ·  资金 = 成交额 × 方向' : `${heatmapTf === '3d' ? '3' : '7'}日累计资金流向估算，按行业净流入排序`}
             </div>
@@ -243,7 +262,8 @@ export default function InstitutionalFlow() {
                     <span style={{ fontSize: '0.42rem', fontFamily: 'var(--font-mono)', color: DARK.dim }}>{s.code}</span>
                     <span style={{ fontSize: '0.42rem', padding: '0.05rem 0.25rem', borderRadius: '3px', backgroundColor: '#a78bfa15', color: '#a78bfa', border: '1px solid #a78bfa30' }}>{s.industry}</span>
                   </div>
-                  <div style={{ fontSize: '0.46rem', color: DARK.muted, marginTop: '0.1rem', lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.desc}</div>
+                  <div style={{ fontSize: '0.44rem', color: DARK.muted, marginTop: '0.06rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.desc}</div>
+                  {s.reason && <div style={{ fontSize: '0.44rem', color: '#fbbf24', marginTop: '0.04rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>💡 {s.reason}</div>}
                 </div>
 
                 {/* Change */}

@@ -76,6 +76,84 @@ sector_map = {
 sector_heat = {}
 _sector_stocks_cache = {}  # id(results) -> sh_stocks, for multi-day reuse
 
+def fetch_klines_em(codes, days=12):
+    """东财日K线API（比Sina更稳定，限速更宽松）"""
+    results = {}
+    for code in codes:
+        try:
+            secid = f'1.{code}' if code.startswith('6') else f'0.{code}'
+            r = req('https://push2his.eastmoney.com/api/qt/stock/kline/get', {
+                'secid': secid, 'fields1': 'f1,f2,f3,f4,f5,f6',
+                'fields2': 'f51,f52,f53,f54,f55,f56,f57',
+                'klt': 101, 'fqt': 1, 'end': '20500101', 'lmt': days,
+            })
+            klines = r.json().get('data', {}).get('klines', []) or []
+            parsed = []
+            for k in klines:
+                p = k.split(',')
+                if len(p) >= 6:
+                    parsed.append({'close': float(p[2] or 0), 'volume': float(p[5] or 0)})
+            results[code] = [x for x in parsed if x['close'] > 0]
+        except:
+            results[code] = []
+        time.sleep(0.08)
+    return results
+
+SECTOR_CATALYSTS = {
+    '半导体': 'AI算力需求驱动，国产芯片加速',
+    '芯片': 'AI算力需求驱动，国产芯片加速',
+    '机器人': '人形机器人产业化，订单落地预期',
+    '工控': '工业自动化升级，国产替代',
+    '新能源': '绿电装机提速，储能需求爆发',
+    '光通信': '数据中心算力扩容，400G需求放量',
+    'AI': 'AI大模型商业化落地，算力基建受益',
+    '服务器': 'AI训练推理算力爆发，IDC扩容',
+    '军工': '国防预算增长，装备现代化加速',
+    '航天': '商业航天提速，卫星互联网布局',
+    '医药': '创新药审批提速，出海逻辑兑现',
+    '生物': '创新药审批提速，出海逻辑兑现',
+    '银行': '化债推进，息差企稳，资产质量改善',
+    '新材料': '国产材料替代，政策支持',
+    '面板': '显示面板价格上涨周期',
+    '消费电子': '手机/PC换机潮，AI终端普及',
+    '电力': '电网改造投资，绿电消纳提升',
+}
+
+def gen_rise_reason(s):
+    chg = s.get('chg1d', 0)
+    turnover = s.get('turnover', 0)
+    pe = s.get('pe', 0)
+    industry = s.get('industry', '')
+    reasons = []
+
+    if chg >= 9.8:
+        reasons.append('涨停封板')
+    elif chg >= 7:
+        reasons.append(f'大涨{chg:.1f}%，市场情绪高涨')
+    elif chg >= 5:
+        reasons.append(f'强势上涨{chg:.1f}%')
+
+    if turnover >= 15:
+        reasons.append('超高换手率，游资积极介入')
+    elif turnover >= 8:
+        reasons.append('量能显著放大，主力建仓')
+    elif turnover >= 4:
+        reasons.append('有效放量突破')
+
+    if 0 < pe <= 15:
+        reasons.append('低估值价值发现')
+    elif 15 < pe <= 25:
+        reasons.append('估值合理，机构增持')
+
+    for key, catalyst in SECTOR_CATALYSTS.items():
+        if key in industry:
+            reasons.append(catalyst)
+            break
+
+    if not reasons:
+        reasons.append(f'{industry}板块资金轮动')
+    return '；'.join(reasons)
+
 def analyze_institutional(codes):
     quotes = fetch_sina_quotes(codes)
     dailies = fetch_daily(codes, 60)
@@ -251,10 +329,12 @@ def analyze_institutional(codes):
     sector_list = []
     for sec, sh in sh_map.items():
         score = round((sh['accum']*3+sh['markup']*2-sh['dist']*2+sh['buySignal']*2)/max(sh['total'],1),1)
-        top3 = sorted([s for s in sh_stocks[sec] if s['flow']>0], key=lambda x: x['flow'], reverse=True)[:3]
+        stocks = sh_stocks[sec]
+        top3 = sorted([s for s in stocks if s['flow']>0], key=lambda x: x['flow'], reverse=True)[:3]
+        outflow3 = sorted([s for s in stocks if s['flow']<0], key=lambda x: x['flow'])[:3]
         sector_list.append({'name':sec,'total':sh['total'],'accum':sh['accum'],'markup':sh['markup'],
                            'dist':sh['dist'],'buySignal':sh['buySignal'],'flow':round(sh['flow'],1),
-                           'score':score,'top3':top3})
+                           'score':score,'top3':top3,'outflow3':outflow3})
     sector_list.sort(key=lambda x: x['score'], reverse=True)
     # also expose per-sector stock list for multi-day computation
     _sector_stocks_cache[id(results)] = sh_stocks
@@ -350,21 +430,19 @@ INDUSTRY_DESC = {
 }
 
 def fetch_midcap_gainers():
-    """获取市值100亿-1000亿 A股涨幅TOP20，含1d/3d/7d三个周期"""
-    # 获取A股全量行情（取前500，按1日涨幅降序）
+    """获取市值100亿-1000亿 A股涨幅TOP20，含1d/3d/7d + 上涨原因"""
     try:
         r = req('https://push2.eastmoney.com/api/qt/clist/get', {
-            'pn': 1, 'pz': 500, 'po': 1, 'np': 1,
+            'pn': 1, 'pz': 800, 'po': 1, 'np': 1,
             'ut': 'bd1d9ddb04089700cf9c27f6f7426281',
             'fltt': 2, 'invt': 2, 'fid': 'f3',
             'fs': 'm:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23',
-            'fields': 'f2,f3,f5,f6,f8,f9,f12,f14,f20,f44,f45,f100,f128',
+            'fields': 'f2,f3,f5,f6,f8,f9,f12,f14,f20,f100',
         })
         raw = r.json().get('data', {}).get('diff', []) or []
     except:
         return {}
 
-    # 过滤市值 100亿-1000亿
     LOWER, UPPER = 10_000_000_000, 100_000_000_000
     candidates = []
     for s in raw:
@@ -374,8 +452,8 @@ def fetch_midcap_gainers():
         chg1d = s.get('f3') or 0
         if chg1d <= 0:
             continue
-        industry = s.get('f100') or s.get('f128') or s.get('f44') or '其他'
-        candidates.append({
+        industry = s.get('f100') or '其他'
+        c = {
             'code': str(s.get('f12', '')).zfill(6),
             'name': s.get('f14', ''),
             'price': round(s.get('f2') or 0, 2),
@@ -387,29 +465,26 @@ def fetch_midcap_gainers():
             'desc': INDUSTRY_DESC.get(industry, f'{industry}行业上市公司'),
             'turnover': round(s.get('f8') or 0, 2),
             'pe': round(s.get('f9') or 0, 1),
-        })
+        }
+        c['reason'] = gen_rise_reason(c)
+        candidates.append(c)
 
-    # 按1d涨幅取前60作为候选，抓日K补充3d/7d
+    # 取前100候选，用东财K线API补充3d/7d（更稳定）
     candidates.sort(key=lambda x: x['chg1d'], reverse=True)
-    pool = candidates[:60]
+    pool = candidates[:100]
+    pool_codes = [c['code'] for c in pool]
+    klines = fetch_klines_em(pool_codes, days=12)
 
-    for c in pool:
-        code = c['code']
-        try:
-            prefix = 'sh' if code.startswith('6') else 'sz'
-            r2 = req(
-                f'https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/'
-                f'CN_MarketData.getKLineData?symbol={prefix}{code}&scale=240&ma=no&datalen=12',
-                referer='https://finance.sina.com.cn'
-            )
-            kl = [float(k.get('close', 0)) for k in json.loads(r2.text) if k.get('close')]
-            if len(kl) >= 4:
-                c['chg3d'] = round((kl[-1] - kl[-4]) / kl[-4] * 100, 2) if kl[-4] else None
-            if len(kl) >= 8:
-                c['chg7d'] = round((kl[-1] - kl[-8]) / kl[-8] * 100, 2) if kl[-8] else None
-        except:
-            pass
-        time.sleep(0.12)
+    code_map = {c['code']: c for c in pool}
+    for code, kl in klines.items():
+        c = code_map.get(code)
+        if not c:
+            continue
+        closes = [k['close'] for k in kl]
+        if len(closes) >= 4 and closes[-4]:
+            c['chg3d'] = round((closes[-1] - closes[-4]) / closes[-4] * 100, 2)
+        if len(closes) >= 8 and closes[-8]:
+            c['chg7d'] = round((closes[-1] - closes[-8]) / closes[-8] * 100, 2)
 
     result = {}
     for tf, key in [('1d', 'chg1d'), ('3d', 'chg3d'), ('7d', 'chg7d')]:
@@ -458,38 +533,45 @@ def main():
     # ── 多周期 sectorHeat: 1d / 3d / 7d ──
     heat_1d = all_result.get('sectorHeat', [])
 
-    # Fetch K-lines for 3d/7d computation (reuse if already fetched)
-    all_dailies = fetch_daily(all_codes, 10)
-
-    # Build name lookup from all_result
+    # 用东财K线API（更稳定）抓多日数据
     name_map = {s['code']: s['name'] for s in all_result.get('stocks', [])}
+    all_klines = fetch_klines_em(all_codes, days=12)
 
     def build_sector_heat_tf(days):
-        sec_agg = {}  # sec -> {flow, stocks[]}
+        sec_agg = {}
+        covered = 0
         for code in all_codes:
             sec = sector_map.get(code, '其他')
-            kl = all_dailies.get(code, [])
-            closes = [k['close'] for k in kl if k.get('close')]
+            kl = all_klines.get(code, [])
+            closes = [k['close'] for k in kl]
             if len(closes) < days + 1:
                 continue
+            covered += 1
             prev = closes[-days - 1]
             cur = closes[-1]
             chg = (cur - prev) / prev * 100 if prev else 0
             vols = [k.get('volume', 0) for k in kl[-days:]]
-            avg_vol = sum(vols) / len(vols) if vols else 0
+            avg_vol = sum(vols) / max(len(vols), 1)
             est_flow = round((avg_vol * cur * 0.3 / 1e8) * (1 if chg > 0 else -1) * min(abs(chg) / 5, 1), 1)
             if sec not in sec_agg:
                 sec_agg[sec] = {'flow': 0, 'stocks': []}
             sec_agg[sec]['flow'] += est_flow
             sec_agg[sec]['stocks'].append({'code': code, 'name': name_map.get(code, code), 'flow': est_flow, 'chg': round(chg, 2)})
 
+        # 如果K线数据不足（限速），fallback到1d数据
+        if covered < len(all_codes) // 2:
+            return heat_1d
+
         sector_list = []
         for sec, agg in sec_agg.items():
             total_flow = round(agg['flow'], 1)
             score = round(min(5, max(-5, total_flow / max(1, len(agg['stocks'])) * 2)), 1)
-            top3 = sorted([s for s in agg['stocks'] if s['flow'] > 0], key=lambda x: x['flow'], reverse=True)[:3]
+            stocks = agg['stocks']
+            top3 = sorted([s for s in stocks if s['flow'] > 0], key=lambda x: x['flow'], reverse=True)[:3]
+            outflow3 = sorted([s for s in stocks if s['flow'] < 0], key=lambda x: x['flow'])[:3]
             sector_list.append({'name': sec, 'score': score, 'flow': total_flow,
-                                'accum': 0, 'markup': 0, 'dist': 0, 'top3': top3})
+                                'accum': 0, 'markup': 0, 'dist': 0,
+                                'top3': top3, 'outflow3': outflow3})
         sector_list.sort(key=lambda x: x['score'], reverse=True)
         return sector_list
 
