@@ -74,6 +74,7 @@ sector_map = {
     '600990':'航天/军工','603950':'航天/军工','002126':'航天/军工','300777':'航天/军工','000099':'航天/军工','603009':'机器人/工控','002472':'机器人/工控','600990':'航天/军工','603950':'航天/军工','002126':'航天/军工',
 }
 sector_heat = {}
+_sector_stocks_cache = {}  # id(results) -> sh_stocks, for multi-day reuse
 
 def analyze_institutional(codes):
     quotes = fetch_sina_quotes(codes)
@@ -230,25 +231,33 @@ def analyze_institutional(codes):
     accum = sum(1 for r in results if r['phase']=='accumulation')
     markup = sum(1 for r in results if r['phase']=='markup')
 
-    # ── 主力建仓热力图 ──
-    # (sector_map moved to module level)
+    # ── 主力建仓热力图（1d，含 top3 公司）──
+    sh_map = {}   # sec -> aggregates
+    sh_stocks = {}  # sec -> list of {code, name, flow}
     for r in results:
         sec = sector_map.get(r['code'], '其他')
-        if sec not in sector_heat:
-            sector_heat[sec] = {'total':0,'accum':0,'markup':0,'dist':0,'buySignal':0,'flow':0}
-        sh = sector_heat[sec]; sh['total'] += 1
+        if sec not in sh_map:
+            sh_map[sec] = {'total':0,'accum':0,'markup':0,'dist':0,'buySignal':0,'flow':0}
+            sh_stocks[sec] = []
+        sh = sh_map[sec]; sh['total'] += 1
         if r['phase']=='accumulation': sh['accum']+=1
         if r['phase']=='markup': sh['markup']+=1
         if r['phase']=='distribution': sh['dist']+=1
         if r['buySignal']: sh['buySignal']+=1
-        sh['flow'] += r.get('amount',0)*(1 if r.get('changePct',0)>0 else -1)/1e8
+        est_flow = round(r.get('amount',0)*(1 if r.get('changePct',0)>0 else -1)/1e8, 1)
+        sh['flow'] += est_flow
+        sh_stocks[sec].append({'code':r['code'],'name':r['name'],'flow':est_flow})
 
     sector_list = []
-    for sec, sh in sector_heat.items():
+    for sec, sh in sh_map.items():
         score = round((sh['accum']*3+sh['markup']*2-sh['dist']*2+sh['buySignal']*2)/max(sh['total'],1),1)
+        top3 = sorted([s for s in sh_stocks[sec] if s['flow']>0], key=lambda x: x['flow'], reverse=True)[:3]
         sector_list.append({'name':sec,'total':sh['total'],'accum':sh['accum'],'markup':sh['markup'],
-                           'dist':sh['dist'],'buySignal':sh['buySignal'],'flow':round(sh['flow'],1),'score':score})
+                           'dist':sh['dist'],'buySignal':sh['buySignal'],'flow':round(sh['flow'],1),
+                           'score':score,'top3':top3})
     sector_list.sort(key=lambda x: x['score'], reverse=True)
+    # also expose per-sector stock list for multi-day computation
+    _sector_stocks_cache[id(results)] = sh_stocks
 
     return {'stocks':results, 'breadth':{'bullish':bull,'bearish':bear,'total':len(results),
             'distribution':dist,'accumulation':accum,'markup':markup},
@@ -444,9 +453,51 @@ def main():
     all_codes = list(sector_map.keys())
     all_result = analyze_institutional(all_codes) if set(all_codes) != set(codes) else result
 
-    # sectorHeat + breadth from full scan
-    result['sectorHeat'] = all_result.get('sectorHeat', result.get('sectorHeat',[]))
-    result['breadth'] = all_result.get('breadth', result.get('breadth',{}))
+    result['breadth'] = all_result.get('breadth', result.get('breadth', {}))
+
+    # ── 多周期 sectorHeat: 1d / 3d / 7d ──
+    heat_1d = all_result.get('sectorHeat', [])
+
+    # Fetch K-lines for 3d/7d computation (reuse if already fetched)
+    all_dailies = fetch_daily(all_codes, 10)
+
+    # Build name lookup from all_result
+    name_map = {s['code']: s['name'] for s in all_result.get('stocks', [])}
+
+    def build_sector_heat_tf(days):
+        sec_agg = {}  # sec -> {flow, stocks[]}
+        for code in all_codes:
+            sec = sector_map.get(code, '其他')
+            kl = all_dailies.get(code, [])
+            closes = [k['close'] for k in kl if k.get('close')]
+            if len(closes) < days + 1:
+                continue
+            prev = closes[-days - 1]
+            cur = closes[-1]
+            chg = (cur - prev) / prev * 100 if prev else 0
+            vols = [k.get('volume', 0) for k in kl[-days:]]
+            avg_vol = sum(vols) / len(vols) if vols else 0
+            est_flow = round((avg_vol * cur * 0.3 / 1e8) * (1 if chg > 0 else -1) * min(abs(chg) / 5, 1), 1)
+            if sec not in sec_agg:
+                sec_agg[sec] = {'flow': 0, 'stocks': []}
+            sec_agg[sec]['flow'] += est_flow
+            sec_agg[sec]['stocks'].append({'code': code, 'name': name_map.get(code, code), 'flow': est_flow, 'chg': round(chg, 2)})
+
+        sector_list = []
+        for sec, agg in sec_agg.items():
+            total_flow = round(agg['flow'], 1)
+            score = round(min(5, max(-5, total_flow / max(1, len(agg['stocks'])) * 2)), 1)
+            top3 = sorted([s for s in agg['stocks'] if s['flow'] > 0], key=lambda x: x['flow'], reverse=True)[:3]
+            sector_list.append({'name': sec, 'score': score, 'flow': total_flow,
+                                'accum': 0, 'markup': 0, 'dist': 0, 'top3': top3})
+        sector_list.sort(key=lambda x: x['score'], reverse=True)
+        return sector_list
+
+    result['sectorHeat'] = {
+        '1d': heat_1d,
+        '3d': build_sector_heat_tf(3),
+        '7d': build_sector_heat_tf(7),
+    }
 
     try: result['midcapGainers'] = fetch_midcap_gainers()
     except: result['midcapGainers'] = {}
