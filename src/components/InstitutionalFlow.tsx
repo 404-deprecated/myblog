@@ -15,7 +15,7 @@ interface StockFlow {
 interface SectorHeat { name:string;total:number;accum:number;markup:number;dist:number;buySignal:number;flow:number;score:number }
 interface TopStock { code:string;name:string;price:number;changePct:number;phase:string;phaseKey:string;buySignal:boolean;estFlow:number;moneyTypes:string[] }
 interface NorthBound { direction:string;amount:number;signal:string;isTrading:boolean }
-interface FlowData { stocks: StockFlow[]; breadth: { bullish:number;bearish:number;total:number;distribution:number;accumulation:number;markup:number }; sectorHeat?:SectorHeat[]; sectorTop3?:Record<string,{topInflow:TopStock[];topOutflow:TopStock[]}>; northBound?:NorthBound; moneyTypes?:Record<string,{desc:string;typical:string[];cap:string}>; updatedAt: string }
+interface FlowData { stocks: StockFlow[]; breadth: { bullish:number;bearish:number;total:number;distribution:number;accumulation:number;markup:number }; sectorHeat?:SectorHeat[]; sectorTop3?:Record<string,Record<string,{topInflow:TopStock[];topOutflow:TopStock[]}>>; northBound?:NorthBound; moneyTypes?:Record<string,{desc:string;typical:string[];cap:string}>; updatedAt: string }
 
 const DARK = { bg:'#0d1117',card:'#161b22',cardBorder:'#30363d',text:'#e6edf3',muted:'#8b949e',dim:'#484f58',input:'#0d1117',inputBorder:'#30363d' }
 
@@ -32,6 +32,8 @@ export default function InstitutionalFlow() {
   const [codes, setCodes] = useState(DEFAULT_CODES)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [filter, setFilter] = useState<string>('all')
+  const [timeframe, setTimeframe] = useState<string>('1d')
+  const [heatmapTf, setHeatmapTf] = useState<'1d'|'3d'|'1w'>('1d')
 
   const fetchData = useCallback(async (c: string) => {
     setLoading(true); setError(''); setData(null)
@@ -84,38 +86,102 @@ export default function InstitutionalFlow() {
       )}
 
       {/* 🏗️ 主力建仓热力图 */}
-      {data?.sectorHeat && data.sectorHeat.length > 0 && (
-        <div style={{ padding: '0.5rem 0.7rem', borderRadius: '8px', backgroundColor: DARK.card, border: `1px solid ${DARK.cardBorder}` }}>
-          <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#fbbf24', marginBottom: '0.4rem' }}>🏗️ 主力建仓热力图 — 按行业聚合</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            {data.sectorHeat.slice(0, 10).map(s => {
-              const isHot = s.score >= 3
-              const barColor = isHot ? '#f87171' : s.score >= 1 ? '#fbbf24' : '#4ade80'
-              return (
-                <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.55rem' }}>
-                  <span style={{ fontWeight: 600, color: DARK.text, minWidth: '70px' }}>{s.name}</span>
-                  <span style={{ flex: 1, height: '6px', borderRadius: '3px', backgroundColor: DARK.dim, overflow: 'hidden' }}>
-                    <span style={{ display: 'block', height: '100%', borderRadius: '3px', backgroundColor: barColor,
-                      width: `${Math.min(100, Math.max(5, (s.score+3)*12))}%`, transition: 'width 0.3s' }} />
-                  </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', color: barColor, fontWeight: 700, minWidth: '35px' }}>
-                    {s.score >= 0 ? '+' : ''}{s.score}
-                  </span>
-                  <span style={{ color: DARK.muted, fontSize: '0.48rem', minWidth: '80px' }}>
-                    {s.accum>0&&`🏗️${s.accum}只建仓 `}{s.markup>0&&`🚀${s.markup}只拉升 `}{s.dist>0&&`⚠️${s.dist}只出货`}
-                  </span>
-                  <span style={{ color: s.flow>=0?'#f87171':'#4ade80', fontFamily: 'var(--font-mono)', fontSize: '0.5rem', minWidth: '55px' }}>
-                    资金{s.flow>=0?'+':''}{s.flow}亿
-                  </span>
-                </div>
-              )
-            })}
+      {data && ((data.sectorHeat && data.sectorHeat.length > 0) || data.sectorTop3) && (() => {
+        // Build sector list for selected timeframe
+        const sectors: Array<{
+          name: string; score: number; flow: number
+          accum: number; markup: number; dist: number
+          top3: TopStock[]
+        }> = []
+
+        if (heatmapTf === '1d' && data.sectorHeat && data.sectorHeat.length > 0) {
+          data.sectorHeat.slice(0, 10).forEach(s => {
+            sectors.push({
+              name: s.name, score: s.score, flow: s.flow,
+              accum: s.accum, markup: s.markup, dist: s.dist,
+              top3: data.sectorTop3?.['1d']?.[s.name]?.topInflow ?? [],
+            })
+          })
+        } else {
+          const tfKey = heatmapTf
+          const top3Data = data.sectorTop3?.[tfKey] || {}
+          Object.entries(top3Data).forEach(([name, d]) => {
+            const inflow = d.topInflow.reduce((a, s) => a + s.estFlow, 0)
+            const outflow = d.topOutflow.reduce((a, s) => a + Math.abs(s.estFlow), 0)
+            const flow = Math.round((inflow - outflow) * 10) / 10
+            const score = Math.round(Math.min(5, Math.max(-5, flow / 3)) * 10) / 10
+            sectors.push({ name, score, flow, accum: 0, markup: 0, dist: 0, top3: d.topInflow })
+          })
+          sectors.sort((a, b) => b.flow - a.flow)
+          sectors.splice(10)
+        }
+
+        if (sectors.length === 0) return null
+        return (
+          <div style={{ padding: '0.5rem 0.7rem', borderRadius: '8px', backgroundColor: DARK.card, border: `1px solid ${DARK.cardBorder}` }}>
+            {/* Header + timeframe toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem', flexWrap: 'wrap', gap: '0.3rem' }}>
+              <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#fbbf24' }}>🏗️ 主力建仓热力图 — 按行业聚合</span>
+              <div style={{ display: 'flex', gap: '0.15rem' }}>
+                {([['1d','1天'],['3d','3天'],['1w','7天']] as const).map(([k, l]) => (
+                  <button key={k} onClick={() => setHeatmapTf(k)} style={{
+                    padding: '0.1rem 0.4rem', fontSize: '0.5rem', borderRadius: '8px', cursor: 'pointer',
+                    border: '1px solid', borderColor: heatmapTf === k ? '#fbbf24' : DARK.cardBorder,
+                    backgroundColor: heatmapTf === k ? '#fbbf2420' : 'transparent',
+                    color: heatmapTf === k ? '#fbbf24' : DARK.muted,
+                    fontWeight: heatmapTf === k ? 700 : 400,
+                  }}>{l}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sector rows */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              {sectors.map(s => {
+                const barColor = s.score >= 3 ? '#f87171' : s.score >= 1 ? '#fbbf24' : s.score >= 0 ? '#4ade80' : '#8b949e'
+                return (
+                  <div key={s.name}>
+                    {/* Bar row */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.55rem' }}>
+                      <span style={{ fontWeight: 600, color: DARK.text, minWidth: '70px' }}>{s.name}</span>
+                      <span style={{ flex: 1, height: '6px', borderRadius: '3px', backgroundColor: DARK.dim, overflow: 'hidden' }}>
+                        <span style={{ display: 'block', height: '100%', borderRadius: '3px', backgroundColor: barColor,
+                          width: `${Math.min(100, Math.max(5, (s.score + 3) * 12))}%`, transition: 'width 0.3s' }} />
+                      </span>
+                      <span style={{ fontFamily: 'var(--font-mono)', color: barColor, fontWeight: 700, minWidth: '35px' }}>
+                        {s.score >= 0 ? '+' : ''}{s.score}
+                      </span>
+                      {heatmapTf === '1d' && (
+                        <span style={{ color: DARK.muted, fontSize: '0.48rem', minWidth: '80px' }}>
+                          {s.accum > 0 && `🏗️${s.accum}只 `}{s.markup > 0 && `🚀${s.markup}只 `}{s.dist > 0 && `⚠️${s.dist}只`}
+                        </span>
+                      )}
+                      <span style={{ color: s.flow >= 0 ? '#f87171' : '#4ade80', fontFamily: 'var(--font-mono)', fontSize: '0.5rem', minWidth: '55px' }}>
+                        资金{s.flow >= 0 ? '+' : ''}{s.flow}亿
+                      </span>
+                    </div>
+                    {/* Top3 inflow companies */}
+                    {s.top3.length > 0 && (
+                      <div style={{ display: 'flex', gap: '0.4rem', paddingLeft: '74px', marginTop: '0.1rem', flexWrap: 'wrap' }}>
+                        {s.top3.slice(0, 3).map((t, i) => (
+                          <span key={t.code} style={{ fontSize: '0.46rem', color: DARK.muted, display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                            <span style={{ color: i === 0 ? '#fbbf24' : DARK.dim }}>#{i + 1}</span>
+                            <span style={{ color: DARK.text }}>{t.name.length > 4 ? t.name.slice(0, 4) : t.name}</span>
+                            <span style={{ fontFamily: 'var(--font-mono)', color: '#f87171' }}>+{t.estFlow}亿</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{ fontSize: '0.48rem', color: DARK.dim, marginTop: '0.4rem' }}>
+              {heatmapTf === '1d' ? '得分 = (建仓×3 + 拉升×2 - 出货×2 + 买入信号×2) ÷ 股票数' : '资金净流入 = 行业TOP3流入合计 − 流出合计'}
+            </div>
           </div>
-          <div style={{ fontSize: '0.48rem', color: DARK.dim, marginTop: '0.35rem' }}>
-            得分 = (建仓×3 + 拉升×2 - 出货×2 + 买入信号×2) ÷ 股票数
-          </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* 北向资金 + 资金类型 */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
@@ -157,9 +223,23 @@ export default function InstitutionalFlow() {
       {/* 各行业 TOP3 流入/流出 */}
       {data?.sectorTop3 && (
         <div style={{ padding: '0.5rem 0.7rem', borderRadius: '8px', backgroundColor: DARK.card, border: `1px solid ${DARK.cardBorder}` }}>
-          <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#f87171', marginBottom: '0.4rem' }}>📊 各行业资金流入/流出 TOP3</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.3rem' }}>
+            <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#f87171' }}>📊 各行业资金流入/流出 TOP3</span>
+            <div style={{ display: 'flex', gap: '0.15rem' }}>
+              {[
+                {k:'1d',l:'1天'},{k:'3d',l:'3天'},{k:'1w',l:'1周'},{k:'2w',l:'2周'},
+              ].map(tf => (
+                <button key={tf.k} onClick={() => setTimeframe(tf.k)} style={{
+                  padding: '0.1rem 0.4rem', fontSize: '0.5rem', borderRadius: '8px', cursor: 'pointer',
+                  border: '1px solid', borderColor: timeframe===tf.k ? '#f87171' : DARK.cardBorder,
+                  backgroundColor: timeframe===tf.k ? '#f8717120' : 'transparent',
+                  color: timeframe===tf.k ? '#f87171' : DARK.muted, fontWeight: timeframe===tf.k?700:400,
+                }}>{tf.l}</button>
+              ))}
+            </div>
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '0.4rem' }}>
-            {Object.entries(data.sectorTop3).slice(0, 8).map(([sec, top3]) => (
+            {Object.entries(data.sectorTop3[timeframe] || data.sectorTop3['1d'] || {}).slice(0, 8).map(([sec, top3]) => (
               <div key={sec} style={{ padding: '0.3rem 0.4rem', borderRadius: '6px', backgroundColor: DARK.bg, border: `1px solid ${DARK.cardBorder}` }}>
                 <div style={{ fontSize: '0.55rem', fontWeight: 700, color: DARK.text, marginBottom: '0.2rem' }}>{sec}</div>
                 {/* Top inflow — only if there are positive flows */}
