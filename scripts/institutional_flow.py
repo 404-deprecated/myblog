@@ -84,54 +84,43 @@ def analyze_institutional(codes):
         q = quotes.get(code)
         if not q: continue
         kl = dailies.get(code, [])
-        if len(kl) < 10: continue
+        has_daily = len(kl) >= 10
 
         price = q['price']; preclose = q['preClose']
         pct = (price-preclose)/preclose*100 if preclose>0 else 0
         high=q['high']; low=q['low']; vol=q['volume']; amt=q['amount']
 
-        closes = [k['close'] for k in kl]
-        volumes = [k['volume'] for k in kl]
-        highs = [k['high'] for k in kl]; lows = [k['low'] for k in kl]
-        n = len(closes)
+        if has_daily:
+            closes = [k['close'] for k in kl]
+            volumes = [k['volume'] for k in kl]
+            highs = [k['high'] for k in kl]; lows = [k['low'] for k in kl]
+            n = len(closes)
+            ma5 = sum(closes[-5:])/5; ma20 = sum(closes[-20:])/20 if n>=20 else ma5
+            ma60 = sum(closes[-60:])/60 if n>=60 else None
+            vol5 = sum(volumes[-6:-1])/5 if n>=6 else vol
+            vol_ratio = vol/vol5 if vol5>0 else 1
+            vol_6m_low = min(volumes); is_volume_low = vol <= vol_6m_low * 1.1
+            price_1m_high = max(highs[-20:]) if n>=20 else high
+            price_1m_low = min(lows[-20:]) if n>=20 else low
+            e12=e26=closes[0]; difs=[]
+            for p in closes: e12=p*2/13+e12*11/13; e26=p*2/27+e26*25/27; difs.append(e12-e26)
+            dea=difs[0]
+            for d in difs: dea=d*2/10+dea*8/10
+            macd_signal = 'golden' if difs[-1]>dea else 'dead'
+            g=sum(max(closes[i]-closes[i-1],0) for i in range(n-14,n))
+            l=sum(max(closes[i-1]-closes[i],0) for i in range(n-14,n))
+            rsi14 = 100-100/(1+g/l) if l>0 else 100
+            trend_up = price > ma5 > ma20
+            trend_down = price < ma5 < ma20
+        else:
+            ma5=ma20=price; ma60=None; vol_ratio=1.0
+            is_volume_low=False; price_1m_high=high; price_1m_low=low
+            macd_signal='unknown'; rsi14=50
+            trend_up=price>preclose; trend_down=price<preclose
 
-        # Basic indicators
-        ma5 = sum(closes[-5:])/5; ma20 = sum(closes[-20:])/20 if n>=20 else ma5
-        ma60 = sum(closes[-60:])/60 if n>=60 else None
-        vol5 = sum(volumes[-6:-1])/5 if n>=6 else vol
-        vol_ratio = vol/vol5 if vol5>0 else 1
-
-        # 换手率估算
         turnover_est = vol / 100 if vol > 0 else 0
-
-        # 6-month volume low
-        vol_6m_low = min(volumes)
-        is_volume_low = vol <= vol_6m_low * 1.1
-
-        # 1-month price high
-        price_1m_high = max(highs[-20:]) if n >= 20 else high
-        price_1m_low = min(lows[-20:]) if n >= 20 else low
-
-        # Upper/lower shadows
         upper_shadow = (high-max(price, q['open']))/price*100 if price>0 else 0
         lower_shadow = (min(price, q['open'])-low)/price*100 if price>0 else 0
-
-        # MACD
-        e12=e26=closes[0]; difs=[]
-        for p in closes: e12=p*2/13+e12*11/13; e26=p*2/27+e26*25/27; difs.append(e12-e26)
-        dea=difs[0]
-        for d in difs: dea=d*2/10+dea*8/10
-        macd_hist = (difs[-1]-dea)*2
-        macd_signal = 'golden' if difs[-1]>dea else 'dead'
-
-        # RSI 14
-        g=sum(max(closes[i]-closes[i-1],0) for i in range(n-14,n))
-        l=sum(max(closes[i-1]-closes[i],0) for i in range(n-14,n))
-        rsi14 = 100-100/(1+g/l) if l>0 else 100
-
-        # Trend
-        trend_up = price > ma5 > ma20
-        trend_down = price < ma5 < ma20
 
         # ─── Signals ───
         signals = []
@@ -144,43 +133,37 @@ def analyze_institutional(codes):
             signals.append({'type':'bearish','text':'⚠️ 放量滞涨 — 主力高位出货，散户接盘'})
             if phase!='distribution': phase='distribution'
 
-        # 缩量横盘不破低位 (建仓信号)
-        price_range_5d = (max(highs[-5:])-min(lows[-5:]))/min(lows[-5:])*100 if min(lows[-5:])>0 else 100
-        if vol_ratio < 0.8 and price_range_5d < 3 and price > price_1m_low * 1.02:
-            signals.append({'type':'bullish','text':'💡 缩量横盘不破低位 — 主力低价吸筹，筹码锁定'})
-            if phase=='neutral': phase='accumulation'
-
-        # 地量
-        if is_volume_low and price > price_1m_low * 1.01:
-            signals.append({'type':'bullish','text':'📊 地量出现 — 筹码高度集中，即将启动'})
-
-        # 低位长下影线放量
-        if lower_shadow > 2 and vol_ratio > 1.2 and price < price_1m_high * 0.9:
-            signals.append({'type':'bullish','text':'🔨 低位长下影线+放量 — 主力在下方大量承接'})
-
-        # 高位长上影线 (出货)
-        if upper_shadow > 2 and price > price_1m_low * 1.15:
-            signals.append({'type':'bearish','text':'📌 高位长上影线 — 盘中冲高被抛压压回，主力借高点出货'})
-            if phase!='distribution': phase='distribution'
-
-        # 量价背离
-        if price > price_1m_high * 0.95 and vol_ratio < 0.8:
-            signals.append({'type':'bearish','text':'⚠️ 量价背离 — 股价近高但量能萎缩，买入动能减弱'})
-
-        # 高位连续阴线不缩量
-        recent_days = [(closes[i]-closes[i-1])/closes[i-1]*100 for i in range(n-3,n)]
-        if all(d<0 for d in recent_days) and vol_ratio > 0.8 and price > price_1m_low * 1.1:
-            signals.append({'type':'bearish','text':'📉 高位连续阴线+量不缩 — 主力持续出货，趋势已逆转'})
-
-        # 放量大阳突破
-        if pct > 3 and vol_ratio > 1.5 and price > ma20:
-            signals.append({'type':'bullish','text':'🚀 放量大阳突破均线 — 主力拉升启动'})
-            phase = 'markup'
-
-        # 缩量回调至均线 (洗盘)
-        if -3 < pct < 0 and vol_ratio < 0.8 and price > ma20:
-            signals.append({'type':'bullish','text':'🔄 缩量回调至均线 — 洗盘，清除获利盘'})
-            if phase=='markup': phase='shakeout'
+        if has_daily:
+            # 缩量横盘不破低位 (建仓信号)
+            price_range_5d = (max(highs[-5:])-min(lows[-5:]))/min(lows[-5:])*100 if min(lows[-5:])>0 else 100
+            if vol_ratio < 0.8 and price_range_5d < 3 and price > price_1m_low * 1.02:
+                signals.append({'type':'bullish','text':'💡 缩量横盘不破低位 — 主力低价吸筹，筹码锁定'})
+                if phase=='neutral': phase='accumulation'
+            # 地量
+            if is_volume_low and price > price_1m_low * 1.01:
+                signals.append({'type':'bullish','text':'📊 地量出现 — 筹码高度集中，即将启动'})
+            # 低位长下影线放量
+            if lower_shadow > 2 and vol_ratio > 1.2 and price < price_1m_high * 0.9:
+                signals.append({'type':'bullish','text':'🔨 低位长下影线+放量 — 主力在下方大量承接'})
+            # 高位长上影线 (出货)
+            if upper_shadow > 2 and price > price_1m_low * 1.15:
+                signals.append({'type':'bearish','text':'📌 高位长上影线 — 盘中冲高被抛压压回，主力借高点出货'})
+                if phase!='distribution': phase='distribution'
+            # 量价背离
+            if price > price_1m_high * 0.95 and vol_ratio < 0.8:
+                signals.append({'type':'bearish','text':'⚠️ 量价背离 — 股价近高但量能萎缩，买入动能减弱'})
+            # 高位连续阴线不缩量
+            recent_days = [(closes[i]-closes[i-1])/closes[i-1]*100 for i in range(n-3,n)]
+            if all(d<0 for d in recent_days) and vol_ratio > 0.8 and price > price_1m_low * 1.1:
+                signals.append({'type':'bearish','text':'📉 高位连续阴线+量不缩 — 主力持续出货，趋势已逆转'})
+            # 放量大阳突破
+            if pct > 3 and vol_ratio > 1.5 and price > ma20:
+                signals.append({'type':'bullish','text':'🚀 放量大阳突破均线 — 主力拉升启动'})
+                phase = 'markup'
+            # 缩量回调至均线 (洗盘)
+            if -3 < pct < 0 and vol_ratio < 0.8 and price > ma20:
+                signals.append({'type':'bullish','text':'🔄 缩量回调至均线 — 洗盘，清除获利盘'})
+                if phase=='markup': phase='shakeout'
 
         # 换手率判断
         if turnover_est > 20:
@@ -197,12 +180,12 @@ def analyze_institutional(codes):
         if vol_ratio > 3:
             if pct > 0: signals.append({'type':'bullish','text':f'量比{vol_ratio:.1f}极度放量+上涨=强势突破'})
             else: signals.append({'type':'bearish','text':f'量比{vol_ratio:.1f}极度放量+下跌=恐慌出逃'})
-        elif vol_ratio < 0.5:
+        elif vol_ratio < 0.5 and has_daily:
             if price > price_1m_low * 1.05:
                 signals.append({'type':'bullish','text':'量比<0.5地量 — 主力完成控盘即将拉升'})
 
         # MACD顶背离检查
-        if n >= 30 and price > price_1m_high * 0.95 and macd_signal == 'dead':
+        if has_daily and n >= 30 and price > price_1m_high * 0.95 and macd_signal == 'dead':
             warnings.append('股价近高但MACD死叉 — 顶背离预警')
 
         # Phase determination
@@ -324,9 +307,134 @@ def classify_money_type(code):
     return ['公募/私募']
 
 
+# ─── 中小盘涨幅榜 100亿-1000亿 ────────────────────────────────────────────
+INDUSTRY_DESC = {
+    '银行': '银行存贷款及金融服务，受益于利差扩张与信贷增长',
+    '证券': '证券经纪、投行及自营业务，与市场交投活跃度高度相关',
+    '保险': '寿险/财险承保与投资，受利率环境和赔付率影响',
+    '房地产': '住宅开发与物业管理，关注销售回款与融资成本',
+    '建筑材料': '水泥、玻璃、石材等基建上游，受地产与基建投资拉动',
+    '建筑装饰': '基础设施施工与室内装修，受政府投资周期驱动',
+    '钢铁': '碳钢/特钢冶炼，关注铁矿石价格与下游需求',
+    '有色金属': '铜铝锂等金属采选冶炼，受大宗商品价格与新能源需求影响',
+    '化工': '基础化学品与精细化工，原料价格与下游景气共同决定盈利',
+    '采掘': '煤炭石油天然气开采，能源价格敏感型',
+    '电气设备': '输配电设备与工控系统，受电网投资与工业自动化拉动',
+    '机械设备': '通用/专用机械制造，工业景气与出口订单是核心驱动',
+    '国防军工': '航空航天、军船、军电子等，受国防预算与装备换代驱动',
+    '汽车': '整车与零部件，关注新能源渗透率与出口竞争力',
+    '家用电器': '白电黑电小家电，内需消费与出口双轮驱动',
+    '轻工制造': '家具造纸印刷等，受地产后周期与出口影响',
+    '纺织服装': '服装鞋帽家纺，品牌溢价与原材料成本是关键',
+    '农林牧渔': '种植养殖及农资，受猪周期与粮价波动驱动',
+    '食品饮料': '白酒、食品、调味品，消费升级与渠道变革是主线',
+    '商业贸易': '零售、批发、电商，受社会消费品零售总额驱动',
+    '休闲服务': '酒店旅游影视，出行恢复与消费意愿是核心逻辑',
+    '医药生物': '创新药、仿制药、器械、CXO，受医保政策与研发管线影响',
+    '电子': '半导体、消费电子、面板，AI/手机/汽车电子是增长主驱动',
+    '计算机': '软件、IT服务、云计算，政策支持与数字化转型是主线',
+    '通信': '运营商、设备商、光通信，5G/算力网络建设驱动增长',
+    '传媒': '游戏、广告、影视，AI内容与出海是当前核心题材',
+    '公用事业': '电力、水务、燃气，受监管定价与能源转型影响',
+    '交通运输': '航运、铁路、机场，货量与运价是核心变量',
+    '综合': '多元化业务集团，估值折价常见',
+}
+
+def fetch_midcap_gainers():
+    """获取市值100亿-1000亿 A股涨幅TOP20，含1d/3d/7d三个周期"""
+    # 获取A股全量行情（取前500，按1日涨幅降序）
+    try:
+        r = req('https://push2.eastmoney.com/api/qt/clist/get', {
+            'pn': 1, 'pz': 500, 'po': 1, 'np': 1,
+            'ut': 'bd1d9ddb04089700cf9c27f6f7426281',
+            'fltt': 2, 'invt': 2, 'fid': 'f3',
+            'fs': 'm:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23',
+            'fields': 'f2,f3,f5,f6,f8,f9,f12,f14,f20,f44,f45,f100,f128',
+        })
+        raw = r.json().get('data', {}).get('diff', []) or []
+    except:
+        return {}
+
+    # 过滤市值 100亿-1000亿
+    LOWER, UPPER = 10_000_000_000, 100_000_000_000
+    candidates = []
+    for s in raw:
+        cap = s.get('f20') or 0
+        if not (LOWER <= cap <= UPPER):
+            continue
+        chg1d = s.get('f3') or 0
+        if chg1d <= 0:
+            continue
+        industry = s.get('f100') or s.get('f128') or s.get('f44') or '其他'
+        candidates.append({
+            'code': str(s.get('f12', '')).zfill(6),
+            'name': s.get('f14', ''),
+            'price': round(s.get('f2') or 0, 2),
+            'chg1d': round(chg1d, 2),
+            'chg3d': None,
+            'chg7d': None,
+            'marketCapB': round(cap / 1e8, 1),
+            'industry': industry,
+            'desc': INDUSTRY_DESC.get(industry, f'{industry}行业上市公司'),
+            'turnover': round(s.get('f8') or 0, 2),
+            'pe': round(s.get('f9') or 0, 1),
+        })
+
+    # 按1d涨幅取前60作为候选，抓日K补充3d/7d
+    candidates.sort(key=lambda x: x['chg1d'], reverse=True)
+    pool = candidates[:60]
+
+    for c in pool:
+        code = c['code']
+        try:
+            prefix = 'sh' if code.startswith('6') else 'sz'
+            r2 = req(
+                f'https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/'
+                f'CN_MarketData.getKLineData?symbol={prefix}{code}&scale=240&ma=no&datalen=12',
+                referer='https://finance.sina.com.cn'
+            )
+            kl = [float(k.get('close', 0)) for k in json.loads(r2.text) if k.get('close')]
+            if len(kl) >= 4:
+                c['chg3d'] = round((kl[-1] - kl[-4]) / kl[-4] * 100, 2) if kl[-4] else None
+            if len(kl) >= 8:
+                c['chg7d'] = round((kl[-1] - kl[-8]) / kl[-8] * 100, 2) if kl[-8] else None
+        except:
+            pass
+        time.sleep(0.12)
+
+    result = {}
+    for tf, key in [('1d', 'chg1d'), ('3d', 'chg3d'), ('7d', 'chg7d')]:
+        valid = [c for c in pool if c.get(key) is not None]
+        valid.sort(key=lambda x: x[key], reverse=True)
+        result[tf] = valid[:20]
+    return result
+
+
+CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.institutional_cache.json')
+
 def main():
     codes = sys.argv[1].split(',') if len(sys.argv)>1 else ['000725','600036']
     result = analyze_institutional(codes)
+
+    # If live data empty, try cache
+    if not result.get('stocks'):
+        try:
+            with open(CACHE_FILE) as f:
+                cached = json.load(f)
+            # Update only the timestamp, keep cached data
+            result = cached
+            result['updatedAt'] = time.strftime('%Y-%m-%d %H:%M:%S') + ' (缓存)'
+            result['fromCache'] = True
+        except:
+            pass
+
+    # Save to cache if we got live data
+    if result.get('stocks') and not result.get('fromCache'):
+        try:
+            with open(CACHE_FILE, 'w') as f:
+                json.dump(result, f)
+        except:
+            pass
     # Add north-bound + money types
     try: result['northBound'] = fetch_north_bound()
     except: result['northBound'] = {'direction':'未知','amount':0,'recent':[],'signal':'❌'}
@@ -340,24 +448,8 @@ def main():
     result['sectorHeat'] = all_result.get('sectorHeat', result.get('sectorHeat',[]))
     result['breadth'] = all_result.get('breadth', result.get('breadth',{}))
 
-    # sectorTop3 from full scan
-    sector_top3 = {}
-    for r in all_result.get('stocks',[]):
-        sec = sector_map.get(r['code'],'其他')
-        if sec not in sector_top3: sector_top3[sec] = []
-        sector_top3[sec].append({
-            'code':r['code'],'name':r['name'],'price':r['price'],
-            'changePct':r['changePct'],'phase':r['phaseLabel'],
-            'phaseKey':r['phase'],'buySignal':r['buySignal'],
-            'estFlow':round(r.get('amount',0)*(1 if r.get('changePct',0)>0 else -1)/1e8,1),
-            'moneyTypes':classify_money_type(r['code']),
-        })
-    for sec in sector_top3:
-        stocks = sector_top3[sec]
-        inflow = sorted([s for s in stocks if s['estFlow'] > 0], key=lambda x: x['estFlow'], reverse=True)
-        outflow = sorted([s for s in stocks if s['estFlow'] < 0], key=lambda x: x['estFlow'])
-        sector_top3[sec] = {'topInflow': inflow[:3], 'topOutflow': outflow[:3]}
-    result['sectorTop3'] = sector_top3
+    try: result['midcapGainers'] = fetch_midcap_gainers()
+    except: result['midcapGainers'] = {}
     print(json.dumps(result, ensure_ascii=False))
 
 if __name__=='__main__': main()

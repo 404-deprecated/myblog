@@ -14,8 +14,9 @@ interface StockFlow {
 }
 interface SectorHeat { name:string;total:number;accum:number;markup:number;dist:number;buySignal:number;flow:number;score:number }
 interface TopStock { code:string;name:string;price:number;changePct:number;phase:string;phaseKey:string;buySignal:boolean;estFlow:number;moneyTypes:string[] }
+interface MidcapStock { code:string;name:string;price:number;chg1d:number;chg3d:number|null;chg7d:number|null;marketCapB:number;industry:string;desc:string;turnover:number;pe:number }
 interface NorthBound { direction:string;amount:number;signal:string;isTrading:boolean }
-interface FlowData { stocks: StockFlow[]; breadth: { bullish:number;bearish:number;total:number;distribution:number;accumulation:number;markup:number }; sectorHeat?:SectorHeat[]; sectorTop3?:Record<string,Record<string,{topInflow:TopStock[];topOutflow:TopStock[]}>>; northBound?:NorthBound; moneyTypes?:Record<string,{desc:string;typical:string[];cap:string}>; updatedAt: string }
+interface FlowData { stocks: StockFlow[]; breadth: { bullish:number;bearish:number;total:number;distribution:number;accumulation:number;markup:number }; sectorHeat?:SectorHeat[]; sectorTop3?:Record<string,Record<string,{topInflow:TopStock[];topOutflow:TopStock[]}>>; midcapGainers?:Record<string,MidcapStock[]>; northBound?:NorthBound; moneyTypes?:Record<string,{desc:string;typical:string[];cap:string}>; updatedAt: string }
 
 const DARK = { bg:'#0d1117',card:'#161b22',cardBorder:'#30363d',text:'#e6edf3',muted:'#8b949e',dim:'#484f58',input:'#0d1117',inputBorder:'#30363d' }
 
@@ -32,8 +33,8 @@ export default function InstitutionalFlow() {
   const [codes, setCodes] = useState(DEFAULT_CODES)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [filter, setFilter] = useState<string>('all')
-  const [timeframe, setTimeframe] = useState<string>('1d')
   const [heatmapTf, setHeatmapTf] = useState<'1d'|'3d'|'1w'>('1d')
+  const [midcapTf, setMidcapTf] = useState<'1d'|'3d'|'7d'>('1d')
 
   const fetchData = useCallback(async (c: string) => {
     setLoading(true); setError(''); setData(null)
@@ -220,62 +221,83 @@ export default function InstitutionalFlow() {
         )}
       </div>
 
-      {/* 各行业 TOP3 流入/流出 */}
-      {data?.sectorTop3 && (
+      {/* 🚀 中小盘涨幅榜 100亿-1000亿 */}
+      {data?.midcapGainers && (
         <div style={{ padding: '0.5rem 0.7rem', borderRadius: '8px', backgroundColor: DARK.card, border: `1px solid ${DARK.cardBorder}` }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.3rem' }}>
-            <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#f87171' }}>📊 各行业资金流入/流出 TOP3</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.3rem' }}>
+            <div>
+              <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#a78bfa' }}>🚀 中小盘涨幅榜</span>
+              <span style={{ fontSize: '0.5rem', color: DARK.muted, marginLeft: '0.4rem' }}>市值 100亿–1000亿 · TOP 20</span>
+            </div>
             <div style={{ display: 'flex', gap: '0.15rem' }}>
-              {[
-                {k:'1d',l:'1天'},{k:'3d',l:'3天'},{k:'1w',l:'1周'},{k:'2w',l:'2周'},
-              ].map(tf => (
-                <button key={tf.k} onClick={() => setTimeframe(tf.k)} style={{
+              {([['1d','1天'],['3d','3天'],['7d','7天']] as const).map(([k, l]) => (
+                <button key={k} onClick={() => setMidcapTf(k)} style={{
                   padding: '0.1rem 0.4rem', fontSize: '0.5rem', borderRadius: '8px', cursor: 'pointer',
-                  border: '1px solid', borderColor: timeframe===tf.k ? '#f87171' : DARK.cardBorder,
-                  backgroundColor: timeframe===tf.k ? '#f8717120' : 'transparent',
-                  color: timeframe===tf.k ? '#f87171' : DARK.muted, fontWeight: timeframe===tf.k?700:400,
-                }}>{tf.l}</button>
+                  border: '1px solid', borderColor: midcapTf === k ? '#a78bfa' : DARK.cardBorder,
+                  backgroundColor: midcapTf === k ? '#a78bfa20' : 'transparent',
+                  color: midcapTf === k ? '#a78bfa' : DARK.muted, fontWeight: midcapTf === k ? 700 : 400,
+                }}>{l}</button>
               ))}
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '0.4rem' }}>
-            {Object.entries(data.sectorTop3[timeframe] || data.sectorTop3['1d'] || {}).slice(0, 8).map(([sec, top3]) => (
-              <div key={sec} style={{ padding: '0.3rem 0.4rem', borderRadius: '6px', backgroundColor: DARK.bg, border: `1px solid ${DARK.cardBorder}` }}>
-                <div style={{ fontSize: '0.55rem', fontWeight: 700, color: DARK.text, marginBottom: '0.2rem' }}>{sec}</div>
-                {/* Top inflow — only if there are positive flows */}
-                {top3.topInflow.length > 0 && (
-                  <div style={{ marginBottom: '0.15rem' }}>
-                    <span style={{ fontSize: '0.48rem', color: '#f87171' }}>🟢 流入TOP{Math.min(3,top3.topInflow.length)}:</span>
-                    {top3.topInflow.map((s,i) => (
-                      <div key={i} style={{ fontSize: '0.5rem', color: DARK.text, paddingLeft: '0.5rem', display:'flex',gap:'0.3rem',alignItems:'center' }}>
-                        <span style={{fontFamily:'var(--font-mono)',color:DARK.dim}}>{s.code}</span>
-                        <span>{s.name.length>5?s.name.slice(0,5)+'…':s.name}</span>
-                        <span style={{fontFamily:'var(--font-mono)',color:'#f87171',fontWeight:600}}>+{s.estFlow}亿</span>
-                        <span style={{fontSize:'0.45rem',color:DARK.muted}}>{s.phase.slice(0,4)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {/* Top outflow — only if there are negative flows */}
-                {top3.topOutflow.length > 0 && (
-                  <div>
-                    <span style={{ fontSize: '0.48rem', color: '#4ade80' }}>🔴 流出TOP{Math.min(3,top3.topOutflow.length)}:</span>
-                    {top3.topOutflow.map((s,i) => (
-                      <div key={i} style={{ fontSize: '0.5rem', color: DARK.text, paddingLeft: '0.5rem', display:'flex',gap:'0.3rem',alignItems:'center' }}>
-                        <span style={{fontFamily:'var(--font-mono)',color:DARK.dim}}>{s.code}</span>
-                        <span>{s.name.length>5?s.name.slice(0,5)+'…':s.name}</span>
-                        <span style={{fontFamily:'var(--font-mono)',color:'#4ade80',fontWeight:600}}>{s.estFlow}亿</span>
-                        <span style={{fontSize:'0.45rem',color:DARK.muted}}>{s.phase.slice(0,4)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {top3.topInflow.length === 0 && top3.topOutflow.length === 0 && (
-                  <span style={{ fontSize: '0.5rem', color: DARK.muted }}>暂无数据</span>
-                )}
-              </div>
-            ))}
+
+          {/* Table header */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2rem 1fr 3.5rem 3.5rem 4rem 3rem', gap: '0.3rem', padding: '0.2rem 0.35rem', fontSize: '0.46rem', color: DARK.dim, borderBottom: `1px solid ${DARK.cardBorder}`, marginBottom: '0.15rem' }}>
+            <span>#</span><span>公司 / 行业 / 介绍</span><span style={{textAlign:'right'}}>涨幅</span><span style={{textAlign:'right'}}>市值</span><span style={{textAlign:'right'}}>换手/PE</span><span style={{textAlign:'right'}}>价格</span>
           </div>
+
+          {(data.midcapGainers[midcapTf] || []).map((s, i) => {
+            const chg = midcapTf === '1d' ? s.chg1d : midcapTf === '3d' ? s.chg3d : s.chg7d
+            const chgVal = chg ?? s.chg1d
+            const intensity = Math.min(1, Math.abs(chgVal) / 10)
+            const rowBg = chgVal >= 7 ? `rgba(248,113,113,${0.06 + intensity * 0.08})` : chgVal >= 3 ? `rgba(251,191,36,${0.04})` : 'transparent'
+            return (
+              <div key={s.code} style={{ display: 'grid', gridTemplateColumns: '1.2rem 1fr 3.5rem 3.5rem 4rem 3rem', gap: '0.3rem', padding: '0.28rem 0.35rem', borderRadius: '4px', backgroundColor: rowBg, alignItems: 'start' }}>
+                {/* Rank */}
+                <span style={{ fontSize: '0.48rem', fontWeight: 700, color: i < 3 ? '#fbbf24' : DARK.dim, paddingTop: '0.1rem' }}>{i + 1}</span>
+
+                {/* Name + industry + desc */}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.56rem', fontWeight: 700, color: DARK.text }}>{s.name}</span>
+                    <span style={{ fontSize: '0.42rem', fontFamily: 'var(--font-mono)', color: DARK.dim }}>{s.code}</span>
+                    <span style={{ fontSize: '0.42rem', padding: '0.05rem 0.25rem', borderRadius: '3px', backgroundColor: '#a78bfa15', color: '#a78bfa', border: '1px solid #a78bfa30' }}>{s.industry}</span>
+                  </div>
+                  <div style={{ fontSize: '0.46rem', color: DARK.muted, marginTop: '0.1rem', lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.desc}</div>
+                </div>
+
+                {/* Change */}
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.6rem', fontWeight: 800, fontFamily: 'var(--font-mono)', color: chgVal >= 0 ? '#f87171' : '#4ade80' }}>
+                    {chgVal >= 0 ? '+' : ''}{chgVal.toFixed(2)}%
+                  </div>
+                  {midcapTf !== '1d' && s.chg1d != null && (
+                    <div style={{ fontSize: '0.42rem', color: DARK.muted, fontFamily: 'var(--font-mono)' }}>1d:{s.chg1d >= 0 ? '+' : ''}{s.chg1d.toFixed(1)}%</div>
+                  )}
+                </div>
+
+                {/* Market cap */}
+                <div style={{ textAlign: 'right', fontSize: '0.5rem', color: DARK.muted, fontFamily: 'var(--font-mono)' }}>
+                  <div style={{ color: DARK.text }}>{s.marketCapB}亿</div>
+                </div>
+
+                {/* Turnover + PE */}
+                <div style={{ textAlign: 'right', fontSize: '0.46rem', color: DARK.muted, fontFamily: 'var(--font-mono)' }}>
+                  <div>换手 {s.turnover}%</div>
+                  {s.pe > 0 && <div>PE {s.pe}x</div>}
+                </div>
+
+                {/* Price */}
+                <div style={{ textAlign: 'right', fontSize: '0.52rem', fontFamily: 'var(--font-mono)', color: DARK.text }}>
+                  ¥{s.price.toFixed(2)}
+                </div>
+              </div>
+            )
+          })}
+
+          {(!data.midcapGainers[midcapTf] || data.midcapGainers[midcapTf].length === 0) && (
+            <div style={{ textAlign: 'center', padding: '1rem', color: DARK.muted, fontSize: '0.55rem' }}>暂无数据，请重新扫描</div>
+          )}
         </div>
       )}
 
