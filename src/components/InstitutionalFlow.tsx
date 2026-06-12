@@ -20,6 +20,19 @@ interface FlowData { stocks: StockFlow[]; breadth: { bullish:number;bearish:numb
 
 const DARK = { bg:'#0d1117',card:'#161b22',cardBorder:'#30363d',text:'#e6edf3',muted:'#8b949e',dim:'#484f58',input:'#0d1117',inputBorder:'#30363d' }
 
+interface BoardInfo { label: string; restricted: boolean; reason: string; color: string; bg: string }
+function getBoardInfo(code: string): BoardInfo {
+  if (code.startsWith('688'))
+    return { label: '科创板', restricted: true, reason: '需开通科创板权限（50万资产+2年经验）', color: '#f59e0b', bg: '#f59e0b18' }
+  if (code.startsWith('300') || code.startsWith('301'))
+    return { label: '创业板', restricted: true, reason: '需开通创业板权限（10万资产+2年经验）', color: '#f87171', bg: '#f8717118' }
+  if (code.startsWith('83') || code.startsWith('87') || code.startsWith('43'))
+    return { label: '北交所', restricted: true, reason: '需单独开通北交所权限', color: '#a78bfa', bg: '#a78bfa18' }
+  if (code.startsWith('6'))
+    return { label: '沪主板', restricted: false, reason: '', color: '#4ade80', bg: '#4ade8012' }
+  return { label: '深主板', restricted: false, reason: '', color: '#4ade80', bg: '#4ade8012' }
+}
+
 const PHASE_COLORS: Record<string,string> = {
   accumulation:'#4ade80',markup:'#f87171',shakeout:'#fbbf24',distribution:'#ef4444',neutral:'#8b949e',
 }
@@ -141,34 +154,41 @@ export default function InstitutionalFlow() {
                       {s.top3 && s.top3.length > 0 && (
                         <div style={{ display: 'flex', gap: '0.35rem', paddingLeft: '76px', marginTop: '0.12rem', flexWrap: 'wrap', alignItems: 'center' }}>
                           <span style={{ fontSize: '0.44rem', color: '#f87171', marginRight: '0.1rem' }}>▲流入</span>
-                          {s.top3.map((t, i) => (
-                            <span key={t.code} style={{ fontSize: '0.46rem', display: 'flex', alignItems: 'center', gap: '0.18rem',
-                              padding: '0.05rem 0.28rem', borderRadius: '3px',
-                              backgroundColor: i === 0 ? '#f8717115' : '#ffffff06',
-                              border: `1px solid ${i === 0 ? '#f8717140' : DARK.cardBorder}` }}>
-                              <span style={{ color: i === 0 ? '#fbbf24' : DARK.dim, fontWeight: 700 }}>#{i + 1}</span>
-                              <span style={{ color: DARK.text }}>{t.name}</span>
-                              <span style={{ fontFamily: 'var(--font-mono)', color: '#f87171', fontWeight: 600 }}>+{t.flow}亿</span>
-                              {t.chg != null && <span style={{ fontFamily: 'var(--font-mono)', color: '#f87171', fontSize: '0.42rem' }}>{t.chg >= 0 ? '+' : ''}{t.chg}%</span>}
-                            </span>
-                          ))}
+                          {s.top3.map((t, i) => {
+                            const tb = getBoardInfo(t.code)
+                            return (
+                              <span key={t.code} style={{ fontSize: '0.46rem', display: 'flex', alignItems: 'center', gap: '0.18rem',
+                                padding: '0.05rem 0.28rem', borderRadius: '3px',
+                                backgroundColor: tb.restricted ? tb.bg : (i === 0 ? '#f8717115' : '#ffffff06'),
+                                border: `1px solid ${tb.restricted ? tb.color + '50' : (i === 0 ? '#f8717140' : DARK.cardBorder)}` }}>
+                                <span style={{ color: i === 0 ? '#fbbf24' : DARK.dim, fontWeight: 700 }}>#{i + 1}</span>
+                                <span style={{ color: tb.restricted ? tb.color : DARK.text }}>{t.name}</span>
+                                {tb.restricted && <span style={{ fontSize: '0.38rem', color: tb.color }}>🔒</span>}
+                                <span style={{ fontFamily: 'var(--font-mono)', color: '#f87171', fontWeight: 600 }}>+{t.flow}亿</span>
+                                {t.chg != null && <span style={{ fontFamily: 'var(--font-mono)', color: '#f87171', fontSize: '0.42rem' }}>{t.chg >= 0 ? '+' : ''}{t.chg}%</span>}
+                              </span>
+                            )
+                          })}
                         </div>
                       )}
                       {/* Outflow top3 */}
                       {s.outflow3 && s.outflow3.length > 0 && (
                         <div style={{ display: 'flex', gap: '0.35rem', paddingLeft: '76px', marginTop: '0.08rem', flexWrap: 'wrap', alignItems: 'center' }}>
                           <span style={{ fontSize: '0.44rem', color: '#4ade80', marginRight: '0.1rem' }}>▼流出</span>
-                          {s.outflow3.map((t, i) => (
-                            <span key={t.code} style={{ fontSize: '0.46rem', display: 'flex', alignItems: 'center', gap: '0.18rem',
-                              padding: '0.05rem 0.28rem', borderRadius: '3px',
-                              backgroundColor: '#4ade8010',
-                              border: `1px solid #4ade8030` }}>
-                              <span style={{ color: DARK.dim, fontWeight: 700 }}>#{i + 1}</span>
-                              <span style={{ color: DARK.text }}>{t.name}</span>
-                              <span style={{ fontFamily: 'var(--font-mono)', color: '#4ade80', fontWeight: 600 }}>{t.flow}亿</span>
-                              {t.chg != null && <span style={{ fontFamily: 'var(--font-mono)', color: '#4ade80', fontSize: '0.42rem' }}>{t.chg >= 0 ? '+' : ''}{t.chg}%</span>}
-                            </span>
-                          ))}
+                          {s.outflow3.map((t, i) => {
+                            const tb = getBoardInfo(t.code)
+                            return (
+                              <span key={t.code} style={{ fontSize: '0.46rem', display: 'flex', alignItems: 'center', gap: '0.18rem',
+                                padding: '0.05rem 0.28rem', borderRadius: '3px',
+                                backgroundColor: '#4ade8010', border: `1px solid #4ade8030` }}>
+                                <span style={{ color: DARK.dim, fontWeight: 700 }}>#{i + 1}</span>
+                                <span style={{ color: tb.restricted ? tb.color : DARK.text }}>{t.name}</span>
+                                {tb.restricted && <span style={{ fontSize: '0.38rem', color: tb.color }}>🔒</span>}
+                                <span style={{ fontFamily: 'var(--font-mono)', color: '#4ade80', fontWeight: 600 }}>{t.flow}亿</span>
+                                {t.chg != null && <span style={{ fontFamily: 'var(--font-mono)', color: '#4ade80', fontSize: '0.42rem' }}>{t.chg >= 0 ? '+' : ''}{t.chg}%</span>}
+                              </span>
+                            )
+                          })}
                         </div>
                       )}
                     </div>
@@ -249,20 +269,33 @@ export default function InstitutionalFlow() {
             const chg = midcapTf === '1d' ? s.chg1d : midcapTf === '3d' ? s.chg3d : s.chg7d
             const chgVal = chg ?? s.chg1d
             const intensity = Math.min(1, Math.abs(chgVal) / 10)
-            const rowBg = chgVal >= 7 ? `rgba(248,113,113,${0.06 + intensity * 0.08})` : chgVal >= 3 ? `rgba(251,191,36,${0.04})` : 'transparent'
+            const board = getBoardInfo(s.code)
+            const rowBg = board.restricted
+              ? board.bg
+              : chgVal >= 7 ? `rgba(248,113,113,${0.06 + intensity * 0.08})` : chgVal >= 3 ? `rgba(251,191,36,${0.04})` : 'transparent'
             return (
-              <div key={s.code} style={{ display: 'grid', gridTemplateColumns: '1.2rem 1fr 3.5rem 3.5rem 4rem 3rem', gap: '0.3rem', padding: '0.28rem 0.35rem', borderRadius: '4px', backgroundColor: rowBg, alignItems: 'start' }}>
+              <div key={s.code} style={{ display: 'grid', gridTemplateColumns: '1.2rem 1fr 3.5rem 3.5rem 4rem 3rem', gap: '0.3rem', padding: '0.28rem 0.35rem', borderRadius: '4px', backgroundColor: rowBg,
+                border: board.restricted ? `1px solid ${board.color}40` : '1px solid transparent', alignItems: 'start' }}>
                 {/* Rank */}
                 <span style={{ fontSize: '0.48rem', fontWeight: 700, color: i < 3 ? '#fbbf24' : DARK.dim, paddingTop: '0.1rem' }}>{i + 1}</span>
 
                 {/* Name + industry + desc */}
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.56rem', fontWeight: 700, color: DARK.text }}>{s.name}</span>
+                    <span style={{ fontSize: '0.56rem', fontWeight: 700, color: board.restricted ? board.color : DARK.text }}>{s.name}</span>
                     <span style={{ fontSize: '0.42rem', fontFamily: 'var(--font-mono)', color: DARK.dim }}>{s.code}</span>
+                    {/* Board badge */}
+                    <span title={board.restricted ? board.reason : '可直接交易'} style={{ fontSize: '0.42rem', padding: '0.05rem 0.25rem', borderRadius: '3px',
+                      backgroundColor: board.bg, color: board.color, border: `1px solid ${board.color}50`,
+                      fontWeight: 600, cursor: 'help' }}>
+                      {board.restricted ? '🔒 ' : '✅ '}{board.label}
+                    </span>
                     <span style={{ fontSize: '0.42rem', padding: '0.05rem 0.25rem', borderRadius: '3px', backgroundColor: '#a78bfa15', color: '#a78bfa', border: '1px solid #a78bfa30' }}>{s.industry}</span>
                   </div>
-                  <div style={{ fontSize: '0.44rem', color: DARK.muted, marginTop: '0.06rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.desc}</div>
+                  {board.restricted && (
+                    <div style={{ fontSize: '0.42rem', color: board.color, marginTop: '0.04rem', opacity: 0.8 }}>⚠️ {board.reason}</div>
+                  )}
+                  <div style={{ fontSize: '0.44rem', color: DARK.muted, marginTop: '0.04rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.desc}</div>
                   {s.reason && <div style={{ fontSize: '0.44rem', color: '#fbbf24', marginTop: '0.04rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>💡 {s.reason}</div>}
                 </div>
 
@@ -329,12 +362,19 @@ export default function InstitutionalFlow() {
           {filtered.map(s => {
             const pc = PHASE_COLORS[s.phase] || DARK.muted
             const isExpanded = expanded === s.code
+            const board = getBoardInfo(s.code)
             return (
-              <div key={s.code} style={{ borderRadius: '8px', border: `1px solid ${pc}50`, backgroundColor: DARK.card, overflow: 'hidden' }}>
+              <div key={s.code} style={{ borderRadius: '8px', border: `1px solid ${board.restricted ? board.color + '60' : pc + '50'}`, backgroundColor: DARK.card, overflow: 'hidden' }}>
                 <div onClick={() => setExpanded(isExpanded ? null : s.code)}
                   style={{ padding: '0.45rem 0.7rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', cursor: 'pointer' }}>
                   <span style={{ fontSize: '0.72rem', fontWeight: 700, color: DARK.text }}>{s.name}</span>
                   <span style={{ fontSize: '0.55rem', fontFamily: 'var(--font-mono)', color: DARK.dim }}>{s.code}</span>
+                  {/* Board restriction badge */}
+                  <span title={board.restricted ? board.reason : '可直接交易'} style={{ fontSize: '0.48rem', padding: '0.06rem 0.3rem', borderRadius: '4px',
+                    backgroundColor: board.bg, color: board.color, border: `1px solid ${board.color}50`,
+                    fontWeight: 700, cursor: 'help', whiteSpace: 'nowrap' }}>
+                    {board.restricted ? '🔒' : '✅'} {board.label}
+                  </span>
                   <span style={{ fontSize: '0.7rem', fontWeight: 700, fontFamily: 'var(--font-mono)', color: s.changePct>=0?'#f87171':'#4ade80' }}>
                     ¥{s.price.toFixed(2)} {s.changePct>=0?'+':''}{s.changePct.toFixed(1)}%
                   </span>
@@ -344,6 +384,11 @@ export default function InstitutionalFlow() {
                   {s.buySignal && <span style={{ fontSize: '0.55rem', padding: '0.1rem 0.35rem', borderRadius: '6px', backgroundColor: '#4ade8020', color: '#4ade80', fontWeight: 700, border: '1px solid #4ade8040' }}>✅ 买入信号 {s.checklist}/8</span>}
                   <span style={{ color: DARK.muted, fontSize: '0.55rem' }}>{isExpanded?'▲':'▼'}</span>
                 </div>
+                {board.restricted && (
+                  <div style={{ padding: '0.2rem 0.7rem', backgroundColor: board.bg, borderTop: `1px solid ${board.color}30`, fontSize: '0.48rem', color: board.color }}>
+                    ⚠️ {board.reason}
+                  </div>
+                )}
 
                 {/* Quick stats */}
                 <div style={{ padding: '0 0.7rem 0.35rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.54rem', color: DARK.muted }}>
